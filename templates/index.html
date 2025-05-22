@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Plateforme d'Hacking</title>
+    <link rel="stylesheet" href="https://unpkg.com/ascent@latest/dist/ascent.min.css">
+    <style>
+        body { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .section { margin-bottom: 20px; }
+        .error { color: #e74c3c; }
+        .success { color: #2ecc71; }
+        button { margin-top: 10px; }
+        input, select { margin: 5px; padding: 8px; width: 200px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <h1>Plateforme d'Hacking</h1>
+
+    <div class="section">
+        <h2>Créer un compte utilisateur</h2>
+        <input id="user-username" placeholder="Nom d'utilisateur">
+        <input id="user-password" type="password" placeholder="Mot de passe">
+        <select id="user-role">
+            <option value="">Aucun rôle préféré</option>
+            <option value="attaque">Attaque</option>
+            <option value="defense">Défense</option>
+        </select>
+        <button class="btn primary" onclick="registerUser()">S'inscrire</button>
+        <p id="user-register-message" class="error"></p>
+    </div>
+
+    <div class="section">
+        <h2>Se connecter (utilisateur)</h2>
+        <input id="user-login-username" placeholder="Nom d'utilisateur">
+        <input id="user-login-password" type="password" placeholder="Mot de passe">
+        <button class="btn primary" onclick="loginUser()">Se connecter</button>
+        <p id="user-login-message" class="error"></p>
+        <p id="user-info" class="success"></p>
+    </div>
+
+    <div class="section" id="team-create-section">
+        <h2>Créer une équipe</h2>
+        <p id="team-create-warning" class="error">Veuillez vous connecter en tant qu'utilisateur d'abord.</p>
+        <div id="team-create-form" class="hidden">
+            <input id="team-name" placeholder="Nom d'équipe">
+            <input id="team-password" type="password" placeholder="Mot de passe">
+            <select id="team-role">
+                <option value="attaque">Attaque</option>
+                <option value="defense">Défense</option>
+            </select>
+            <button class="btn primary" onclick="registerTeam()">S'inscrire</button>
+        </div>
+        <p id="team-register-message" class="error"></p>
+    </div>
+
+    <div class="section">
+        <h2>Se connecter (équipe)</h2>
+        <input id="team-login-name" placeholder="Nom d'équipe">
+        <input id="team-login-password" type="password" placeholder="Mot de passe">
+        <button class="btn primary" onclick="loginTeam()">Se connecter</button>
+        <p id="team-login-message" class="error"></p>
+        <p id="team-info" class="success"></p>
+    </div>
+
+    <div class="section">
+        <h2>Rejoindre une équipe</h2>
+        <input id="team-id" placeholder="ID de l'équipe">
+        <button class="btn primary" onclick="joinTeam()">Rejoindre</button>
+        <p id="join-team-message" class="success"></p>
+    </div>
+
+    <div class="section">
+        <h2>Quitter une équipe</h2>
+        <button class="btn secondary" onclick="leaveTeam()">Quitter</button>
+        <p id="leave-team-message" class="error"></p>
+    </div>
+
+    <div class="section" id="match-join-section">
+        <h2>Rejoindre un match</h2>
+        <p id="match-join-warning" class="error">Veuillez vous connecter en tant que créateur de l'équipe.</p>
+        <div id="match-join-form" class="hidden">
+            <input id="match-id" placeholder="ID du match">
+            <button class="btn primary" onclick="joinMatch()">Rejoindre</button>
+        </div>
+        <p id="match-message" class="success"></p>
+    </div>
+
+    <div class="section">
+        <h2>Quitter un match</h2>
+        <input id="leave-match-id" placeholder="ID du match">
+        <button class="btn secondary" onclick="leaveMatch()">Quitter</button>
+        <p id="leave-match-message" class="error"></p>
+    </div>
+
+    <script>
+        let userId = null;
+        let teamId = null;
+        let userRole = null;
+        let teamRole = null;
+        let isTeamCreator = false;
+
+        function updateTeamCreateForm() {
+            console.log('updateTeamCreateForm:', { userId });
+            const form = document.getElementById('team-create-form');
+            const warning = document.getElementById('team-create-warning');
+            if (userId) {
+                form.classList.remove('hidden');
+                warning.classList.add('hidden');
+            } else {
+                form.classList.add('hidden');
+                warning.classList.remove('hidden');
+            }
+        }
+
+        function updateMatchJoinForm() {
+            console.log('updateMatchJoinForm:', { userId, teamId, isTeamCreator });
+            const form = document.getElementById('match-join-form');
+            const warning = document.getElementById('match-join-warning');
+            if (userId && teamId && isTeamCreator) {
+                form.classList.remove('hidden');
+                warning.classList.add('hidden');
+            } else {
+                form.classList.add('hidden');
+                warning.classList.remove('hidden');
+            }
+        }
+
+        async function registerUser() {
+            console.log('registerUser clicked');
+            const username = document.getElementById('user-username').value;
+            const password = document.getElementById('user-password').value;
+            const preferred_role = document.getElementById('user-role').value;
+            try {
+                const response = await fetch('/register_user', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password, preferred_role })
+                });
+                const data = await response.json();
+                document.getElementById('user-register-message').textContent = data.message;
+                document.getElementById('user-register-message').className = response.ok ? 'success' : 'error';
+            } catch (error) {
+                console.error('Error in registerUser:', error);
+                document.getElementById('user-register-message').textContent = 'Erreur réseau';
+                document.getElementById('user-register-message').className = 'error';
+            }
+        }
+
+        async function loginUser() {
+            console.log('loginUser clicked');
+            const username = document.getElementById('user-login-username').value;
+            const password = document.getElementById('user-login-password').value;
+            try {
+                const response = await fetch('/login_user', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await response.json();
+                document.getElementById('user-login-message').textContent = data.message;
+                document.getElementById('user-login-message').className = response.ok ? 'success' : 'error';
+                if (data.user_id) {
+                    userId = data.user_id;
+                    userRole = data.preferred_role;
+                    document.getElementById('user-info').textContent = 
+                        `Connecté en tant que ${username} (ID: ${userId}, Rôle préféré: ${userRole || 'Aucun'})`;
+                    updateTeamCreateForm();
+                    updateMatchJoinForm();
+                }
+            } catch (error) {
+                console.error('Error in loginUser:', error);
+                document.getElementById('user-login-message').textContent = 'Erreur réseau';
+                document.getElementById('user-login-message').className = 'error';
+            }
+        }
+
+        async function registerTeam() {
+            console.log('registerTeam clicked');
+            const name = document.getElementById('team-name').value;
+            const password = document.getElementById('team-password').value;
+            const role = document.getElementById('team-role').value;
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, password, role, user_id: userId })
+                });
+                const data = await response.json();
+                document.getElementById('team-register-message').textContent = data.message;
+                document.getElementById('team-register-message').className = response.ok ? 'success' : 'error';
+                if (data.team_id) {
+                    teamId = data.team_id;
+                    teamRole = role;
+                    isTeamCreator = true;
+                    document.getElementById('team-info').textContent = 
+                        `Équipe créée: ${name} (ID: ${teamId}, Rôle: ${teamRole})`;
+                    updateMatchJoinForm();
+                }
+            } catch (error) {
+                console.error('Error in registerTeam:', error);
+                document.getElementById('team-register-message').textContent = 'Erreur réseau';
+                document.getElementById('team-register-message').className = 'error';
+            }
+        }
+
+        async function loginTeam() {
+            console.log('loginTeam clicked');
+            const name = document.getElementById('team-login-name').value;
+            const password = document.getElementById('team-login-password').value;
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, password })
+                });
+                const data = await response.json();
+                document.getElementById('team-login-message').textContent = data.message;
+                document.getElementById('team-login-message').className = response.ok ? 'success' : 'error';
+                if (data.team_id) {
+                    teamId = data.team_id;
+                    teamRole = data.role;
+                    const creatorCheck = await fetch('/teams', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ team_id: teamId, user_id: userId })
+                    });
+                    const creatorData = await creatorCheck.json();
+                    isTeamCreator = creatorData.is_creator;
+                    document.getElementById('team-info').textContent = 
+                        `Connecté en tant que ${name} (ID: ${teamId}, Rôle: ${teamRole}${isTeamCreator ? ', Créateur' : ''})`;
+                    updateMatchJoinForm();
+                }
+            } catch (error) {
+                console.error('Error in loginTeam:', error);
+                document.getElementById('team-login-message').textContent = 'Erreur réseau';
+                document.getElementById('team-login-message').className = 'error';
+            }
+        }
+
+        async function joinTeam() {
+            console.log('joinTeam clicked');
+            const team_id = document.getElementById('team-id').value;
+            try {
+                const response = await fetch('/join_team', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, team_id })
+                });
+                const data = await response.json();
+                document.getElementById('join-team-message').textContent = data.message;
+                document.getElementById('join-team-message').className = response.ok ? 'success' : 'error';
+                if (response.ok) {
+                    isTeamCreator = false;
+                    updateMatchJoinForm();
+                }
+            } catch (error) {
+                console.error('Error in joinTeam:', error);
+                document.getElementById('join-team-message').textContent = 'Erreur réseau';
+                document.getElementById('join-team-message').className = 'error';
+            }
+        }
+
+        async function leaveTeam() {
+            console.log('leaveTeam clicked');
+            try {
+                const response = await fetch('/leave_team', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                const data = await response.json();
+                document.getElementById('leave-team-message').textContent = data.message;
+                document.getElementById('leave-team-message').className = response.ok ? 'success' : 'error';
+                if (response.ok) {
+                    isTeamCreator = false;
+                    updateMatchJoinForm();
+                }
+            } catch (error) {
+                console.error('Error in leaveTeam:', error);
+                document.getElementById('leave-team-message').textContent = 'Erreur réseau';
+                document.getElementById('leave-team-message').className = 'error';
+            }
+        }
+
+        async function joinMatch() {
+            console.log('joinMatch clicked');
+            const matchId = document.getElementById('match-id').value;
+            try {
+                const response = await fetch('/join_match', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ team_id: teamId, match_id: matchId, user_id: userId })
+                });
+                const data = await response.json();
+                document.getElementById('match-message').textContent = data.message;
+                document.getElementById('match-message').className = response.ok ? 'success' : 'error';
+                if (data.vm_ip) {
+                    document.getElementById('match-message').innerHTML += 
+                        `<br>Accès VM: <a href="http://${data.vm_ip}" target="_blank">${data.vm_ip}</a>` +
+                        (data.guacamole_url ? `<br>Guacamole: <a href="${data.guacamole_url}" target="_blank">${data.guacamole_url}</a>` : '');
+                }
+            } catch (error) {
+                console.error('Error in joinMatch:', error);
+                document.getElementById('match-message').textContent = 'Erreur réseau';
+                document.getElementById('match-message').className = 'error';
+            }
+        }
+
+        async function leaveMatch() {
+            console.log('leaveMatch clicked');
+            const matchId = document.getElementById('leave-match-id').value;
+            try {
+                const response = await fetch('/leave_match', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ team_id: teamId, match_id: matchId })
+                });
+                const data = await response.json();
+                document.getElementById('leave-match-message').textContent = data.message;
+                document.getElementById('leave-match-message').className = response.ok ? 'success' : 'error';
+            } catch (error) {
+                console.error('Error in leaveMatch:', error);
+                document.getElementById('leave-match-message').textContent = 'Erreur réseau';
+                document.getElementById('leave-match-message').className = 'error';
+            }
+        }
+
+        // Initialize forms
+        updateTeamCreateForm();
+        updateMatchJoinForm();
+    </script>
+</body>
+</html>
