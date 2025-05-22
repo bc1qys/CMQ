@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Plateforme d'Hacking</title>
+    <link rel="stylesheet" href="https://unpkg.com/ascent@latest/dist/ascent.min.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+            font-family: Arial, sans-serif;
+        }
+        .login-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        input, select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        .btn-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+        button {
+            flex: 1;
+            padding: 0.8rem;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .error {
+            color: #e74c3c;
+            text-align: center;
+            margin-top: 1rem;
+        }
+        .success {
+            color: #2ecc71;
+            text-align: center;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>Plateforme d'Hacking</h1>
+        <div class="form-group">
+            <input id="username" type="text" placeholder="Nom d'utilisateur" required>
+        </div>
+        <div class="form-group">
+            <input id="password" type="password" placeholder="Mot de passe" required>
+        </div>
+        <div class="form-group hidden" id="preferred-role-group">
+            <select id="preferred-role">
+                <option value="">Aucun rôle préféré</option>
+                <option value="attaque">Attaque</option>
+                <option value="defense">Défense</option>
+            </select>
+        </div>
+        <div class="btn-group">
+            <button class="btn primary" id="login-button">Se connecter</button>
+            <button class="btn secondary" id="register-button">S'inscrire</button>
+        </div>
+        <p id="message" class="error"></p>
+    </div>
+
+    <script>
+        // Afficher/masquer le champ preferred-role
+        function toggleRegisterFields(isRegister) {
+            document.getElementById('preferred-role-group').classList.toggle('hidden', !isRegister);
+        }
+
+        // Inscription
+        async function registerUser() {
+            console.log('registerUser clicked');
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const preferred_role = document.getElementById('preferred-role').value;
+
+            if (!username || !password) {
+                document.getElementById('message').textContent = 'Veuillez remplir le nom d’utilisateur et le mot de passe';
+                document.getElementById('message').className = 'error';
+                return;
+            }
+
+            try {
+                const response = await fetch('/register_user', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password, preferred_role })
+                });
+                const data = await response.json();
+                console.log('Register response:', data);
+                document.getElementById('message').textContent = data.message;
+                document.getElementById('message').className = response.ok ? 'success' : 'error';
+                if (response.ok) {
+                    setTimeout(() => loginUser(), 1000); // Connexion auto après inscription
+                }
+            } catch (error) {
+                console.error('Error in registerUser:', error);
+                document.getElementById('message').textContent = 'Erreur réseau';
+                document.getElementById('message').className = 'error';
+            }
+        }
+
+        // Connexion
+        async function loginUser() {
+            console.log('loginUser clicked');
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (!username || !password) {
+                document.getElementById('message').textContent = 'Veuillez remplir le nom d’utilisateur et le mot de passe';
+                document.getElementById('message').className = 'error';
+                return;
+            }
+
+            try {
+                const response = await fetch('/login_user', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await response.json();
+                console.log('Login response:', data);
+                document.getElementById('message').textContent = data.message;
+                document.getElementById('message').className = response.ok ? 'success' : 'error';
+                if (response.ok && data.redirect) {
+                    if (data.user_id) {
+                        // Stockage pour joueur
+                        sessionStorage.setItem('userId', data.user_id);
+                        sessionStorage.setItem('username', username);
+                        sessionStorage.setItem('preferred_role', data.preferred_role || 'Aucun');
+                    } else if (data.message.includes('admin')) {
+                        // Marquer l’admin comme connecté
+                        sessionStorage.setItem('isAdminLoggedIn', 'true');
+                    }
+                    window.location.href = data.redirect;
+                }
+            } catch (error) {
+                console.error('Error in loginUser:', error);
+                document.getElementById('message').textContent = 'Erreur réseau';
+                document.getElementById('message').className = 'error';
+            }
+        }
+
+        // Écouteurs d’événements
+        document.getElementById('login-button').addEventListener('click', () => {
+            toggleRegisterFields(false);
+            loginUser();
+        });
+        document.getElementById('register-button').addEventListener('click', () => {
+            toggleRegisterFields(true);
+            registerUser();
+        });
+    </script>
+</body>
+</html>

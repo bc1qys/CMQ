@@ -94,11 +94,19 @@
     </div>
 
     <script>
-        let userId = null;
+        // Initialiser les variables depuis sessionStorage
+        let userId = sessionStorage.getItem('userId') || null;
         let teamId = null;
-        let userRole = null;
+        let userRole = sessionStorage.getItem('preferred_role') || null;
         let teamRole = null;
         let isTeamCreator = false;
+
+        // Afficher les infos de l'utilisateur connecté au chargement
+        if (userId) {
+            const username = sessionStorage.getItem('username');
+            document.getElementById('user-info').textContent = 
+                `Connecté en tant que ${username} (ID: ${userId}, Rôle préféré: ${userRole || 'Aucun'})`;
+        }
 
         function updateTeamCreateForm() {
             console.log('updateTeamCreateForm:', { userId });
@@ -161,6 +169,10 @@
                 document.getElementById('user-login-message').textContent = data.message;
                 document.getElementById('user-login-message').className = response.ok ? 'success' : 'error';
                 if (data.user_id) {
+                    // Stocker dans sessionStorage
+                    sessionStorage.setItem('userId', data.user_id);
+                    sessionStorage.setItem('username', username);
+                    sessionStorage.setItem('preferred_role', data.preferred_role || 'Aucun');
                     userId = data.user_id;
                     userRole = data.preferred_role;
                     document.getElementById('user-info').textContent = 
@@ -220,6 +232,7 @@
                 if (data.team_id) {
                     teamId = data.team_id;
                     teamRole = data.role;
+                    // Vérifier si l'utilisateur est le créateur
                     const creatorCheck = await fetch('/teams', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -326,7 +339,7 @@
             }
         }
 
-        // Initialize forms
+        // Initialiser les formulaires
         updateTeamCreateForm();
         updateMatchJoinForm();
     </script>

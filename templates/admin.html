@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration - Plateforme CTF</title>
+    <link rel="stylesheet" href="https://unpkg.com/ascent@latest/dist/ascent.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            font-size: 2rem;
+            color: #2c3e50;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .section h2 {
+            font-size: 1.6rem;
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .error { color: #e74c3c; }
+        .success { color: #2ecc71; }
+        input, button, select, textarea {
+            padding: 10px;
+            margin: 5px;
+            font-size: 1rem;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            width: 300px;
+        }
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        button {
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn.primary:hover {
+            background: #3498db;
+        }
+        .btn.secondary:hover {
+            background: #e74c3c;
+        }
+        .hidden { display: none; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #3498db;
+            color: white;
+        }
+        tr:hover { background: #f5f5f5; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Panel d'Administration CTF</h1>
+        </div>
+
+        <!-- Section Accès Refusé -->
+        <div class="section hidden" id="admin-access-denied-section">
+            <h2>Accès Refusé</h2>
+            <p class="error">Vous devez être connecté en tant qu’administrateur pour accéder à cette page.</p>
+            <a href="/login">Se connecter</a>
+        </div>
+
+        <!-- Section Gestion -->
+        <div class="section hidden" id="admin-management-section">
+            <h2>Gestion de la Plateforme</h2>
+            <button class="btn secondary" id="admin-logout-button">Se déconnecter</button>
+
+            <!-- Liste des Joueurs -->
+            <div class="section">
+                <h3>Liste des Joueurs</h3>
+                <table id="players-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nom</th>
+                            <th>Rôle Préféré</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <p id="players-message" class="error"></p>
+            </div>
+
+            <!-- Liste des Équipes -->
+            <div class="section">
+                <h3>Liste des Équipes</h3>
+                <table id="teams-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nom</th>
+                            <th>Rôle</th>
+                            <th>Créateur</th>
+                            <th>Membres</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <p id="teams-message" class="error"></p>
+            </div>
+
+            <!-- Créer un Challenge -->
+            <div class="section">
+                <h3>Créer un Challenge</h3>
+                <input id="challenge-name" placeholder="Nom du challenge">
+                <textarea id="challenge-description" placeholder="Description"></textarea>
+                <select id="challenge-level">
+                    <option value="debutant">Débutant</option>
+                    <option value="intermediaire">Intermédiaire</option>
+                    <option value="avance">Avancé</option>
+                </select>
+                <input id="challenge-points" type="number" placeholder="Points">
+                <input id="challenge-flag" placeholder="Flag (ex: FLAG{xxx})">
+                <input id="challenge-ip" placeholder="IP du match (ex: 192.168.1.10)">
+                <button class="btn primary" id="create-challenge-button">Créer</button>
+                <p id="challenge-message" class="success"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isAdminLoggedIn = sessionStorage.getItem('isAdminLoggedIn') === 'true';
+
+        // Afficher/masquer sections selon état admin
+        async function updateAdminSections() {
+            console.log('updateAdminSections:', { isAdminLoggedIn });
+            const accessDeniedSection = document.getElementById('admin-access-denied-section');
+            const managementSection = document.getElementById('admin-management-section');
+
+            try {
+                // Vérifier si admin via /admin_players
+                const response = await fetch('/admin_players', { method: 'GET' });
+                if (response.ok) {
+                    isAdminLoggedIn = true;
+                    sessionStorage.setItem('isAdminLoggedIn', 'true');
+                    accessDeniedSection.classList.add('hidden');
+                    managementSection.classList.remove('hidden');
+                    fetchPlayers();
+                    fetchTeams();
+                } else {
+                    isAdminLoggedIn = false;
+                    sessionStorage.removeItem('isAdminLoggedIn');
+                    accessDeniedSection.classList.remove('hidden');
+                    managementSection.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Error checking admin status:', error);
+                accessDeniedSection.classList.remove('hidden');
+                managementSection.classList.add('hidden');
+            }
+        }
+
+        // Déconnexion admin
+        async function logoutAdmin() {
+            console.log('logoutAdmin clicked');
+            try {
+                const response = await fetch('/admin_logout', { method: 'POST' });
+                const data = await response.json();
+                console.log('Logout response:', data);
+                if (response.ok) {
+                    isAdminLoggedIn = false;
+                    sessionStorage.removeItem('isAdminLoggedIn');
+                    window.location.href = data.redirect || '/login';
+                }
+            } catch (error) {
+                console.error('Error in logoutAdmin:', error);
+                document.getElementById('players-message').textContent = 'Erreur réseau';
+                document.getElementById('players-message').className = 'error';
+            }
+        }
+
+        // Récupérer la liste des joueurs
+        async function fetchPlayers() {
+            console.log('fetchPlayers called');
+            try {
+                const response = await fetch('/admin_players', { method: 'GET' });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                const tbody = document.getElementById('players-table').querySelector('tbody');
+                tbody.innerHTML = '';
+                if (data.players && data.players.length > 0) {
+                    data.players.forEach(player => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${player.id}</td>
+                            <td>${player.username}</td>
+                            <td>${player.preferred_role || 'Aucun'}</td>
+                            <td>${player.score}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                    document.getElementById('players-message').textContent = '';
+                } else {
+                    document.getElementById('players-message').textContent = 'Aucun joueur trouvé.';
+                }
+            } catch (error) {
+                console.error('Error in fetchPlayers:', error);
+                document.getElementById('players-message').textContent = 'Erreur réseau';
+                document.getElementById('players-message').className = 'error';
+            }
+        }
+
+        // Récupérer la liste des équipes
+        async function fetchTeams() {
+            console.log('fetchTeams called');
+            try {
+                const response = await fetch('/admin_teams', { method: 'GET' });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                const tbody = document.getElementById('teams-table').querySelector('tbody');
+                tbody.innerHTML = '';
+                if (data.teams && data.teams.length > 0) {
+                    data.teams.forEach(team => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${team.id}</td>
+                            <td>${team.name}</td>
+                            <td>${team.role}</td>
+                            <td>${team.creator_username}</td>
+                            <td>${team.members.join(', ') || 'Aucun'}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                    document.getElementById('teams-message').textContent = '';
+                } else {
+                    document.getElementById('teams-message').textContent = 'Aucune équipe trouvée.';
+                }
+            } catch (error) {
+                console.error('Error in fetchTeams:', error);
+                document.getElementById('teams-message').textContent = 'Erreur réseau';
+                document.getElementById('teams-message').className = 'error';
+            }
+        }
+
+        // Créer un challenge
+        async function createChallenge() {
+            console.log('createChallenge clicked');
+            const name = document.getElementById('challenge-name').value;
+            const description = document.getElementById('challenge-description').value;
+            const level = document.getElementById('challenge-level').value;
+            const points = parseInt(document.getElementById('challenge-points').value);
+            const flag = document.getElementById('challenge-flag').value;
+            const ip = document.getElementById('challenge-ip').value;
+            try {
+                const response = await fetch('/admin_create_challenge', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, description, level, points, flag, ip })
+                });
+                console.log('Create challenge response:', response.status);
+                const data = await response.json();
+                console.log('Create challenge data:', data);
+                document.getElementById('challenge-message').textContent = data.message;
+                document.getElementById('challenge-message').className = response.ok ? 'success' : 'error';
+                if (response.ok) {
+                    document.getElementById('challenge-name').value = '';
+                    document.getElementById('challenge-description').value = '';
+                    document.getElementById('challenge-points').value = '';
+                    document.getElementById('challenge-flag').value = '';
+                    document.getElementById('challenge-ip').value = '';
+                }
+            } catch (error) {
+                console.error('Error in createChallenge:', error);
+                document.getElementById('challenge-message').textContent = 'Erreur réseau';
+                document.getElementById('challenge-message').className = 'error';
+            }
+        }
+
+        // Écouteurs d’événements
+        document.getElementById('admin-logout-button').addEventListener('click', logoutAdmin);
+        document.getElementById('create-challenge-button').addEventListener('click', createChallenge);
+
+        // Initialiser l’état de la page
+        updateAdminSections();
+    </script>
+</body>
+</html>

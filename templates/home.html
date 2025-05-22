@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accueil - Plateforme CTF</title>
+    <link rel="stylesheet" href="https://unpkg.com/ascent@latest/dist/ascent.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #f0f4ff, #e0e7ff);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin: 0;
+        }
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        .menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .menu-item {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+        .menu-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+        .menu-item h2 {
+            font-size: 1.4rem;
+            color: #2980b9;
+            margin: 10px 0;
+        }
+        .menu-item p {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .section h2 {
+            font-size: 1.6rem;
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .error { color: #e74c3c; }
+        .success { color: #2ecc71; }
+        input, button, select {
+            padding: 10px;
+            margin: 5px;
+            font-size: 1rem;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        button {
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn.primary:hover {
+            background: #3498db;
+        }
+        .btn.secondary:hover {
+            background: #e74c3c;
+        }
+        .hidden { display: none; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #3498db;
+            color: white;
+        }
+        tr:hover { background: #f5f5f5; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Plateforme CTF 🏴‍☠️</h1>
+            <p>Prêt à hacker ? Choisis une mission et montre tes skills !</p>
+        </div>
+
+        <div class="menu">
+            <div class="menu-item" onclick="showSection('profile')">
+                <h2>Profil</h2>
+                <p>Vos infos et paramètres</p>
+            </div>
+            <div class="menu-item" onclick="showSection('leaderboard')">
+                <h2>Classement</h2>
+                <p>Voir les meilleurs joueurs</p>
+            </div>
+            <div class="menu-item" onclick="showSection('challenges')">
+                <h2>Défis</h2>
+                <p>Explorez les challenges</p>
+            </div>
+            <div class="menu-item" onclick="showSection('join-match')">
+                <h2>Rejoindre un match</h2>
+                <p>Participez à une mission</p>
+            </div>
+            <div class="menu-item" onclick="showSection('create-team')">
+                <h2>Créer une équipe</h2>
+                <p>Formez votre crew</p>
+            </div>
+        </div>
+
+        <!-- Section Profil -->
+        <div class="section" id="profile-section">
+            <h2>Votre Profil</h2>
+            <p id="profile-info" class="success"></p>
+            <button class="btn secondary" onclick="logout()">Se déconnecter</button>
+        </div>
+
+        <!-- Section Classement -->
+        <div class="section hidden" id="leaderboard-section">
+            <h2>Classement des Joueurs</h2>
+            <table id="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Rang</th>
+                        <th>Joueur</th>
+                        <th>Score</th>
+                        <th>Rôle Préféré</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <p id="leaderboard-message" class="error"></p>
+        </div>
+
+        <!-- Section Défis -->
+        <div class="section hidden" id="challenges-section">
+            <h2>Défis Disponibles</h2>
+            <table id="challenges-table">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Points</th>
+                        <th>Niveau</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <p id="challenges-message" class="error"></p>
+        </div>
+
+        <!-- Section Rejoindre un Match -->
+        <div class="section hidden" id="join-match-section">
+            <h2>Rejoindre un Match</h2>
+            <p id="match-join-warning" class="error">Veuillez vous connecter en tant que créateur de l'équipe.</p>
+            <div id="match-join-form" class="hidden">
+                <input id="match-id" placeholder="ID du match">
+                <button class="btn primary" onclick="joinMatch()">Rejoindre</button>
+            </div>
+            <p id="match-message" class="success"></p>
+        </div>
+
+        <!-- Section Créer une Équipe -->
+        <div class="section hidden" id="create-team-section">
+            <h2>Créer une Équipe</h2>
+            <p id="team-create-warning" class="error">Veuillez vous connecter pour créer une équipe.</p>
+            <div id="team-create-form" class="hidden">
+                <input id="team-name" placeholder="Nom d'équipe">
+                <input id="team-password" type="password" placeholder="Mot de passe">
+                <select id="team-role">
+                    <option value="attaque">Attaque</option>
+                    <option value="defense">Défense</option>
+                </select>
+                <button class="btn primary" onclick="createTeam()">Créer</button>
+            </div>
+            <p id="team-create-message" class="success"></p>
+        </div>
+    </div>
+
+    <script>
+        let userId = sessionStorage.getItem('userId') || null;
+        let teamId = sessionStorage.getItem('teamId') || null;
+        let userRole = sessionStorage.getItem('preferred_role') || null;
+        let teamRole = sessionStorage.getItem('teamRole') || null;
+        let isTeamCreator = sessionStorage.getItem('isTeamCreator') === 'true';
+
+        // Afficher les infos du profil au chargement
+        if (userId) {
+            const username = sessionStorage.getItem('username');
+            document.getElementById('profile-info').textContent = 
+                `Connecté en tant que ${username} (ID: ${userId}, Rôle préféré: ${userRole || 'Aucun'})` +
+                (teamId ? ` | Équipe: ${sessionStorage.getItem('teamName')} (ID: ${teamId}, Rôle: ${teamRole}${isTeamCreator ? ', Créateur' : ''})` : '');
+        }
+
+        // Mettre à jour le formulaire de création d'équipe
+        function updateTeamCreateForm() {
+            console.log('updateTeamCreateForm:', { userId });
+            const form = document.getElementById('team-create-form');
+            const warning = document.getElementById('team-create-warning');
+            if (userId) {
+                form.classList.remove('hidden');
+                warning.classList.add('hidden');
+            } else {
+                form.classList.add('hidden');
+                warning.classList.remove('hidden');
+            }
+        }
+
+        // Mettre à jour le formulaire de match
+        function updateMatchJoinForm() {
+            console.log('updateMatchJoinForm:', { userId, teamId, isTeamCreator });
+            const form = document.getElementById('match-join-form');
+            const warning = document.getElementById('match-join-warning');
+            if (userId && teamId && isTeamCreator) {
+                form.classList.remove('hidden');
+                warning.classList.add('hidden');
+            } else {
+                form.classList.add('hidden');
+                warning.classList.remove('hidden');
+            }
+        }
+
+        // Gérer l'affichage des sections
+        function showSection(sectionId) {
+            console.log(`showSection: ${sectionId}`);
+            document.querySelectorAll('.section').forEach(section => section.classList.add('hidden'));
+            document.getElementById(`${sectionId}-section`).classList.remove('hidden');
+
+            if (sectionId === 'leaderboard') fetchLeaderboard();
+            if (sectionId === 'challenges') fetchChallenges();
+            if (sectionId === 'join-match') updateMatchJoinForm();
+            if (sectionId === 'create-team') updateTeamCreateForm();
+        }
+
+        // Créer une équipe
+        async function createTeam() {
+            console.log('createTeam clicked');
+            const name = document.getElementById('team-name').value;
+            const password = document.getElementById('team-password').value;
+            const role = document.getElementById('team-role').value;
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, password, role, user_id: userId })
+                });
+                const data = await response.json();
+                document.getElementById('team-create-message').textContent = data.message;
+                document.getElementById('team-create-message').className = response.ok ? 'success' : 'error';
+                if (data.team_id) {
+                    teamId = data.team_id;
+                    teamRole = data.team_role;
+                    isTeamCreator = true;
+                    sessionStorage.setItem('teamId', teamId);
+                    sessionStorage.setItem('teamRole', teamRole);
+                    sessionStorage.setItem('teamName', data.team_name);
+                    sessionStorage.setItem('isTeamCreator', 'true');
+                    document.getElementById('profile-info').textContent = 
+                        `Connecté en tant que ${sessionStorage.getItem('username')} (ID: ${userId}, Rôle préféré: ${userRole || 'Aucun'})` +
+                        ` | Équipe: ${data.team_name} (ID: ${teamId}, Rôle: ${teamRole}, Créateur)`;
+                    updateMatchJoinForm();
+                }
+            } catch (error) {
+                console.error('Error in createTeam:', error);
+                document.getElementById('team-create-message').textContent = 'Erreur réseau';
+                document.getElementById('team-create-message').className = 'error';
+            }
+        }
+
+        // Récupérer le classement des joueurs
+        async function fetchLeaderboard() {
+            console.log('fetchLeaderboard called');
+            try {
+                const response = await fetch('/leaderboard', { method: 'GET' });
+                const data = await response.json();
+                const tbody = document.getElementById('leaderboard-table').querySelector('tbody');
+                tbody.innerHTML = '';
+                if (data.players && data.players.length > 0) {
+                    data.players.forEach((player, index) => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${index + 1}</td>
+                            <td>${player.username}</td>
+                            <td>${player.score}</td>
+                            <td>${player.preferred_role || 'Aucun'}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                    document.getElementById('leaderboard-message').textContent = '';
+                } else {
+                    document.getElementById('leaderboard-message').textContent = 'Aucun joueur trouvé.';
+                }
+            } catch (error) {
+                console.error('Error in fetchLeaderboard:', error);
+                document.getElementById('leaderboard-message').textContent = 'Erreur réseau';
+                document.getElementById('leaderboard-message').className = 'error';
+            }
+        }
+
+        // Récupérer les défis
+        async function fetchChallenges() {
+            console.log('fetchChallenges called');
+            try {
+                const response = await fetch('/challenges', { method: 'GET' });
+                const data = await response.json();
+                const tbody = document.getElementById('challenges-table').querySelector('tbody');
+                tbody.innerHTML = '';
+                if (data.challenges && data.challenges.length > 0) {
+                    data.challenges.forEach(challenge => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${challenge.name}</td>
+                            <td>${challenge.points}</td>
+                            <td>${challenge.level}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                    document.getElementById('challenges-message').textContent = '';
+                } else {
+                    document.getElementById('challenges-message').textContent = 'Aucun défi disponible.';
+                }
+            } catch (error) {
+                console.error('Error in fetchChallenges:', error);
+                document.getElementById('challenges-message').textContent = 'Erreur réseau';
+                document.getElementById('challenges-message').className = 'error';
+            }
+        }
+
+        // Rejoindre un match
+        async function joinMatch() {
+            console.log('joinMatch clicked');
+            const matchId = document.getElementById('match-id').value;
+            try {
+                const response = await fetch('/join_match', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ team_id: teamId, match_id: matchId, user_id: userId })
+                });
+                const data = await response.json();
+                document.getElementById('match-message').textContent = data.message;
+                document.getElementById('match-message').className = response.ok ? 'success' : 'error';
+                if (data.vm_ip) {
+                    document.getElementById('match-message').innerHTML += 
+                        `<br>Accès VM: <a href="http://${data.vm_ip}" target="_blank">${data.vm_ip}</a>` +
+                        (data.guacamole_url ? `<br>Guacamole: <a href="${data.guacamole_url}" target="_blank">${data.guacamole_url}</a>` : '');
+                }
+            } catch (error) {
+                console.error('Error in joinMatch:', error);
+                document.getElementById('match-message').textContent = 'Erreur réseau';
+                document.getElementById('match-message').className = 'error';
+            }
+        }
+
+        // Déconnexion
+        async function logout() {
+            console.log('logout clicked');
+            try {
+                const response = await fetch('/logout', { method: 'POST' });
+                const data = await response.json();
+                if (response.ok) {
+                    sessionStorage.clear();
+                    window.location.href = '/login';
+                } else {
+                    document.getElementById('profile-info').textContent = data.message;
+                    document.getElementById('profile-info').className = 'error';
+                }
+            } catch (error) {
+                console.error('Error in logout:', error);
+                document.getElementById('profile-info').textContent = 'Erreur réseau';
+                document.getElementById('profile-info').className = 'error';
+            }
+        }
+
+        // Afficher la section Profil par défaut
+        showSection('profile');
+    </script>
+</body>
+</html>
