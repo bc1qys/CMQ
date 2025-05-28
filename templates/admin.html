@@ -39,27 +39,49 @@
         }
         .error { color: #e74c3c; }
         .success { color: #2ecc71; }
+        .info { color: #3498db; }
+
         input, button, select, textarea {
             padding: 10px;
             margin: 5px;
             font-size: 1rem;
             border-radius: 5px;
             border: 1px solid #ddd;
-            width: 300px;
+            width: 300px; 
+            box-sizing: border-box;
         }
         textarea {
+            width: calc(100% - 10px); 
             height: 100px;
             resize: vertical;
+        }
+        .section > input, .section > select, .section > textarea {
+            display: block; 
+            width: calc(100% - 10px); 
+            margin-bottom: 10px;
         }
         button {
             cursor: pointer;
             transition: background 0.3s;
+            width: auto; 
+            min-width: 120px; 
         }
         .btn.primary:hover {
             background: #3498db;
+            color: white; 
+        }
+         .btn.primary {
+            background: #3498db; 
+            color: white;
+            border-color: #3498db;
+        }
+        .btn.secondary {
+            background-color: #7f8c8d;
+            color: white;
+            border-color: #7f8c8d;
         }
         .btn.secondary:hover {
-            background: #e74c3c;
+            background: #95a5a6;
         }
         .hidden { display: none; }
         table {
@@ -68,15 +90,35 @@
             margin-top: 10px;
         }
         th, td {
-            padding: 10px;
+            padding: 12px; 
             text-align: left;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid #e0e0e0; 
         }
         th {
-            background: #3498db;
+            background: #3498db; 
             color: white;
+            font-weight: bold; 
         }
-        tr:hover { background: #f5f5f5; }
+        tr:nth-child(even) { 
+            background-color: #f9f9f9;
+        }
+        tr:hover { background: #f0f0f0; }
+
+        .btn-delete {
+            background-color: #e74c3c; 
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .btn-delete:hover {
+            background-color: #c0392b; 
+        }
+        td.actions-cell { 
+            text-align: center; 
+        }
     </style>
 </head>
 <body>
@@ -85,54 +127,51 @@
             <h1>Panel d'Administration CTF</h1>
         </div>
 
-        <!-- Section Accès Refusé -->
         <div class="section hidden" id="admin-access-denied-section">
             <h2>Accès Refusé</h2>
             <p class="error">Vous devez être connecté en tant qu’administrateur pour accéder à cette page.</p>
-            <a href="/login">Se connecter</a>
+            <p><a href="/login" class="btn primary">Se connecter</a></p>
         </div>
 
-        <!-- Section Gestion -->
         <div class="section hidden" id="admin-management-section">
             <h2>Gestion de la Plateforme</h2>
-            <button class="btn secondary" id="admin-logout-button">Se déconnecter</button>
+            <button class="btn secondary" id="admin-logout-button" style="margin-bottom: 20px;">Se déconnecter</button>
 
-            <!-- Liste des Joueurs -->
             <div class="section">
                 <h3>Liste des Joueurs</h3>
                 <table id="players-table">
-                    <thead>
+                    <thead> 
                         <tr>
                             <th>ID</th>
                             <th>Nom</th>
-                            <th>Rôle Préféré</th>
+                            <th>Rôle Utilisateur</th>
                             <th>Score</th>
+                            <th>Actions</th> 
                         </tr>
                     </thead>
-                    <tbody></tbody>
+                    <tbody></tbody> 
                 </table>
-                <p id="players-message" class="error"></p>
+                <p id="players-message" class="info"></p>
             </div>
 
-            <!-- Liste des Équipes -->
             <div class="section">
                 <h3>Liste des Équipes</h3>
                 <table id="teams-table">
-                    <thead>
+                    <thead> 
                         <tr>
                             <th>ID</th>
                             <th>Nom</th>
-                            <th>Rôle</th>
+                            <th>Rôle Équipe</th>
                             <th>Créateur</th>
                             <th>Membres</th>
+                            <th>Actions</th> 
                         </tr>
                     </thead>
-                    <tbody></tbody>
+                    <tbody></tbody> 
                 </table>
-                <p id="teams-message" class="error"></p>
+                <p id="teams-message" class="info"></p>
             </div>
 
-            <!-- Créer un Challenge -->
             <div class="section">
                 <h3>Créer un Challenge</h3>
                 <input id="challenge-name" placeholder="Nom du challenge">
@@ -144,9 +183,9 @@
                 </select>
                 <input id="challenge-points" type="number" placeholder="Points">
                 <input id="challenge-flag" placeholder="Flag (ex: FLAG{xxx})">
-                <input id="challenge-ip" placeholder="IP du match (ex: 192.168.1.10)">
-                <button class="btn primary" id="create-challenge-button">Créer</button>
-                <p id="challenge-message" class="success"></p>
+                <input id="challenge-ip" placeholder="IP de la VM (optionnel, ex: 192.168.1.10)">
+                <button class="btn primary" id="create-challenge-button">Créer Challenge</button>
+                <p id="challenge-message"></p>
             </div>
         </div>
     </div>
@@ -154,15 +193,13 @@
     <script>
         let isAdminLoggedIn = sessionStorage.getItem('isAdminLoggedIn') === 'true';
 
-        // Afficher/masquer sections selon état admin
         async function updateAdminSections() {
             console.log('updateAdminSections:', { isAdminLoggedIn });
             const accessDeniedSection = document.getElementById('admin-access-denied-section');
             const managementSection = document.getElementById('admin-management-section');
 
             try {
-                // Vérifier si admin via /admin_players
-                const response = await fetch('/admin_players', { method: 'GET' });
+                const response = await fetch('/admin_players', { method: 'GET' }); 
                 if (response.ok) {
                     isAdminLoggedIn = true;
                     sessionStorage.setItem('isAdminLoggedIn', 'true');
@@ -171,6 +208,8 @@
                     fetchPlayers();
                     fetchTeams();
                 } else {
+                    const errorData = await response.json();
+                    console.warn('Admin status check failed:', errorData.message);
                     isAdminLoggedIn = false;
                     sessionStorage.removeItem('isAdminLoggedIn');
                     accessDeniedSection.classList.remove('hidden');
@@ -178,12 +217,15 @@
                 }
             } catch (error) {
                 console.error('Error checking admin status:', error);
+                isAdminLoggedIn = false;
+                sessionStorage.removeItem('isAdminLoggedIn');
                 accessDeniedSection.classList.remove('hidden');
                 managementSection.classList.add('hidden');
+                const genericMessageLocation = document.getElementById('admin-access-denied-section').querySelector('p.error') || document.body;
+                genericMessageLocation.textContent = "Erreur de communication avec le serveur pour vérifier le statut admin. Veuillez réessayer plus tard.";
             }
         }
 
-        // Déconnexion admin
         async function logoutAdmin() {
             console.log('logoutAdmin clicked');
             try {
@@ -193,55 +235,70 @@
                 if (response.ok) {
                     isAdminLoggedIn = false;
                     sessionStorage.removeItem('isAdminLoggedIn');
-                    window.location.href = data.redirect || '/login';
+                    window.location.href = data.redirect;
+                } else {
+                    alert(`Erreur de déconnexion: ${data.message}`);
                 }
             } catch (error) {
                 console.error('Error in logoutAdmin:', error);
-                document.getElementById('players-message').textContent = 'Erreur réseau';
-                document.getElementById('players-message').className = 'error';
+                alert('Erreur réseau lors de la déconnexion.');
             }
         }
 
-        // Récupérer la liste des joueurs
         async function fetchPlayers() {
             console.log('fetchPlayers called');
+            const messageEl = document.getElementById('players-message');
+            messageEl.textContent = 'Chargement des joueurs...';
+            messageEl.className = 'info';
             try {
                 const response = await fetch('/admin_players', { method: 'GET' });
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `Erreur HTTP ! Statut : ${response.status}`);
+                }
                 const data = await response.json();
                 const tbody = document.getElementById('players-table').querySelector('tbody');
-                tbody.innerHTML = '';
+                tbody.innerHTML = ''; 
                 if (data.players && data.players.length > 0) {
                     data.players.forEach(player => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td>${player.id}</td>
                             <td>${player.username}</td>
-                            <td>${player.preferred_role || 'Aucun'}</td>
+                            <td>${player.preferred_role || 'Joueur'}</td>
                             <td>${player.score}</td>
+                            <td class="actions-cell">
+                                <button class="btn-delete btn-delete-player" data-id="${player.id}" data-username="${player.username}">Supprimer</button>
+                            </td>
                         `;
                         tbody.appendChild(row);
                     });
-                    document.getElementById('players-message').textContent = '';
+                    messageEl.textContent = ''; 
                 } else {
-                    document.getElementById('players-message').textContent = 'Aucun joueur trouvé.';
+                    messageEl.textContent = 'Aucun joueur trouvé.';
+                    messageEl.className = 'info';
                 }
             } catch (error) {
                 console.error('Error in fetchPlayers:', error);
-                document.getElementById('players-message').textContent = 'Erreur réseau';
-                document.getElementById('players-message').className = 'error';
+                messageEl.textContent = error.message || 'Erreur réseau lors de la récupération des joueurs.';
+                messageEl.className = 'error';
             }
         }
 
-        // Récupérer la liste des équipes
         async function fetchTeams() {
             console.log('fetchTeams called');
+            const messageEl = document.getElementById('teams-message');
+            messageEl.textContent = 'Chargement des équipes...';
+            messageEl.className = 'info';
             try {
                 const response = await fetch('/admin_teams', { method: 'GET' });
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `Erreur HTTP ! Statut : ${response.status}`);
+                }
                 const data = await response.json();
                 const tbody = document.getElementById('teams-table').querySelector('tbody');
-                tbody.innerHTML = '';
+                tbody.innerHTML = ''; 
                 if (data.teams && data.teams.length > 0) {
                     data.teams.forEach(team => {
                         const row = document.createElement('tr');
@@ -251,40 +308,63 @@
                             <td>${team.role}</td>
                             <td>${team.creator_username}</td>
                             <td>${team.members.join(', ') || 'Aucun'}</td>
+                            <td class="actions-cell">
+                                <button class="btn-delete btn-delete-team" data-id="${team.id}" data-name="${team.name}">Supprimer</button>
+                            </td>
                         `;
                         tbody.appendChild(row);
                     });
-                    document.getElementById('teams-message').textContent = '';
+                    messageEl.textContent = '';
                 } else {
-                    document.getElementById('teams-message').textContent = 'Aucune équipe trouvée.';
+                    messageEl.textContent = 'Aucune équipe trouvée.';
+                    messageEl.className = 'info';
                 }
             } catch (error) {
                 console.error('Error in fetchTeams:', error);
-                document.getElementById('teams-message').textContent = 'Erreur réseau';
-                document.getElementById('teams-message').className = 'error';
+                messageEl.textContent = error.message || 'Erreur réseau lors de la récupération des équipes.';
+                messageEl.className = 'error';
             }
         }
 
-        // Créer un challenge
         async function createChallenge() {
             console.log('createChallenge clicked');
             const name = document.getElementById('challenge-name').value;
             const description = document.getElementById('challenge-description').value;
             const level = document.getElementById('challenge-level').value;
-            const points = parseInt(document.getElementById('challenge-points').value);
+            const points = document.getElementById('challenge-points').value;
             const flag = document.getElementById('challenge-flag').value;
             const ip = document.getElementById('challenge-ip').value;
+            const messageEl = document.getElementById('challenge-message');
+            messageEl.className = ''; 
+            messageEl.textContent = '';
+
+            if (!name || !description || !level || !points || !flag) {
+                messageEl.textContent = 'Veuillez remplir tous les champs obligatoires (nom, description, niveau, points, flag).';
+                messageEl.className = 'error';
+                return;
+            }
+            if (isNaN(parseInt(points))) {
+                messageEl.textContent = 'Les points doivent être un nombre.';
+                messageEl.className = 'error';
+                return;
+            }
+
             try {
                 const response = await fetch('/admin_create_challenge', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, description, level, points, flag, ip })
+                    body: JSON.stringify({ 
+                        name, 
+                        description, 
+                        level, 
+                        points: parseInt(points), 
+                        flag, 
+                        ip: ip || null 
+                    })
                 });
-                console.log('Create challenge response:', response.status);
                 const data = await response.json();
-                console.log('Create challenge data:', data);
-                document.getElementById('challenge-message').textContent = data.message;
-                document.getElementById('challenge-message').className = response.ok ? 'success' : 'error';
+                messageEl.textContent = data.message;
+                messageEl.className = response.ok ? 'success' : 'error';
                 if (response.ok) {
                     document.getElementById('challenge-name').value = '';
                     document.getElementById('challenge-description').value = '';
@@ -294,16 +374,75 @@
                 }
             } catch (error) {
                 console.error('Error in createChallenge:', error);
-                document.getElementById('challenge-message').textContent = 'Erreur réseau';
-                document.getElementById('challenge-message').className = 'error';
+                messageEl.textContent = 'Erreur réseau lors de la création du challenge.';
+                messageEl.className = 'error';
             }
         }
 
-        // Écouteurs d’événements
+        async function handleDeletePlayer(playerId, playerName) {
+            if (confirm(`Êtes-vous sûr de vouloir supprimer le joueur "${playerName}" (ID: ${playerId}) ?\nCette action est irréversible.`)) {
+                const messageEl = document.getElementById('players-message');
+                messageEl.className = 'info';
+                messageEl.textContent = `Suppression du joueur ${playerName}...`;
+                try {
+                    const response = await fetch(`/admin/delete_player/${playerId}`, {
+                        method: 'DELETE'
+                    });
+                    const data = await response.json();
+                    messageEl.textContent = data.message;
+                    messageEl.className = response.ok ? 'success' : 'error';
+
+                    if (response.ok) {
+                        fetchPlayers(); 
+                    }
+                } catch (error) {
+                    console.error('Error deleting player:', error);
+                    messageEl.textContent = 'Erreur réseau lors de la suppression du joueur.';
+                    messageEl.className = 'error';
+                }
+            }
+        }
+
+        async function handleDeleteTeam(teamId, teamName) {
+            if (confirm(`Êtes-vous sûr de vouloir supprimer l'équipe "${teamName}" (ID: ${teamId}) ?\nCette action est irréversible.`)) {
+                const messageEl = document.getElementById('teams-message');
+                messageEl.className = 'info';
+                messageEl.textContent = `Suppression de l'équipe ${teamName}...`;
+                try {
+                    const response = await fetch(`/admin/delete_team/${teamId}`, {
+                        method: 'DELETE'
+                    });
+                    const data = await response.json();
+                    messageEl.textContent = data.message;
+                    messageEl.className = response.ok ? 'success' : 'error';
+
+                    if (response.ok) {
+                        fetchTeams(); 
+                    }
+                } catch (error) {
+                    console.error('Error deleting team:', error);
+                    messageEl.textContent = 'Erreur réseau lors de la suppression de l\'équipe.';
+                    messageEl.className = 'error';
+                }
+            }
+        }
+
         document.getElementById('admin-logout-button').addEventListener('click', logoutAdmin);
         document.getElementById('create-challenge-button').addEventListener('click', createChallenge);
 
-        // Initialiser l’état de la page
+        document.addEventListener('click', function(event) {
+            if (event.target.classList.contains('btn-delete-player')) {
+                const playerId = event.target.dataset.id;
+                const playerName = event.target.dataset.username;
+                handleDeletePlayer(playerId, playerName);
+            }
+            if (event.target.classList.contains('btn-delete-team')) {
+                const teamId = event.target.dataset.id;
+                const teamName = event.target.dataset.name;
+                handleDeleteTeam(teamId, teamName);
+            }
+        });
+
         updateAdminSections();
     </script>
 </body>

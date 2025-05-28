@@ -3,177 +3,395 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion - Plateforme d'Hacking</title>
-    <link rel="stylesheet" href="https://unpkg.com/ascent@latest/dist/ascent.min.css">
+    <title>Accès Plateforme CTF</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
+        /* --- Variables CSS --- */
+        :root {
+            --bg-dark: #0d1117; /* Fond GitHub sombre */
+            --primary-accent: #58a6ff; /* Bleu GitHub */
+            --secondary-accent: #3FB950; /* Vert GitHub (pour succès) */
+            --text-color: #c9d1d9; /* Texte gris clair GitHub */
+            --border-color: #30363d;
+            --input-bg: #010409;
+            --input-focus-border: var(--primary-accent);
+            --error-color: #f85149; /* Rouge GitHub */
+            --font-primary: 'Roboto', sans-serif;
+            --font-mono: 'Share Tech Mono', monospace;
+        }
+
+        /* --- Reset et Body --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
+            font-family: var(--font-primary);
+            background-color: var(--bg-dark);
+            color: var(--text-color);
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f4f4f4;
-            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            overflow: hidden; /* Pour s'assurer que l'animation de fond ne cause pas de scrollbars */
         }
+
+        /* --- Conteneur Principal --- */
+        .login-wrapper {
+            position: relative; /* Pour le positionnement des éléments décoratifs */
+            z-index: 1;
+        }
+
         .login-container {
-            background: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: rgba(22, 27, 34, 0.85); /* Fond de la carte légèrement transparent */
+            backdrop-filter: blur(10px); /* Effet de verre dépoli */
+            padding: 3rem 3.5rem;
+            border-radius: 12px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5), 0 0 15px var(--primary-accent) inset; /* Ombre et lueur interne */
+            border: 1px solid var(--border-color);
             width: 100%;
-            max-width: 400px;
-        }
-        h1 {
+            max-width: 450px;
             text-align: center;
-            margin-bottom: 1.5rem;
-            font-size: 1.8rem;
-            color: #333;
+            animation: fadeInContainer 1s ease-out forwards;
         }
-        .form-group {
+
+        @keyframes fadeInContainer {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Titre --- */
+        .login-title {
+            font-family: var(--font-mono);
+            font-size: 2.2rem;
+            color: var(--primary-accent);
             margin-bottom: 1rem;
+            text-shadow: 0 0 10px var(--primary-accent);
+            letter-spacing: 1px;
         }
-        input, select {
+        .login-subtitle {
+            font-size: 0.9rem;
+            margin-bottom: 2.5rem;
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+
+
+        /* --- Champs de Formulaire --- */
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative; /* Pour les icônes */
+        }
+
+        .form-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-accent);
+            opacity: 0.6;
+        }
+
+        .form-input {
             width: 100%;
-            padding: 0.8rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: 12px 15px 12px 45px; /* Espace pour l'icône */
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
             font-size: 1rem;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            font-family: var(--font-primary);
         }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--input-focus-border);
+            box-shadow: 0 0 10px rgba(88, 166, 255, 0.3);
+        }
+
+        .form-input::placeholder {
+            color: #8b949e; /* Placeholder GitHub */
+        }
+
+        /* --- Boutons --- */
         .btn-group {
             display: flex;
-            justify-content: space-between;
             gap: 1rem;
+            margin-top: 2rem;
         }
-        button {
+
+        .btn {
             flex: 1;
-            padding: 0.8rem;
+            padding: 12px;
             font-size: 1rem;
+            font-weight: 500;
+            border-radius: 6px;
             cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+            font-family: var(--font-mono);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
-        .error {
-            color: #e74c3c;
+
+        .btn-primary {
+            background-color: var(--primary-accent);
+            color: var(--bg-dark);
+            box-shadow: 0 0 15px rgba(88, 166, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            background-color: #79c0ff; /* Bleu GitHub plus clair */
+            box-shadow: 0 0 20px rgba(88, 166, 255, 0.6);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--primary-accent);
+            border: 1px solid var(--primary-accent);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(88, 166, 255, 0.1);
+            color: #79c0ff;
+            border-color: #79c0ff;
+            transform: translateY(-2px);
+        }
+
+        /* --- Messages --- */
+        #message {
             text-align: center;
-            margin-top: 1rem;
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            min-height: 1.2em;
+            font-weight: 500;
         }
-        .success {
-            color: #2ecc71;
-            text-align: center;
-            margin-top: 1rem;
+
+        .error { color: var(--error-color); }
+        .success { color: var(--secondary-accent); }
+
+        /* --- Animation de fond (optionnel, avec particles.js) --- */
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 0; /* Derrière le contenu */
         }
+
+        /* --- Scanline overlay (optionnel) --- */
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0,0,0,0) 0px,
+                rgba(0,0,0,0) 2px,
+                rgba(255,255,255,0.02) 3px, /* Lignes très fines et subtiles */
+                rgba(255,255,255,0.02) 4px
+            );
+            pointer-events: none; /* Pour ne pas interférer avec les clics */
+            z-index: 2; /* Au-dessus du fond, en dessous du contenu si besoin */
+            animation: scanlineAnim 60s linear infinite;
+        }
+
+        @keyframes scanlineAnim {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100vh; } /* Défilement lent */
+        }
+
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <h1>Plateforme d'Hacking</h1>
-        <div class="form-group">
-            <input id="username" type="text" placeholder="Nom d'utilisateur" required>
+    <div id="particles-js"></div>
+
+    <div class="login-wrapper">
+        <div class="login-container">
+            <h1 class="login-title">&lt;CTF_ACCESS_PORTAL&gt;</h1>
+            <p class="login-subtitle">Authentification requise pour initialiser la connexion sécurisée.</p>
+            
+            <form id="login-form">
+                <div class="form-group">
+                    <i class="fas fa-user-secret"></i>
+                    <input class="form-input" id="username" type="text" placeholder="Identifiant // Analyste" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <i class="fas fa-key"></i>
+                    <input class="form-input" id="password" type="password" placeholder="Protocole d'accès // Mot de passe" required autocomplete="current-password">
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary" id="login-button">Connexion</button>
+                    <button type="button" class="btn btn-secondary" id="register-button">S'enregistrer</button>
+                </div>
+                <p id="message" class=""></p>
+            </form>
         </div>
-        <div class="form-group">
-            <input id="password" type="password" placeholder="Mot de passe" required>
-        </div>
-        <div class="form-group hidden" id="preferred-role-group">
-            <select id="preferred-role">
-                <option value="">Aucun rôle préféré</option>
-                <option value="attaque">Attaque</option>
-                <option value="defense">Défense</option>
-            </select>
-        </div>
-        <div class="btn-group">
-            <button class="btn primary" id="login-button">Se connecter</button>
-            <button class="btn secondary" id="register-button">S'inscrire</button>
-        </div>
-        <p id="message" class="error"></p>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script>
-        // Afficher/masquer le champ preferred-role
-        function toggleRegisterFields(isRegister) {
-            document.getElementById('preferred-role-group').classList.toggle('hidden', !isRegister);
+        // Configuration de Particles.js (optionnelle, à adapter)
+        if (document.getElementById('particles-js')) {
+            particlesJS('particles-js', {
+                "particles": {
+                    "number": { "value": 80, "density": { "enable": true, "value_area": 800 } },
+                    "color": { "value": "#223c5e" }, // Couleur des particules, plus sombre
+                    "shape": { "type": "circle", "stroke": { "width": 0, "color": "#000000" }, "polygon": { "nb_sides": 5 } },
+                    "opacity": { "value": 0.3, "random": true, "anim": { "enable": false, "speed": 1, "opacity_min": 0.1, "sync": false } },
+                    "size": { "value": 3, "random": true, "anim": { "enable": false, "speed": 40, "size_min": 0.1, "sync": false } },
+                    "line_linked": { "enable": true, "distance": 150, "color": "#2e5280", "opacity": 0.2, "width": 1 }, // Liens plus subtils
+                    "move": { "enable": true, "speed": 1.5, "direction": "none", "random": false, "straight": false, "out_mode": "out", "bounce": false, "attract": { "enable": false, "rotateX": 600, "rotateY": 1200 } }
+                },
+                "interactivity": {
+                    "detect_on": "canvas",
+                    "events": { "onhover": { "enable": true, "mode": "grab" }, "onclick": { "enable": true, "mode": "push" }, "resize": true },
+                    "modes": { "grab": { "distance": 140, "line_linked": { "opacity": 0.5 } }, "bubble": { "distance": 400, "size": 40, "duration": 2, "opacity": 8, "speed": 3 }, "repulse": { "distance": 100, "duration": 0.4 }, "push": { "particles_nb": 4 }, "remove": { "particles_nb": 2 } }
+                },
+                "retina_detect": true
+            });
         }
 
-        // Inscription
+        // --- JavaScript pour la logique de connexion/inscription (votre code existant) ---
+        // J'ai adapté les ID des boutons pour correspondre au HTML
+        const loginButton = document.getElementById('login-button');
+        const registerButton = document.getElementById('register-button');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const messageEl = document.getElementById('message');
+
         async function registerUser() {
-            console.log('registerUser clicked');
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const preferred_role = document.getElementById('preferred-role').value;
+            const username = usernameInput.value;
+            const password = passwordInput.value;
+            messageEl.textContent = '';
+            messageEl.className = '';
 
             if (!username || !password) {
-                document.getElementById('message').textContent = 'Veuillez remplir le nom d’utilisateur et le mot de passe';
-                document.getElementById('message').className = 'error';
+                messageEl.textContent = 'Veuillez remplir tous les champs.';
+                messageEl.className = 'error';
                 return;
             }
-
+            // ... (le reste de votre logique fetch pour /register_user)
+            // Exemple :
             try {
                 const response = await fetch('/register_user', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password, preferred_role })
+                    body: JSON.stringify({ username, password })
                 });
                 const data = await response.json();
-                console.log('Register response:', data);
-                document.getElementById('message').textContent = data.message;
-                document.getElementById('message').className = response.ok ? 'success' : 'error';
-                if (response.ok) {
-                    setTimeout(() => loginUser(), 1000); // Connexion auto après inscription
-                }
+                messageEl.textContent = data.message;
+                messageEl.className = response.ok ? 'success' : 'error';
             } catch (error) {
-                console.error('Error in registerUser:', error);
-                document.getElementById('message').textContent = 'Erreur réseau';
-                document.getElementById('message').className = 'error';
+                messageEl.textContent = 'Erreur réseau lors de l\'inscription.';
+                messageEl.className = 'error';
             }
         }
 
-        // Connexion
         async function loginUser() {
-            console.log('loginUser clicked');
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+            const username = usernameInput.value;
+            const password = passwordInput.value;
+            messageEl.textContent = '';
+            messageEl.className = '';
 
             if (!username || !password) {
-                document.getElementById('message').textContent = 'Veuillez remplir le nom d’utilisateur et le mot de passe';
-                document.getElementById('message').className = 'error';
+                messageEl.textContent = 'Veuillez remplir tous les champs.';
+                messageEl.className = 'error';
                 return;
             }
-
-            try {
+            // ... (le reste de votre logique fetch pour /login_user)
+            // Exemple :
+             try {
                 const response = await fetch('/login_user', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
                 });
                 const data = await response.json();
-                console.log('Login response:', data);
-                document.getElementById('message').textContent = data.message;
-                document.getElementById('message').className = response.ok ? 'success' : 'error';
+                messageEl.textContent = data.message;
                 if (response.ok && data.redirect) {
-                    if (data.user_id) {
-                        // Stockage pour joueur
+                    messageEl.className = 'success';
+                    if (data.user_id) { 
                         sessionStorage.setItem('userId', data.user_id);
                         sessionStorage.setItem('username', username);
-                        sessionStorage.setItem('preferred_role', data.preferred_role || 'Aucun');
-                    } else if (data.message.includes('admin')) {
-                        // Marquer l’admin comme connecté
+                        sessionStorage.setItem('preferred_role', data.preferred_role); 
+                    } else if (data.message.includes('admin')) { 
                         sessionStorage.setItem('isAdminLoggedIn', 'true');
                     }
-                    window.location.href = data.redirect;
+                    // Petite animation/délai avant redirection
+                    messageEl.textContent = "Connexion réussie. Redirection...";
+                    setTimeout(() => { window.location.href = data.redirect; }, 1500);
+                } else {
+                     messageEl.className = 'error';
                 }
             } catch (error) {
-                console.error('Error in loginUser:', error);
-                document.getElementById('message').textContent = 'Erreur réseau';
-                document.getElementById('message').className = 'error';
+                messageEl.textContent = 'Erreur réseau lors de la connexion.';
+                messageEl.className = 'error';
             }
         }
 
-        // Écouteurs d’événements
-        document.getElementById('login-button').addEventListener('click', () => {
-            toggleRegisterFields(false);
-            loginUser();
+        if (loginButton) loginButton.addEventListener('click', loginUser);
+        if (registerButton) registerButton.addEventListener('click', registerUser);
+
+        // Animation pour le placeholder (optionnel, effet de "typing")
+        const placeholders = [
+            "Identifiant // Analyste",
+            "Protocole d'accès // Mot de passe"
+        ];
+        const inputs = [usernameInput, passwordInput];
+        let currentPlaceholderIndex = [0, 0];
+        let currentText = ["", ""];
+        let typingSpeed = 100; // ms
+        let deletingSpeed = 50; // ms
+        let delayBetween = 2000; // ms
+
+        function typeEffect(inputElement, placeholderText, inputIndex) {
+            if (currentText[inputIndex].length < placeholderText.length) {
+                currentText[inputIndex] += placeholderText.charAt(currentText[inputIndex].length);
+                inputElement.setAttribute('placeholder', currentText[inputIndex] + "_"); // Ajoute un curseur
+                setTimeout(() => typeEffect(inputElement, placeholderText, inputIndex), typingSpeed);
+            } else {
+                inputElement.setAttribute('placeholder', currentText[inputIndex]); // Enlève le curseur
+                setTimeout(() => deleteEffect(inputElement, placeholderText, inputIndex), delayBetween);
+            }
+        }
+
+        function deleteEffect(inputElement, placeholderText, inputIndex) {
+            if (currentText[inputIndex].length > 0) {
+                currentText[inputIndex] = currentText[inputIndex].substring(0, currentText[inputIndex].length - 1);
+                inputElement.setAttribute('placeholder', currentText[inputIndex] + (currentText[inputIndex].length > 0 ? "_" : ""));
+                setTimeout(() => deleteEffect(inputElement, placeholderText, inputIndex), deletingSpeed);
+            } else {
+                inputElement.setAttribute('placeholder', ""); // Placeholder vide avant de retaper
+                // Changer de placeholder ou recommencer (ici on recommence le même)
+                setTimeout(() => typeEffect(inputElement, placeholderText, inputIndex), typingSpeed);
+            }
+        }
+        
+        // Pour éviter que l'animation ne se lance si l'utilisateur a déjà rempli un champ
+        inputs.forEach((input, index) => {
+            if (input) { // Vérifie si l'input existe
+                input.addEventListener('focus', () => {
+                    // Pourrait arrêter l'animation sur focus si souhaité, mais c'est plus simple de la laisser
+                    // Pour l'instant, on la laisse, elle ne gêne pas l'input.
+                });
+                 // Lancer l'animation au chargement pour chaque input
+                // setTimeout(() => typeEffect(input, placeholders[index], index), 500 * (index + 1)); // Décalage pour ne pas qu'elles partent en même temps
+            }
         });
-        document.getElementById('register-button').addEventListener('click', () => {
-            toggleRegisterFields(true);
-            registerUser();
-        });
+        // Note: L'animation de typing pour placeholder est un ajout. Si elle est trop complexe ou non désirée,
+        // vous pouvez la supprimer et garder des placeholders statiques.
+        // J'ai commenté le lancement pour l'instant, car elle peut devenir un peu "chargée" à la longue.
+
     </script>
 </body>
 </html>

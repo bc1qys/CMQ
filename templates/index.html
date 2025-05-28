@@ -21,11 +21,6 @@
         <h2>Créer un compte utilisateur</h2>
         <input id="user-username" placeholder="Nom d'utilisateur">
         <input id="user-password" type="password" placeholder="Mot de passe">
-        <select id="user-role">
-            <option value="">Aucun rôle préféré</option>
-            <option value="attaque">Attaque</option>
-            <option value="defense">Défense</option>
-        </select>
         <button class="btn primary" onclick="registerUser()">S'inscrire</button>
         <p id="user-register-message" class="error"></p>
     </div>
@@ -58,15 +53,13 @@
         <h2>Se connecter (équipe)</h2>
         <input id="team-login-name" placeholder="Nom d'équipe">
         <input id="team-login-password" type="password" placeholder="Mot de passe">
-        <button class="btn primary" onclick="loginTeam()">Se connecter</button>
-        <p id="team-login-message" class="error"></p>
+        <button class="btn primary" onclick="loginTeam()">Se connecter</button> <p id="team-login-message" class="error"></p>
         <p id="team-info" class="success"></p>
     </div>
 
     <div class="section">
         <h2>Rejoindre une équipe</h2>
-        <input id="team-id" placeholder="ID de l'équipe">
-        <button class="btn primary" onclick="joinTeam()">Rejoindre</button>
+        <input id="join-team-id" placeholder="ID de l'équipe"> <button class="btn primary" onclick="joinTeam()">Rejoindre</button>
         <p id="join-team-message" class="success"></p>
     </div>
 
@@ -94,22 +87,25 @@
     </div>
 
     <script>
-        // Initialiser les variables depuis sessionStorage
         let userId = sessionStorage.getItem('userId') || null;
-        let teamId = null;
-        let userRole = sessionStorage.getItem('preferred_role') || null;
-        let teamRole = null;
-        let isTeamCreator = false;
+        let teamId = sessionStorage.getItem('teamId') || null; // Ajout pour suivre l'équipe de la session
+        let userRole = sessionStorage.getItem('preferred_role') || null; // Sera null pour les joueurs
+        let teamRole = sessionStorage.getItem('teamRole') || null; // Ajout
+        let isTeamCreator = sessionStorage.getItem('isTeamCreator') === 'true'; // Ajout
 
-        // Afficher les infos de l'utilisateur connecté au chargement
         if (userId) {
             const username = sessionStorage.getItem('username');
-            document.getElementById('user-info').textContent = 
-                `Connecté en tant que ${username} (ID: ${userId}, Rôle préféré: ${userRole || 'Aucun'})`;
+            let userInfoText = `Connecté en tant que ${username} (ID: ${userId})`;
+            // userRole (preferred_role) sera null pour les joueurs, donc on peut omettre l'affichage "Rôle préféré: Aucun"
+            // if (userRole) { userInfoText += `, Rôle préféré: ${userRole}`; } else { userInfoText += `, Rôle préféré: Aucun`;}
+            
+            if (teamId && sessionStorage.getItem('teamName')) {
+                userInfoText += ` | Équipe: ${sessionStorage.getItem('teamName')} (ID: ${teamId}, Rôle: ${teamRole || 'N/A'}${isTeamCreator ? ', Créateur' : ''})`;
+            }
+            document.getElementById('user-info').textContent = userInfoText;
         }
 
         function updateTeamCreateForm() {
-            console.log('updateTeamCreateForm:', { userId });
             const form = document.getElementById('team-create-form');
             const warning = document.getElementById('team-create-warning');
             if (userId) {
@@ -121,42 +117,72 @@
             }
         }
 
-        function updateMatchJoinForm() {
-            console.log('updateMatchJoinForm:', { userId, teamId, isTeamCreator });
+        async function updateMatchJoinForm() {
             const form = document.getElementById('match-join-form');
             const warning = document.getElementById('match-join-warning');
-            if (userId && teamId && isTeamCreator) {
+
+            if (!userId || !teamId) {
+                form.classList.add('hidden');
+                warning.classList.remove('hidden');
+                warning.textContent = userId ? 'Vous devez être dans une équipe.' : 'Veuillez vous connecter.';
+                return;
+            }
+            
+            // Vérifier si l'utilisateur est créateur de l'équipe actuelle (teamId de la session)
+            try {
+                const response = await fetch('/teams', { // Endpoint pour vérifier le créateur
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ team_id: teamId }) // team_id est celui de la session
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    isTeamCreator = data.is_creator;
+                    sessionStorage.setItem('isTeamCreator', isTeamCreator.toString());
+                } else {
+                    isTeamCreator = false; // En cas d'erreur, assumer non-créateur
+                    sessionStorage.setItem('isTeamCreator', 'false');
+                    console.error("Erreur vérification créateur:", data.message);
+                }
+            } catch (error) {
+                console.error('Erreur réseau vérification créateur:', error);
+                isTeamCreator = false;
+                sessionStorage.setItem('isTeamCreator', 'false');
+            }
+
+            if (isTeamCreator) {
                 form.classList.remove('hidden');
                 warning.classList.add('hidden');
             } else {
                 form.classList.add('hidden');
                 warning.classList.remove('hidden');
+                warning.textContent = 'Seul le créateur de l’équipe peut rejoindre un match.';
             }
         }
 
         async function registerUser() {
-            console.log('registerUser clicked');
+            console.log('registerUser from index.html clicked');
             const username = document.getElementById('user-username').value;
             const password = document.getElementById('user-password').value;
-            const preferred_role = document.getElementById('user-role').value;
+            // preferred_role n'est plus envoyé
             try {
                 const response = await fetch('/register_user', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password, preferred_role })
+                    body: JSON.stringify({ username, password })
                 });
                 const data = await response.json();
                 document.getElementById('user-register-message').textContent = data.message;
                 document.getElementById('user-register-message').className = response.ok ? 'success' : 'error';
             } catch (error) {
-                console.error('Error in registerUser:', error);
+                console.error('Error in registerUser (index.html):', error);
                 document.getElementById('user-register-message').textContent = 'Erreur réseau';
                 document.getElementById('user-register-message').className = 'error';
             }
         }
 
         async function loginUser() {
-            console.log('loginUser clicked');
+            console.log('loginUser from index.html clicked');
             const username = document.getElementById('user-login-username').value;
             const password = document.getElementById('user-login-password').value;
             try {
@@ -168,20 +194,39 @@
                 const data = await response.json();
                 document.getElementById('user-login-message').textContent = data.message;
                 document.getElementById('user-login-message').className = response.ok ? 'success' : 'error';
-                if (data.user_id) {
-                    // Stocker dans sessionStorage
+                if (response.ok && data.user_id) {
                     sessionStorage.setItem('userId', data.user_id);
                     sessionStorage.setItem('username', username);
-                    sessionStorage.setItem('preferred_role', data.preferred_role || 'Aucun');
+                    sessionStorage.setItem('preferred_role', data.preferred_role); // Sera null
                     userId = data.user_id;
-                    userRole = data.preferred_role;
-                    document.getElementById('user-info').textContent = 
-                        `Connecté en tant que ${username} (ID: ${userId}, Rôle préféré: ${userRole || 'Aucun'})`;
+                    userRole = data.preferred_role; // Sera null
+                    
+                    let userInfoText = `Connecté en tant que ${username} (ID: ${userId})`;
+                    document.getElementById('user-info').textContent = userInfoText;
+                    
+                    // Si l'utilisateur était déjà dans une équipe (info stockée côté serveur avec la session)
+                    // ou si on veut la récupérer après login. Pour l'instant, login ne ramène pas l'équipe.
+                    // On va essayer de récupérer l'info équipe si elle est déjà en session serveur (peu probable après simple login user)
+                    // Mieux: home.html gère la récupération de l'état complet de l'équipe.
+                    // Ici, on met à jour juste l'état utilisateur.
+                    sessionStorage.removeItem('teamId'); // Clear team info from potential previous user
+                    sessionStorage.removeItem('teamName');
+                    sessionStorage.removeItem('teamRole');
+                    sessionStorage.removeItem('isTeamCreator');
+                    teamId = null; teamRole = null; isTeamCreator = false;
+
+
                     updateTeamCreateForm();
-                    updateMatchJoinForm();
+                    updateMatchJoinForm(); // Mettre à jour aussi après connexion utilisateur
+
+                    // Redirection vers home.html si on veut un flux similaire à login.html
+                    // window.location.href = "/"; 
+                } else if (response.ok && data.redirect && data.message.includes('admin')) {
+                    sessionStorage.setItem('isAdminLoggedIn', 'true');
+                    window.location.href = data.redirect; // Pour admin
                 }
             } catch (error) {
-                console.error('Error in loginUser:', error);
+                console.error('Error in loginUser (index.html):', error);
                 document.getElementById('user-login-message').textContent = 'Erreur réseau';
                 document.getElementById('user-login-message').className = 'error';
             }
@@ -191,22 +236,31 @@
             console.log('registerTeam clicked');
             const name = document.getElementById('team-name').value;
             const password = document.getElementById('team-password').value;
-            const role = document.getElementById('team-role').value;
+            const role = document.getElementById('team-role').value; // Role de l'équipe
+            if (!userId) {
+                document.getElementById('team-register-message').textContent = "Veuillez d'abord vous connecter en tant qu'utilisateur.";
+                document.getElementById('team-register-message').className = 'error';
+                return;
+            }
             try {
-                const response = await fetch('/register', {
+                const response = await fetch('/register', { // Endpoint /register pour créer une équipe
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, password, role, user_id: userId })
+                    body: JSON.stringify({ name, password, role }) // user_id est pris de la session serveur
                 });
                 const data = await response.json();
                 document.getElementById('team-register-message').textContent = data.message;
                 document.getElementById('team-register-message').className = response.ok ? 'success' : 'error';
-                if (data.team_id) {
+                if (response.ok && data.team_id) {
                     teamId = data.team_id;
-                    teamRole = role;
-                    isTeamCreator = true;
+                    teamRole = data.team_role;
+                    isTeamCreator = true; // Le créateur est celui qui vient d'enregistrer
+                    sessionStorage.setItem('teamId', teamId);
+                    sessionStorage.setItem('teamName', data.team_name);
+                    sessionStorage.setItem('teamRole', teamRole);
+                    sessionStorage.setItem('isTeamCreator', 'true');
                     document.getElementById('team-info').textContent = 
-                        `Équipe créée: ${name} (ID: ${teamId}, Rôle: ${teamRole})`;
+                        `Équipe créée: ${data.team_name} (ID: ${teamId}, Rôle: ${teamRole}, Créateur)`;
                     updateMatchJoinForm();
                 }
             } catch (error) {
@@ -220,28 +274,44 @@
             console.log('loginTeam clicked');
             const name = document.getElementById('team-login-name').value;
             const password = document.getElementById('team-login-password').value;
+            if (!userId) {
+                document.getElementById('team-login-message').textContent = "Veuillez d'abord vous connecter en tant qu'utilisateur.";
+                document.getElementById('team-login-message').className = 'error';
+                return;
+            }
             try {
-                const response = await fetch('/login', {
+                // La route /login_team est utilisée par home.html. index.html utilisait /login. Soyons cohérent.
+                const response = await fetch('/login_team', { 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, password })
+                    body: JSON.stringify({ name, password }) // user_id est pris de la session serveur
                 });
                 const data = await response.json();
                 document.getElementById('team-login-message').textContent = data.message;
                 document.getElementById('team-login-message').className = response.ok ? 'success' : 'error';
-                if (data.team_id) {
+                if (response.ok && data.team_id) {
                     teamId = data.team_id;
-                    teamRole = data.role;
-                    // Vérifier si l'utilisateur est le créateur
-                    const creatorCheck = await fetch('/teams', {
+                    teamRole = data.team_role; // La route /login_team renvoie team_role
+                    sessionStorage.setItem('teamId', teamId);
+                    sessionStorage.setItem('teamName', data.team_name);
+                    sessionStorage.setItem('teamRole', teamRole);
+
+                    // Vérifier si l'utilisateur connecté est le créateur de CETTE équipe
+                    const creatorCheckResponse = await fetch('/teams', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ team_id: teamId, user_id: userId })
+                        body: JSON.stringify({ team_id: teamId })
                     });
-                    const creatorData = await creatorCheck.json();
-                    isTeamCreator = creatorData.is_creator;
+                    const creatorData = await creatorCheckResponse.json();
+                    if (creatorCheckResponse.ok) {
+                        isTeamCreator = creatorData.is_creator;
+                    } else {
+                        isTeamCreator = false; // Default
+                    }
+                    sessionStorage.setItem('isTeamCreator', isTeamCreator.toString());
+                    
                     document.getElementById('team-info').textContent = 
-                        `Connecté en tant que ${name} (ID: ${teamId}, Rôle: ${teamRole}${isTeamCreator ? ', Créateur' : ''})`;
+                        `Connecté à l'équipe: ${data.team_name} (ID: ${teamId}, Rôle: ${teamRole})${isTeamCreator ? ', Vous êtes le créateur' : ''}`;
                     updateMatchJoinForm();
                 }
             } catch (error) {
@@ -253,19 +323,39 @@
 
         async function joinTeam() {
             console.log('joinTeam clicked');
-            const team_id = document.getElementById('team-id').value;
+            const team_id_to_join = document.getElementById('join-team-id').value; // Utiliser le bon ID d'input
+            if (!userId) {
+                document.getElementById('join-team-message').textContent = "Veuillez d'abord vous connecter en tant qu'utilisateur.";
+                document.getElementById('join-team-message').className = 'error';
+                return;
+            }
+            if (!team_id_to_join) {
+                 document.getElementById('join-team-message').textContent = "Veuillez entrer l'ID de l'équipe à rejoindre.";
+                document.getElementById('join-team-message').className = 'error';
+                return;
+            }
             try {
                 const response = await fetch('/join_team', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_id: userId, team_id })
+                    body: JSON.stringify({ team_id: team_id_to_join }) // user_id est de la session serveur
                 });
                 const data = await response.json();
                 document.getElementById('join-team-message').textContent = data.message;
                 document.getElementById('join-team-message').className = response.ok ? 'success' : 'error';
                 if (response.ok) {
-                    isTeamCreator = false;
-                    updateMatchJoinForm();
+                    teamId = data.team_id;
+                    teamRole = data.team_role;
+                    isTeamCreator = false; // En rejoignant, on n'est pas créateur (sauf si on rejoint sa propre équipe, mais registerTeam gère la création)
+                                        // La vérification /teams après coup confirmera.
+                    sessionStorage.setItem('teamId', teamId);
+                    sessionStorage.setItem('teamName', data.team_name);
+                    sessionStorage.setItem('teamRole', teamRole);
+                    sessionStorage.setItem('isTeamCreator', 'false'); // Mettre à jour isTeamCreator après avoir rejoint
+                    
+                    document.getElementById('team-info').textContent = 
+                        `Équipe rejointe: ${data.team_name} (ID: ${teamId}, Rôle: ${teamRole})`;
+                    updateMatchJoinForm(); // Mettre à jour le statut pour rejoindre un match
                 }
             } catch (error) {
                 console.error('Error in joinTeam:', error);
@@ -276,17 +366,29 @@
 
         async function leaveTeam() {
             console.log('leaveTeam clicked');
+            if (!userId || !teamId) {
+                document.getElementById('leave-team-message').textContent = "Vous n'êtes pas connecté ou pas dans une équipe.";
+                document.getElementById('leave-team-message').className = 'error';
+                return;
+            }
             try {
                 const response = await fetch('/leave_team', {
-                    method: 'POST',
+                    method: 'POST', // user_id et team_id sont pris de la session serveur
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_id: userId })
+                    body: JSON.stringify({}) // Pas besoin de corps si l'info est en session
                 });
                 const data = await response.json();
                 document.getElementById('leave-team-message').textContent = data.message;
                 document.getElementById('leave-team-message').className = response.ok ? 'success' : 'error';
                 if (response.ok) {
+                    teamId = null;
+                    teamRole = null;
                     isTeamCreator = false;
+                    sessionStorage.removeItem('teamId');
+                    sessionStorage.removeItem('teamName');
+                    sessionStorage.removeItem('teamRole');
+                    sessionStorage.removeItem('isTeamCreator');
+                    document.getElementById('team-info').textContent = "Vous avez quitté l'équipe.";
                     updateMatchJoinForm();
                 }
             } catch (error) {
@@ -298,17 +400,29 @@
 
         async function joinMatch() {
             console.log('joinMatch clicked');
-            const matchId = document.getElementById('match-id').value;
+            const matchIdToJoin = document.getElementById('match-id').value; // ID de l'input pour match_id
+            if (!userId || !teamId || !isTeamCreator) {
+                 document.getElementById('match-message').textContent = "Vous devez être connecté, être le créateur d'une équipe et l'équipe doit être sélectionnée.";
+                 document.getElementById('match-message').className = 'error';
+                return;
+            }
+            if (!matchIdToJoin) {
+                document.getElementById('match-message').textContent = "Veuillez entrer l'ID du match.";
+                document.getElementById('match-message').className = 'error';
+                return;
+            }
             try {
                 const response = await fetch('/join_match', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ team_id: teamId, match_id: matchId, user_id: userId })
+                    // user_id et team_id sont pris de la session serveur.
+                    // Le client envoie match_id.
+                    body: JSON.stringify({ match_id: matchIdToJoin }) 
                 });
                 const data = await response.json();
                 document.getElementById('match-message').textContent = data.message;
                 document.getElementById('match-message').className = response.ok ? 'success' : 'error';
-                if (data.vm_ip) {
+                if (response.ok && data.vm_ip) {
                     document.getElementById('match-message').innerHTML += 
                         `<br>Accès VM: <a href="http://${data.vm_ip}" target="_blank">${data.vm_ip}</a>` +
                         (data.guacamole_url ? `<br>Guacamole: <a href="${data.guacamole_url}" target="_blank">${data.guacamole_url}</a>` : '');
@@ -322,12 +436,23 @@
 
         async function leaveMatch() {
             console.log('leaveMatch clicked');
-            const matchId = document.getElementById('leave-match-id').value;
+            const matchIdToLeave = document.getElementById('leave-match-id').value;
+            if (!userId || !teamId) {
+                document.getElementById('leave-match-message').textContent = "Vous n'êtes pas connecté ou pas dans une équipe.";
+                document.getElementById('leave-match-message').className = 'error';
+                return;
+            }
+            if (!matchIdToLeave) {
+                document.getElementById('leave-match-message').textContent = "Veuillez entrer l'ID du match à quitter.";
+                document.getElementById('leave-match-message').className = 'error';
+                return;
+            }
             try {
                 const response = await fetch('/leave_match', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ team_id: teamId, match_id: matchId })
+                    // team_id est de la session serveur. Le client envoie match_id.
+                    body: JSON.stringify({ match_id: matchIdToLeave }) 
                 });
                 const data = await response.json();
                 document.getElementById('leave-match-message').textContent = data.message;
@@ -339,7 +464,6 @@
             }
         }
 
-        // Initialiser les formulaires
         updateTeamCreateForm();
         updateMatchJoinForm();
     </script>

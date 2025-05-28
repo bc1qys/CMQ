@@ -4,403 +4,1013 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Accueil - Plateforme CTF</title>
-    <link rel="stylesheet" href="https://unpkg.com/ascent@latest/dist/ascent.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
-        body {
+        /* --- Variables CSS (cohérentes avec login.html) --- */
+        :root {
+            --bg-dark: #0d1117;
+            --primary-accent: #58a6ff;
+            --secondary-accent: #3FB950;
+            --text-color: #c9d1d9;
+            --text-secondary-color: #8b949e; /* Gris plus doux pour les descriptions */
+            --border-color: #30363d;
+            --container-bg: rgba(22, 27, 34, 0.85); /* Fond de carte/section légèrement transparent */
+            --input-bg: #010409;
+            --input-focus-border: var(--primary-accent);
+            --error-color: #f85149;
+            --font-primary: 'Roboto', sans-serif;
+            --font-mono: 'Share Tech Mono', monospace;
+            --card-glow-shadow: 0 0 15px rgba(88, 166, 255, 0.1); /* Lueur pour les cartes */
+            --card-hover-glow-shadow: 0 0 25px rgba(88, 166, 255, 0.3);
+        }
+
+        /* --- Reset et Body --- */
+        * {
+            box-sizing: border-box;
             margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background-color: var(--bg-dark);
+            color: var(--text-color);
+            display: flex; /* Permet au container de se centrer si besoin */
+            flex-direction: column;
+            align-items: center;
             padding: 20px;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #f0f4ff, #e0e7ff);
             min-height: 100vh;
+            overflow-x: hidden; /* Empêche le scroll horizontal si particles-js dépasse un peu */
         }
+        
+        /* --- Animation de fond et scanlines (identiques à login.html) --- */
+        #particles-js {
+            position: fixed; /* Fixé pour couvrir tout l'arrière-plan */
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1; /* Derrière tout le contenu */
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0,0,0,0) 0px,
+                rgba(0,0,0,0) 2px,
+                rgba(255,255,255,0.015) 3px, /* Lignes encore plus subtiles */
+                rgba(255,255,255,0.015) 4px
+            );
+            pointer-events: none;
+            z-index: -1; /* S'assurer qu'il est derrière le contenu mais peut être au-dessus du fond particles */
+            animation: scanlineAnim 80s linear infinite;
+        }
+
+        @keyframes scanlineAnim {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100vh; }
+        }
+
         .container {
-            max-width: 1000px;
-            margin: 0 auto;
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto; /* Centrage du contenu principal */
         }
+
         .header {
             text-align: center;
             margin-bottom: 40px;
+            padding: 20px 0;
         }
+
         .header h1 {
-            font-size: 2.5rem;
-            color: #2c3e50;
-            margin: 0;
+            font-family: var(--font-mono);
+            font-size: 2.8rem;
+            color: var(--primary-accent);
+            font-weight: 700;
+            margin: 0 0 10px 0;
+            text-shadow: 0 0 10px var(--primary-accent);
+            animation: textGlow 1.5s ease-in-out infinite alternate;
         }
+        
+        @keyframes textGlow {
+            from { text-shadow: 0 0 5px var(--primary-accent), 0 0 10px var(--primary-accent); }
+            to   { text-shadow: 0 0 15px var(--primary-accent), 0 0 25px var(--primary-accent); }
+        }
+
         .header p {
-            color: #7f8c8d;
+            color: var(--text-secondary-color);
             font-size: 1.1rem;
+            font-weight: 300;
         }
+
         .menu {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 25px;
             margin-bottom: 40px;
         }
+
         .menu-item {
-            background: white;
-            padding: 20px;
+            background-color: var(--container-bg);
+            backdrop-filter: blur(8px);
+            padding: 25px;
             border-radius: 10px;
             text-align: center;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), var(--card-glow-shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
             cursor: pointer;
+            position: relative;
+            overflow: hidden;
         }
-        .menu-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-        }
-        .menu-item h2 {
-            font-size: 1.4rem;
-            color: #2980b9;
-            margin: 10px 0;
-        }
-        .menu-item p {
-            color: #7f8c8d;
-            font-size: 0.9rem;
-        }
-        .section {
-            background: white;
-            padding: 20px;
+        
+        .menu-item::before { /* Effet de lueur subtile au survol */
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            background: radial-gradient(circle at center, rgba(88, 166, 255, 0.2) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 0;
         }
-        .section h2 {
-            font-size: 1.6rem;
-            color: #2c3e50;
+
+        .menu-item:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), var(--card-hover-glow-shadow);
+            border-color: var(--primary-accent);
+        }
+        .menu-item:hover::before {
+            opacity: 1;
+        }
+
+        .menu-item h2 {
+            font-family: var(--font-mono);
+            font-size: 1.4rem;
+            color: var(--primary-accent);
+            margin: 10px 0 8px 0;
+            font-weight: 500;
+            position: relative; z-index: 1;
+        }
+
+        .menu-item p {
+            color: var(--text-secondary-color);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            position: relative; z-index: 1;
+        }
+
+        .section {
+            background-color: var(--container-bg);
+            backdrop-filter: blur(8px);
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), var(--card-glow-shadow);
+        }
+
+        .section h2, .section h3 { /* Style pour les titres de section et sous-section */
+            font-family: var(--font-mono);
+            font-size: 1.8rem;
+            color: var(--text-color);
             margin-top: 0;
+            margin-bottom: 20px;
+            font-weight: 500;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
         }
-        .error { color: #e74c3c; }
-        .success { color: #2ecc71; }
-        input, button, select {
-            padding: 10px;
-            margin: 5px;
+        .section h3 {
+            font-size: 1.4rem; /* Taille pour les sous-titres comme "Créer une Équipe" */
+            color: var(--primary-accent);
+            border-bottom-style: dashed;
+        }
+
+
+        .error { color: var(--error-color); font-weight: 500; }
+        .success { color: var(--secondary-accent); font-weight: 500;}
+        .info { color: var(--text-secondary-color); }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 8px 0 15px 0; /* Ajout de marge en bas */
             font-size: 1rem;
-            border-radius: 5px;
-            border: 1px solid #ddd;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-family: var(--font-primary);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
-        button {
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--input-focus-border);
+            box-shadow: 0 0 8px rgba(88, 166, 255, 0.25);
+        }
+        
+        button, .btn {
+            padding: 10px 22px;
+            margin: 10px 5px 10px 0;
+            font-size: 0.95rem; /* Légèrement plus petit */
+            font-weight: 500;
+            border-radius: 6px;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .btn.primary:hover {
-            background: #3498db;
+
+        button.primary, .btn.primary {
+            background-color: var(--primary-accent);
+            color: var(--bg-dark); /* Contraste élevé */
+            box-shadow: 0 0 10px rgba(88, 166, 255, 0.2);
         }
-        .btn.secondary:hover {
-            background: #e74c3c;
+        button.primary:hover, .btn.primary:hover {
+            background-color: #79c0ff;
+            box-shadow: 0 0 15px rgba(88, 166, 255, 0.4);
+            transform: translateY(-1px);
         }
-        .hidden { display: none; }
+
+        button.secondary, .btn.secondary {
+            background-color: transparent;
+            color: var(--primary-accent);
+            border: 1px solid var(--primary-accent);
+        }
+        button.secondary:hover, .btn.secondary:hover {
+            background-color: rgba(88, 166, 255, 0.1);
+            color: #79c0ff;
+            border-color: #79c0ff;
+            transform: translateY(-1px);
+        }
+
+        .hidden { display: none !important; }
+
         table {
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
+            border-collapse: separate; /* Pour utiliser border-spacing */
+            border-spacing: 0; /* Enlever l'espacement par défaut */
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden; /* Pour que le radius s'applique aux coins de la table */
         }
+
         th, td {
-            padding: 10px;
+            padding: 12px 15px;
             text-align: left;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid var(--border-color);
         }
+        td:not(:last-child), th:not(:last-child) { /* Ajouter une bordure à droite sauf pour la dernière cellule */
+             border-right: 1px solid var(--border-color);
+        }
+
+
         th {
-            background: #3498db;
-            color: white;
+            background-color: rgba(48, 54, 61, 0.5); /* Fond d'en-tête plus subtil */
+            color: var(--primary-accent);
+            font-weight: 500;
+            font-family: var(--font-mono);
+            text-transform: uppercase;
         }
-        tr:hover { background: #f5f5f5; }
+        
+        tbody tr { /* Pour que la bordure du bas de la dernière ligne ne soit pas doublée par celle de la table */
+            border-bottom: none;
+        }
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:nth-of-type(even) {
+             background-color: rgba(1, 4, 9, 0.3); /* Lignes paires encore plus subtiles */
+        }
+
+        tbody tr:hover {
+            background-color: rgba(88, 166, 255, 0.08); /* Survol avec lueur bleue très légère */
+        }
+        
+        td a {
+            color: var(--primary-accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        td a:hover {
+            text-decoration: underline;
+            color: #79c0ff;
+        }
+
+        hr {
+            border: 0;
+            height: 1px;
+            background-image: linear-gradient(to right, transparent, var(--border-color), transparent);
+            margin: 35px 0;
+        }
+
+        .section p.error, .section p.success, .section p.info {
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            border: 1px solid transparent;
+        }
+        .section p.error {
+            background-color: rgba(248, 81, 73, 0.1);
+            border-color: var(--error-color);
+            color: var(--error-color);
+        }
+         .section p.success {
+            background-color: rgba(63, 185, 80, 0.1);
+            border-color: var(--secondary-accent);
+            color: var(--secondary-accent);
+        }
+        .section p.info {
+            background-color: rgba(88, 166, 255, 0.05);
+            border-color: var(--primary-accent);
+            color: var(--text-secondary-color);
+        }
+
     </style>
 </head>
 <body>
+    <div id="particles-js"></div>
+
     <div class="container">
         <div class="header">
-            <h1>Plateforme CTF 🏴‍☠️</h1>
-            <p>Prêt à hacker ? Choisis une mission et montre tes skills !</p>
+            <h1>&lt; Plateforme C.T.F /&gt;</h1>
+            <p>Initialisation des protocoles... Accès autorisé. Choisissez votre module.</p>
         </div>
 
         <div class="menu">
             <div class="menu-item" onclick="showSection('profile')">
-                <h2>Profil</h2>
-                <p>Vos infos et paramètres</p>
+                <i class="fas fa-user-shield fa-2x" style="color:var(--primary-accent); margin-bottom:10px;"></i>
+                <h2>Identité // Profil</h2>
+                <p>Consultez vos données et paramètres de session.</p>
             </div>
             <div class="menu-item" onclick="showSection('leaderboard')">
-                <h2>Classement</h2>
-                <p>Voir les meilleurs joueurs</p>
+                <i class="fas fa-trophy fa-2x" style="color:var(--primary-accent); margin-bottom:10px;"></i>
+                <h2>Panneau des Scores</h2>
+                <p>Visualisez le classement global des opérateurs.</p>
             </div>
             <div class="menu-item" onclick="showSection('challenges')">
-                <h2>Défis</h2>
-                <p>Explorez les challenges</p>
+                <i class="fas fa-laptop-code fa-2x" style="color:var(--primary-accent); margin-bottom:10px;"></i>
+                <h2>Modules de Défis</h2>
+                <p>Explorez et sélectionnez les simulations disponibles.</p>
             </div>
-            <div class="menu-item" onclick="showSection('join-match')">
-                <h2>Rejoindre un match</h2>
-                <p>Participez à une mission</p>
+            <div class="menu-item" onclick="showSection('team-management')">
+                <i class="fas fa-users-cog fa-2x" style="color:var(--primary-accent); margin-bottom:10px;"></i>
+                <h2>Gestion d'Escouade</h2>
+                <p>Formez, rejoignez ou quittez votre unité opérationnelle.</p>
             </div>
-            <div class="menu-item" onclick="showSection('create-team')">
-                <h2>Créer une équipe</h2>
-                <p>Formez votre crew</p>
+            <div class="menu-item" onclick="showSection('match-operations')">
+                <i class="fas fa-terminal fa-2x" style="color:var(--primary-accent); margin-bottom:10px;"></i>
+                <h2>Interface de Match</h2>
+                <p>Engagez-vous, soumettez vos exploits et défenses.</p>
             </div>
         </div>
 
-        <!-- Section Profil -->
         <div class="section" id="profile-section">
-            <h2>Votre Profil</h2>
-            <p id="profile-info" class="success"></p>
-            <button class="btn secondary" onclick="logout()">Se déconnecter</button>
+            <h2><i class="fas fa-id-card"></i> Données de Profil</h2>
+            <p id="profile-info"></p>
+            <button class="btn secondary" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
         </div>
 
-        <!-- Section Classement -->
         <div class="section hidden" id="leaderboard-section">
-            <h2>Classement des Joueurs</h2>
+            <h2><i class="fas fa-stream"></i> Tableau de Classement</h2>
             <table id="leaderboard-table">
                 <thead>
                     <tr>
                         <th>Rang</th>
-                        <th>Joueur</th>
-                        <th>Score</th>
-                        <th>Rôle Préféré</th>
+                        <th>Opérateur</th>
+                        <th>Score Total</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
             </table>
-            <p id="leaderboard-message" class="error"></p>
+            <p id="leaderboard-message" class="info"></p>
         </div>
 
-        <!-- Section Défis -->
         <div class="section hidden" id="challenges-section">
-            <h2>Défis Disponibles</h2>
+            <h2><i class="fas fa-tasks"></i> Liste des Défis Actifs</h2>
             <table id="challenges-table">
                 <thead>
                     <tr>
-                        <th>Nom</th>
-                        <th>Points</th>
-                        <th>Niveau</th>
+                        <th>ID_CHAL</th>
+                        <th>Nom de Code</th>
+                        <th>Description Tactique</th>
+                        <th>Points Strat.</th>
+                        <th>Niveau de Menace</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
             </table>
-            <p id="challenges-message" class="error"></p>
+            <p id="challenges-message" class="info"></p>
         </div>
 
-        <!-- Section Rejoindre un Match -->
-        <div class="section hidden" id="join-match-section">
-            <h2>Rejoindre un Match</h2>
-            <p id="match-join-warning" class="error">Veuillez vous connecter en tant que créateur de l'équipe.</p>
-            <div id="match-join-form" class="hidden">
-                <input id="match-id" placeholder="ID du match">
-                <button class="btn primary" onclick="joinMatch()">Rejoindre</button>
+        <div class="section hidden" id="team-management-section">
+            <h2><i class="fas fa-users"></i> Quartier Général d'Escouade</h2>
+            
+            <div id="create-team-subsection">
+                <h3><i class="fas fa-user-plus"></i> Former une Nouvelle Escouade</h3>
+                <p id="team-create-warning" class="info"></p>
+                <div id="team-create-form" class="hidden">
+                    <input id="team-name" type="text" placeholder="Nom de code de l'escouade">
+                    <input id="team-password" type="password" placeholder="Clé d'accès de l'escouade">
+                    <select id="team-role">
+                        <option value="attaque">Unité d'Attaque</option>
+                        <option value="defense">Unité de Défense</option>
+                    </select>
+                    <button class="btn primary" onclick="createTeam()"><i class="fas fa-plus-circle"></i> Créer Escouade</button>
+                </div>
+                <p id="team-create-message"></p>
             </div>
-            <p id="match-message" class="success"></p>
+            <hr>
+            <div id="join-team-subsection">
+                 <h3><i class="fas fa-link"></i> Rejoindre une Escouade</h3>
+                 <p id="team-join-warning" class="info"></p>
+                 <div id="team-join-form" class="hidden">
+                    <input id="join-team-id" type="number" placeholder="Identifiant de l'escouade cible">
+                    <button class="btn primary" onclick="joinExistingTeam()"><i class="fas fa-project-diagram"></i> Intégrer Escouade</button>
+                 </div>
+                 <p id="team-join-message"></p>
+            </div>
+             <hr>
+            <div id="leave-team-subsection">
+                <h3><i class="fas fa-user-minus"></i> Quitter l'Escouade</h3>
+                <p id="team-leave-warning" class="info"></p>
+                <button class="btn secondary hidden" id="leave-team-button" onclick="leaveCurrentTeam()"><i class="fas fa-door-open"></i> Se désengager</button>
+                <p id="team-leave-message"></p>
+            </div>
         </div>
-
-        <!-- Section Créer une Équipe -->
-        <div class="section hidden" id="create-team-section">
-            <h2>Créer une Équipe</h2>
-            <p id="team-create-warning" class="error">Veuillez vous connecter pour créer une équipe.</p>
-            <div id="team-create-form" class="hidden">
-                <input id="team-name" placeholder="Nom d'équipe">
-                <input id="team-password" type="password" placeholder="Mot de passe">
-                <select id="team-role">
-                    <option value="attaque">Attaque</option>
-                    <option value="defense">Défense</option>
-                </select>
-                <button class="btn primary" onclick="createTeam()">Créer</button>
+        
+        <div class="section hidden" id="match-operations-section">
+            <h2><i class="fas fa-gamepad"></i> Console d'Opérations</h2>
+            
+            <div id="join-match-subsection">
+                <h3><i class="fas fa-network-wired"></i> Connexion au Match</h3>
+                <p id="match-join-status" class="info"></p>
+                <div id="match-join-form" class="hidden">
+                    <input id="match-id-to-join" type="number" placeholder="ID de la simulation de match">
+                    <button class="btn primary" onclick="joinSelectedMatch()"><i class="fas fa-plug"></i> Lancer Connexion</button>
+                </div>
+                <p id="match-join-message"></p>
             </div>
-            <p id="team-create-message" class="success"></p>
+            <hr>
+            <div id="submit-flag-subsection" class="hidden">
+                <h3><i class="fas fa-flag"></i> Soumission de Flag (Attaque)</h3>
+                <input id="flag-to-submit" type="text" placeholder="Ex: CTF{D4t4_C4ptur3d_S3cur3ly}">
+                <button class="btn primary" onclick="submitTeamFlag()"><i class="fas fa-paper-plane"></i> Transmettre Flag</button>
+                <p id="flag-submit-message"></p>
+            </div>
+            <hr>
+            <div id="submit-defense-subsection" class="hidden">
+                <h3><i class="fas fa-shield-alt"></i> Rapport de Défense</h3>
+                <input id="defense-challenge-id" type="number" placeholder="ID du système sécurisé">
+                <textarea id="defense-proof" placeholder="Détaillez les contre-mesures appliquées et les preuves..."></textarea>
+                <button class="btn primary" onclick="submitTeamDefense()"><i class="fas fa-upload"></i> Soumettre Rapport</button>
+                <p id="defense-submit-message"></p>
+            </div>
+             <hr>
+            <div id="leave-match-subsection" class="hidden">
+                 <h3><i class="fas fa-times-circle"></i> Déconnexion du Match</h3>
+                 <input id="match-id-to-leave" type="number" placeholder="ID de la simulation à quitter">
+                 <button class="btn secondary" onclick="leaveCurrentMatch()"><i class="fas fa-power-off"></i> Terminer Session</button>
+                 <p id="match-leave-message"></p>
+            </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script>
+        // Configuration de Particles.js (optionnelle, à adapter)
+        if (document.getElementById('particles-js')) {
+            particlesJS('particles-js', { /* COPIEZ LA CONFIGURATION DE PARTICLES.JS DEPUIS LOGIN.HTML ICI SI VOUS VOULEZ L'UTILISER */
+                "particles": { "number": { "value": 60, "density": { "enable": true, "value_area": 800 } }, "color": { "value": "#30363d" }, "shape": { "type": "circle" }, "opacity": { "value": 0.2, "random": true }, "size": { "value": 2, "random": true }, "line_linked": { "enable": true, "distance": 180, "color": "#30363d", "opacity": 0.15, "width": 1 }, "move": { "enable": true, "speed": 0.8, "direction": "none", "random": true, "straight": false, "out_mode": "out" } }, "interactivity": { "detect_on": "canvas", "events": { "onhover": { "enable": false, "mode": "repulse" }, "onclick": { "enable": false, "mode": "push" }, "resize": true } }, "retina_detect": true
+            });
+        }
+
+        // --- VOTRE CODE JAVASCRIPT EXISTANT POUR HOME.HTML VIENT ICI ---
+        // Assurez-vous de copier l'intégralité de votre bloc <script> précédent ici,
+        // en adaptant les sélecteurs si j'ai modifié des ID ou des classes dans le HTML ci-dessus.
+        // Par exemple, la logique pour :
+        // - updateProfileDisplay()
+        // - updateTeamManagementSection()
+        // - updateMatchOperationsSection()
+        // - showSection()
+        // - createTeam(), joinExistingTeam(), leaveCurrentTeam()
+        // - fetchLeaderboard(), fetchChallenges()
+        // - joinSelectedMatch(), leaveCurrentMatch()
+        // - submitTeamFlag(), submitTeamDefense()
+        // - logout()
+        // - initializePage()
+
+        // --- COLLER VOTRE BLOC SCRIPT DE HOME.HTML (ENVIRON 700 LIGNES) CI-DESSOUS ---
         let userId = sessionStorage.getItem('userId') || null;
+        let username = sessionStorage.getItem('username') || null;
+        let userRole = sessionStorage.getItem('preferred_role') || null; 
+
         let teamId = sessionStorage.getItem('teamId') || null;
-        let userRole = sessionStorage.getItem('preferred_role') || null;
+        let teamName = sessionStorage.getItem('teamName') || null;
         let teamRole = sessionStorage.getItem('teamRole') || null;
         let isTeamCreator = sessionStorage.getItem('isTeamCreator') === 'true';
 
-        // Afficher les infos du profil au chargement
-        if (userId) {
-            const username = sessionStorage.getItem('username');
-            document.getElementById('profile-info').textContent = 
-                `Connecté en tant que ${username} (ID: ${userId}, Rôle préféré: ${userRole || 'Aucun'})` +
-                (teamId ? ` | Équipe: ${sessionStorage.getItem('teamName')} (ID: ${teamId}, Rôle: ${teamRole}${isTeamCreator ? ', Créateur' : ''})` : '');
-        }
-
-        // Mettre à jour le formulaire de création d'équipe
-        function updateTeamCreateForm() {
-            console.log('updateTeamCreateForm:', { userId });
-            const form = document.getElementById('team-create-form');
-            const warning = document.getElementById('team-create-warning');
-            if (userId) {
-                form.classList.remove('hidden');
-                warning.classList.add('hidden');
+        function updateProfileDisplay() {
+            const profileInfoEl = document.getElementById('profile-info');
+            if (userId && username) {
+                let infoText = `Connecté en tant que ${username} (ID: ${userId})`;
+                if (teamId && teamName) {
+                    infoText += ` | Escouade: ${teamName} (ID: ${teamId}, Rôle: ${teamRole || 'N/A'}${isTeamCreator ? ', Commandant' : ''})`;
+                }
+                profileInfoEl.textContent = infoText;
+                profileInfoEl.className = 'success'; // Ou une classe neutre si ce n'est pas un message de succès
             } else {
-                form.classList.add('hidden');
-                warning.classList.remove('hidden');
+                profileInfoEl.textContent = 'Anomalie de session. Veuillez vous reconnecter.';
+                profileInfoEl.className = 'error';
+                setTimeout(() => { if(window.location.pathname !== '/login' && window.location.pathname !== '/login.html') window.location.href = '/login'; }, 2000);
+            }
+        }
+        
+        function updateTeamManagementSection() {
+            const createTeamForm = document.getElementById('team-create-form');
+            const createTeamWarning = document.getElementById('team-create-warning');
+            const joinTeamForm = document.getElementById('team-join-form');
+            const joinTeamWarning = document.getElementById('team-join-warning');
+            const leaveTeamButton = document.getElementById('leave-team-button');
+            const leaveTeamWarning = document.getElementById('team-leave-warning');
+
+            createTeamWarning.className = 'info'; 
+            joinTeamWarning.className = 'info';
+            leaveTeamWarning.className = 'info';
+
+            if (userId) { 
+                if (teamId) { 
+                    createTeamForm.classList.add('hidden');
+                    createTeamWarning.classList.remove('hidden');
+                    createTeamWarning.textContent = `Vous êtes assigné à l'escouade "${teamName}". Pour former ou rejoindre une autre unité, un désengagement est requis.`;
+                    joinTeamForm.classList.add('hidden');
+                    joinTeamWarning.classList.remove('hidden');
+                    joinTeamWarning.textContent = `Affiliation actuelle : escouade "${teamName}".`;
+                    leaveTeamButton.classList.remove('hidden');
+                    leaveTeamWarning.classList.add('hidden');
+                } else { 
+                    createTeamForm.classList.remove('hidden');
+                    createTeamWarning.classList.add('hidden');
+                    joinTeamForm.classList.remove('hidden');
+                    joinTeamWarning.classList.add('hidden');
+                    leaveTeamButton.classList.add('hidden');
+                    leaveTeamWarning.classList.remove('hidden');
+                    leaveTeamWarning.textContent = "Aucune affiliation d'escouade détectée.";
+                }
+            } else { 
+                createTeamForm.classList.add('hidden');
+                createTeamWarning.classList.remove('hidden');
+                createTeamWarning.textContent = 'Authentification requise pour la formation d\'escouade.';
+                createTeamWarning.className = 'error';
+                joinTeamForm.classList.add('hidden');
+                joinTeamWarning.classList.remove('hidden');
+                joinTeamWarning.textContent = 'Authentification requise pour rejoindre une escouade.';
+                joinTeamWarning.className = 'error';
+                leaveTeamButton.classList.add('hidden');
+                leaveTeamWarning.classList.remove('hidden');
+                leaveTeamWarning.textContent = 'Authentification requise pour la gestion d\'escouade.';
+                leaveTeamWarning.className = 'error';
             }
         }
 
-        // Mettre à jour le formulaire de match
-        function updateMatchJoinForm() {
-            console.log('updateMatchJoinForm:', { userId, teamId, isTeamCreator });
-            const form = document.getElementById('match-join-form');
-            const warning = document.getElementById('match-join-warning');
-            if (userId && teamId && isTeamCreator) {
-                form.classList.remove('hidden');
-                warning.classList.add('hidden');
-            } else {
-                form.classList.add('hidden');
-                warning.classList.remove('hidden');
+        async function updateMatchOperationsSection() {
+            const matchJoinStatus = document.getElementById('match-join-status');
+            const matchJoinForm = document.getElementById('match-join-form');
+            const submitFlagSection = document.getElementById('submit-flag-subsection');
+            const submitDefenseSection = document.getElementById('submit-defense-subsection');
+            const leaveMatchSection = document.getElementById('leave-match-subsection');
+
+            matchJoinStatus.className = 'info';
+
+            if (!userId) {
+                matchJoinStatus.textContent = 'Authentification requise pour les opérations de match.';
+                matchJoinStatus.className = 'error';
+                matchJoinStatus.classList.remove('hidden');
+                [matchJoinForm, submitFlagSection, submitDefenseSection, leaveMatchSection].forEach(el => el.classList.add('hidden'));
+                return;
             }
+            if (!teamId) {
+                matchJoinStatus.textContent = 'Affiliation à une escouade requise pour les opérations de match.';
+                matchJoinStatus.classList.remove('hidden');
+                [matchJoinForm, submitFlagSection, submitDefenseSection, leaveMatchSection].forEach(el => el.classList.add('hidden'));
+                return;
+            }
+
+            try {
+                const response = await fetch('/teams', { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ team_id: teamId })
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    isTeamCreator = data.is_creator;
+                    sessionStorage.setItem('isTeamCreator', isTeamCreator.toString());
+                } else {
+                    const errorData = await response.json();
+                    console.error("Erreur vérification commandant pour match:", errorData.message);
+                    isTeamCreator = false; 
+                }
+            } catch (error) {
+                console.error('Erreur réseau vérification commandant pour match:', error);
+                isTeamCreator = false; 
+            }
+            
+            if (isTeamCreator) {
+                matchJoinStatus.classList.add('hidden');
+                matchJoinForm.classList.remove('hidden');
+            } else {
+                matchJoinStatus.textContent = "Seul le commandant d'escouade peut initier l'engagement dans un match.";
+                matchJoinStatus.classList.remove('hidden');
+                matchJoinForm.classList.add('hidden');
+            }
+
+            if (teamRole === 'attaque') {
+                submitFlagSection.classList.remove('hidden');
+                submitDefenseSection.classList.add('hidden');
+            } else if (teamRole === 'defense') {
+                submitFlagSection.classList.add('hidden');
+                submitDefenseSection.classList.remove('hidden');
+            } else {
+                [submitFlagSection, submitDefenseSection].forEach(el => el.classList.add('hidden'));
+            }
+            leaveMatchSection.classList.remove('hidden'); 
         }
 
-        // Gérer l'affichage des sections
         function showSection(sectionId) {
-            console.log(`showSection: ${sectionId}`);
             document.querySelectorAll('.section').forEach(section => section.classList.add('hidden'));
-            document.getElementById(`${sectionId}-section`).classList.remove('hidden');
+            const activeSection = document.getElementById(`${sectionId}-section`);
+            if (activeSection) {
+                activeSection.classList.remove('hidden');
+            } else {
+                 console.warn(`Section avec id "${sectionId}-section" non trouvée.`);
+                 document.getElementById('profile-section').classList.remove('hidden');
+            }
 
             if (sectionId === 'leaderboard') fetchLeaderboard();
             if (sectionId === 'challenges') fetchChallenges();
-            if (sectionId === 'join-match') updateMatchJoinForm();
-            if (sectionId === 'create-team') updateTeamCreateForm();
+            if (sectionId === 'team-management') updateTeamManagementSection();
+            if (sectionId === 'match-operations') updateMatchOperationsSection();
         }
 
-        // Créer une équipe
         async function createTeam() {
-            console.log('createTeam clicked');
             const name = document.getElementById('team-name').value;
             const password = document.getElementById('team-password').value;
             const role = document.getElementById('team-role').value;
+            const messageEl = document.getElementById('team-create-message');
+            messageEl.className = '';
+
+            if (!name || !password || !role) {
+                messageEl.textContent = 'Tous les champs sont requis pour la formation de l\'escouade.';
+                messageEl.className = 'error';
+                return;
+            }
             try {
-                const response = await fetch('/register', {
+                const response = await fetch('/register', { 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, password, role, user_id: userId })
+                    body: JSON.stringify({ name, password, role })
                 });
                 const data = await response.json();
-                document.getElementById('team-create-message').textContent = data.message;
-                document.getElementById('team-create-message').className = response.ok ? 'success' : 'error';
-                if (data.team_id) {
+                messageEl.textContent = data.message;
+                messageEl.className = response.ok ? 'success' : 'error';
+                if (response.ok) {
                     teamId = data.team_id;
+                    teamName = data.team_name;
                     teamRole = data.team_role;
-                    isTeamCreator = true;
+                    isTeamCreator = true; 
                     sessionStorage.setItem('teamId', teamId);
+                    sessionStorage.setItem('teamName', teamName);
                     sessionStorage.setItem('teamRole', teamRole);
-                    sessionStorage.setItem('teamName', data.team_name);
                     sessionStorage.setItem('isTeamCreator', 'true');
-                    document.getElementById('profile-info').textContent = 
-                        `Connecté en tant que ${sessionStorage.getItem('username')} (ID: ${userId}, Rôle préféré: ${userRole || 'Aucun'})` +
-                        ` | Équipe: ${data.team_name} (ID: ${teamId}, Rôle: ${teamRole}, Créateur)`;
-                    updateMatchJoinForm();
+                    
+                    document.getElementById('team-name').value = '';
+                    document.getElementById('team-password').value = '';
+                    updateProfileDisplay();
+                    updateTeamManagementSection();
+                    updateMatchOperationsSection();
                 }
             } catch (error) {
                 console.error('Error in createTeam:', error);
-                document.getElementById('team-create-message').textContent = 'Erreur réseau';
-                document.getElementById('team-create-message').className = 'error';
+                messageEl.textContent = 'Erreur réseau : formation d\'escouade échouée.';
+                messageEl.className = 'error';
             }
         }
 
-        // Récupérer le classement des joueurs
-        async function fetchLeaderboard() {
-            console.log('fetchLeaderboard called');
+        async function joinExistingTeam() {
+            const teamIdToJoin = document.getElementById('join-team-id').value;
+            const messageEl = document.getElementById('team-join-message');
+            messageEl.className = '';
+            if (!teamIdToJoin) {
+                messageEl.textContent = "Veuillez spécifier l'identifiant de l'escouade cible.";
+                messageEl.className = 'error';
+                return;
+            }
             try {
-                const response = await fetch('/leaderboard', { method: 'GET' });
+                const response = await fetch('/join_team', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ team_id: parseInt(teamIdToJoin) })
+                });
                 const data = await response.json();
+                messageEl.textContent = data.message;
+                messageEl.className = response.ok ? 'success' : 'error';
+                if (response.ok) {
+                    teamId = data.team_id;
+                    teamName = data.team_name;
+                    teamRole = data.team_role;
+                    
+                    sessionStorage.setItem('teamId', teamId);
+                    sessionStorage.setItem('teamName', teamName);
+                    sessionStorage.setItem('teamRole', teamRole);
+                     const creatorCheckResponse = await fetch('/teams', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ team_id: teamId })
+                    });
+                    if(creatorCheckResponse.ok) {
+                        const creatorData = await creatorCheckResponse.json();
+                        isTeamCreator = creatorData.is_creator;
+                    } else { isTeamCreator = false; }
+                    sessionStorage.setItem('isTeamCreator', isTeamCreator.toString());
+
+                    updateProfileDisplay();
+                    updateTeamManagementSection();
+                    updateMatchOperationsSection(); 
+                }
+            } catch (error) {
+                 console.error('Error in joinExistingTeam:', error);
+                messageEl.textContent = 'Erreur réseau : impossible de rejoindre l\'escouade.';
+                messageEl.className = 'error';
+            }
+        }
+
+        async function leaveCurrentTeam() {
+            const messageEl = document.getElementById('team-leave-message');
+            messageEl.className = '';
+            try {
+                const response = await fetch('/leave_team', { method: 'POST' });
+                const data = await response.json();
+                messageEl.textContent = data.message;
+                messageEl.className = response.ok ? 'success' : 'error';
+                if (response.ok) {
+                    teamId = null; teamName = null; teamRole = null; isTeamCreator = false;
+                    sessionStorage.removeItem('teamId');
+                    sessionStorage.removeItem('teamName');
+                    sessionStorage.removeItem('teamRole');
+                    sessionStorage.removeItem('isTeamCreator');
+                    updateProfileDisplay();
+                    updateTeamManagementSection();
+                    updateMatchOperationsSection();
+                }
+            } catch (error) {
+                console.error('Error in leaveCurrentTeam:', error);
+                messageEl.textContent = 'Erreur réseau : impossible de quitter l\'escouade.';
+                messageEl.className = 'error';
+            }
+        }
+
+        async function fetchLeaderboard() {
+            const messageEl = document.getElementById('leaderboard-message');
+            messageEl.className = 'info';
+            messageEl.textContent = 'Chargement du classement...';
+            try {
+                const response = await fetch('/leaderboard');
+                const data = await response.json();
+                if (!response.ok) {
+                    messageEl.textContent = data.message || "Erreur chargement classement.";
+                    messageEl.className = 'error'; return;
+                }
                 const tbody = document.getElementById('leaderboard-table').querySelector('tbody');
                 tbody.innerHTML = '';
                 if (data.players && data.players.length > 0) {
                     data.players.forEach((player, index) => {
                         const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${index + 1}</td>
-                            <td>${player.username}</td>
-                            <td>${player.score}</td>
-                            <td>${player.preferred_role || 'Aucun'}</td>
-                        `;
+                        row.innerHTML = `<td>${index + 1}</td><td>${player.username}</td><td>${player.score}</td>`;
                         tbody.appendChild(row);
                     });
-                    document.getElementById('leaderboard-message').textContent = '';
+                    messageEl.textContent = ''; 
                 } else {
-                    document.getElementById('leaderboard-message').textContent = 'Aucun joueur trouvé.';
+                    messageEl.textContent = 'Aucun opérateur classé pour le moment.';
                 }
             } catch (error) {
                 console.error('Error in fetchLeaderboard:', error);
-                document.getElementById('leaderboard-message').textContent = 'Erreur réseau';
-                document.getElementById('leaderboard-message').className = 'error';
+                messageEl.textContent = 'Erreur réseau : chargement classement impossible.';
+                messageEl.className = 'error';
             }
         }
 
-        // Récupérer les défis
         async function fetchChallenges() {
-            console.log('fetchChallenges called');
+            const messageEl = document.getElementById('challenges-message');
+             messageEl.className = 'info';
+             messageEl.textContent = 'Chargement des modules de défis...';
             try {
-                const response = await fetch('/challenges', { method: 'GET' });
+                const response = await fetch('/challenges');
                 const data = await response.json();
+                 if (!response.ok) {
+                    messageEl.textContent = data.message || "Erreur chargement défis.";
+                    messageEl.className = 'error'; return;
+                }
                 const tbody = document.getElementById('challenges-table').querySelector('tbody');
                 tbody.innerHTML = '';
                 if (data.challenges && data.challenges.length > 0) {
                     data.challenges.forEach(challenge => {
                         const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${challenge.name}</td>
-                            <td>${challenge.points}</td>
-                            <td>${challenge.level}</td>
-                        `;
+                        row.innerHTML = `<td>${challenge.id}</td><td>${challenge.name}</td><td>${challenge.description || 'N/A'}</td><td>${challenge.points}</td><td>${challenge.level}</td>`;
                         tbody.appendChild(row);
                     });
-                    document.getElementById('challenges-message').textContent = '';
+                    messageEl.textContent = '';
                 } else {
-                    document.getElementById('challenges-message').textContent = 'Aucun défi disponible.';
+                    messageEl.textContent = 'Aucun module de défi actif pour le moment.';
                 }
             } catch (error) {
                 console.error('Error in fetchChallenges:', error);
-                document.getElementById('challenges-message').textContent = 'Erreur réseau';
-                document.getElementById('challenges-message').className = 'error';
+                messageEl.textContent = 'Erreur réseau : chargement défis impossible.';
+                messageEl.className = 'error';
             }
         }
 
-        // Rejoindre un match
-        async function joinMatch() {
-            console.log('joinMatch clicked');
-            const matchId = document.getElementById('match-id').value;
+        async function joinSelectedMatch() {
+            const matchId = document.getElementById('match-id-to-join').value;
+            const messageEl = document.getElementById('match-join-message');
+            messageEl.className = '';
+
+            if (!matchId) {
+                messageEl.textContent = 'Veuillez spécifier l\'ID de la simulation.';
+                messageEl.className = 'error'; return;
+            }
+            if (!isTeamCreator ) { // Redondant car le formulaire est caché, mais double sécurité
+                messageEl.textContent = 'Autorisation refusée : Seul le commandant d\'escouade peut initier.';
+                messageEl.className = 'error'; return;
+            }
             try {
                 const response = await fetch('/join_match', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ team_id: teamId, match_id: matchId, user_id: userId })
+                    body: JSON.stringify({ match_id: parseInt(matchId) }) 
                 });
                 const data = await response.json();
-                document.getElementById('match-message').textContent = data.message;
-                document.getElementById('match-message').className = response.ok ? 'success' : 'error';
-                if (data.vm_ip) {
-                    document.getElementById('match-message').innerHTML += 
-                        `<br>Accès VM: <a href="http://${data.vm_ip}" target="_blank">${data.vm_ip}</a>` +
-                        (data.guacamole_url ? `<br>Guacamole: <a href="${data.guacamole_url}" target="_blank">${data.guacamole_url}</a>` : '');
+                messageEl.textContent = data.message;
+                messageEl.className = response.ok ? 'success' : 'error';
+                if (response.ok && data.vm_ip) {
+                    messageEl.innerHTML += `<br>Accès VM: <a href="http://${data.vm_ip}" target="_blank">${data.vm_ip}</a>` +
+                                         (data.guacamole_url ? `<br>Interface Guacamole: <a href="${data.guacamole_url}" target="_blank">${data.guacamole_url}</a>` : '');
+                    document.getElementById('match-id-to-join').value = '';
                 }
             } catch (error) {
-                console.error('Error in joinMatch:', error);
-                document.getElementById('match-message').textContent = 'Erreur réseau';
-                document.getElementById('match-message').className = 'error';
+                console.error('Error in joinSelectedMatch:', error);
+                messageEl.textContent = 'Erreur réseau : connexion au match échouée.';
+                messageEl.className = 'error';
+            }
+        }
+        
+        async function leaveCurrentMatch() {
+            const matchIdToLeave = document.getElementById('match-id-to-leave').value;
+            const messageEl = document.getElementById('match-leave-message');
+            messageEl.className = '';
+             if (!matchIdToLeave) {
+                messageEl.textContent = "Veuillez spécifier l'ID de la simulation à quitter.";
+                messageEl.className = 'error'; return;
+            }
+            try {
+                const response = await fetch('/leave_match', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ match_id: parseInt(matchIdToLeave) })
+                });
+                const data = await response.json();
+                messageEl.textContent = data.message;
+                messageEl.className = response.ok ? 'success' : 'error';
+                if(response.ok) {
+                    document.getElementById('match-id-to-leave').value = '';
+                }
+            } catch (error) {
+                console.error('Error in leaveCurrentMatch:', error);
+                messageEl.textContent = 'Erreur réseau : déconnexion du match échouée.';
+                messageEl.className = 'error';
             }
         }
 
-        // Déconnexion
+        async function submitTeamFlag() {
+            const flag = document.getElementById('flag-to-submit').value;
+            const messageEl = document.getElementById('flag-submit-message');
+            messageEl.className = '';
+            if (!flag) {
+                messageEl.textContent = "Transmission de flag vide non autorisée.";
+                messageEl.className = 'error'; return;
+            }
+            try {
+                const response = await fetch('/submit_flag', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ flag: flag }) 
+                });
+                const data = await response.json();
+                let responseText = data.message;
+                if (data.points) { responseText += ` Gain de ${data.points} points stratégiques !`; }
+                messageEl.textContent = responseText;
+                messageEl.className = response.ok ? 'success' : 'error';
+                if (response.ok) {
+                    document.getElementById('flag-to-submit').value = '';
+                    updateProfileDisplay(); 
+                }
+            } catch (error) {
+                console.error('Error in submitTeamFlag:', error);
+                messageEl.textContent = 'Erreur réseau : soumission de flag échouée.';
+                messageEl.className = 'error';
+            }
+        }
+
+        async function submitTeamDefense() {
+            const challengeId = document.getElementById('defense-challenge-id').value;
+            const proof = document.getElementById('defense-proof').value;
+            const messageEl = document.getElementById('defense-submit-message');
+            messageEl.className = '';
+
+            if (!challengeId || !proof) {
+                messageEl.textContent = "ID du système et rapport de défense requis.";
+                messageEl.className = 'error'; return;
+            }
+            try {
+                const response = await fetch('/submit_defense', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ challenge_id: parseInt(challengeId), proof: proof }) 
+                });
+                const data = await response.json();
+                let responseText = data.message;
+                if (data.points) { responseText += ` Gain de ${data.points} points stratégiques !`; }
+                messageEl.textContent = responseText;
+                messageEl.className = response.ok ? 'success' : 'error';
+                 if (response.ok) {
+                    document.getElementById('defense-challenge-id').value = '';
+                    document.getElementById('defense-proof').value = '';
+                    updateProfileDisplay();
+                }
+            } catch (error) {
+                console.error('Error in submitTeamDefense:', error);
+                messageEl.textContent = 'Erreur réseau : soumission de défense échouée.';
+                messageEl.className = 'error';
+            }
+        }
+
         async function logout() {
-            console.log('logout clicked');
+            const profileInfoEl = document.getElementById('profile-info');
             try {
                 const response = await fetch('/logout', { method: 'POST' });
                 const data = await response.json();
                 if (response.ok) {
                     sessionStorage.clear();
-                    window.location.href = '/login';
+                    window.location.href = data.redirect;
                 } else {
-                    document.getElementById('profile-info').textContent = data.message;
-                    document.getElementById('profile-info').className = 'error';
+                    profileInfoEl.textContent = data.message || 'Erreur de déconnexion.';
+                    profileInfoEl.className = 'error';
                 }
             } catch (error) {
                 console.error('Error in logout:', error);
-                document.getElementById('profile-info').textContent = 'Erreur réseau';
-                document.getElementById('profile-info').className = 'error';
+                profileInfoEl.textContent = 'Erreur réseau lors de la déconnexion.';
+                profileInfoEl.className = 'error';
             }
         }
 
-        // Afficher la section Profil par défaut
-        showSection('profile');
+        function initializePage() {
+            if (!userId && !window.location.pathname.endsWith('/login') && !window.location.pathname.endsWith('/login.html') ) {
+                 console.log("Utilisateur non authentifié, redirection vers le portail de connexion depuis home.html JS.");
+                 window.location.href = '/login';
+                 return; 
+            }
+            updateProfileDisplay();
+            showSection('profile'); 
+        }
+
+        initializePage();
     </script>
 </body>
 </html>
