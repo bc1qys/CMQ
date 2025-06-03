@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <title>Administration - Plateforme CTF</title>
     <link rel="stylesheet" href="https://unpkg.com/ascent@latest/dist/ascent.min.css">
     <style>
@@ -32,10 +33,16 @@
             margin-bottom: 20px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
-        .section h2 {
+        .section h2, .section h3 { /* Appliquer aussi à h3 */
             font-size: 1.6rem;
             color: #2c3e50;
             margin-top: 0;
+            margin-bottom: 15px; /* Un peu moins de marge pour h3 */
+        }
+        .section h3 {
+            font-size: 1.3rem; /* Taille un peu réduite pour h3 */
+             border-bottom: 1px solid #eee; /* Ligne de séparation légère */
+            padding-bottom: 10px;
         }
         .error { color: #e74c3c; }
         .success { color: #2ecc71; }
@@ -43,37 +50,42 @@
 
         input, button, select, textarea {
             padding: 10px;
-            margin: 5px;
+            margin: 5px 0; /* Ajustement des marges */
             font-size: 1rem;
             border-radius: 5px;
             border: 1px solid #ddd;
-            width: 300px; 
+            /* width: 300px; Enlevé pour que .form-control gère la largeur */
             box-sizing: border-box;
         }
         textarea {
-            width: calc(100% - 10px); 
-            height: 100px;
+            /* width: calc(100% - 10px); Pas besoin si .form-control est utilisé */
+            min-height: 150px; /* Augmenté pour le contenu de la doc */
             resize: vertical;
+            font-family: Arial, sans-serif; /* Assurer une police cohérente */
         }
-        .section > input, .section > select, .section > textarea {
-            display: block; 
-            width: calc(100% - 10px); 
+        
+        /* Classe pour les éléments de formulaire prenant toute la largeur */
+        .form-control {
+            display: block;
+            width: 100%;
             margin-bottom: 10px;
         }
+
         button {
             cursor: pointer;
             transition: background 0.3s;
             width: auto; 
             min-width: 120px; 
+            margin-top:10px; /* Ajouter une marge en haut pour espacement */
         }
-        .btn.primary:hover {
-            background: #3498db;
-            color: white; 
-        }
-         .btn.primary {
+        .btn.primary {
             background: #3498db; 
             color: white;
             border-color: #3498db;
+        }
+        .btn.primary:hover {
+            background: #2980b9; /* Couleur un peu plus foncée au survol */
+            color: white; 
         }
         .btn.secondary {
             background-color: #7f8c8d;
@@ -174,20 +186,36 @@
 
             <div class="section">
                 <h3>Créer un Challenge</h3>
-                <input id="challenge-name" placeholder="Nom du challenge">
-                <textarea id="challenge-description" placeholder="Description"></textarea>
-                <select id="challenge-level">
+                <input class="form-control" id="challenge-name" placeholder="Nom du challenge">
+                <textarea class="form-control" id="challenge-description" placeholder="Description"></textarea>
+                <select class="form-control" id="challenge-level">
                     <option value="debutant">Débutant</option>
                     <option value="intermediaire">Intermédiaire</option>
                     <option value="avance">Avancé</option>
                 </select>
-                <input id="challenge-points" type="number" placeholder="Points">
-                <input id="challenge-flag" placeholder="Flag (ex: FLAG{xxx})">
-                <input id="challenge-ip" placeholder="IP de la VM (optionnel, ex: 192.168.1.10)">
+                <input class="form-control" id="challenge-points" type="number" placeholder="Points">
+                <input class="form-control" id="challenge-flag" placeholder="Flag (ex: FLAG{xxx})">
+                <input class="form-control" id="challenge-ip" placeholder="IP de la VM (optionnel, ex: 192.168.1.10)">
                 <button class="btn primary" id="create-challenge-button">Créer Challenge</button>
                 <p id="challenge-message"></p>
             </div>
-        </div>
+
+            <div class="section">
+                <h3>Ajouter un Article de Documentation</h3>
+                <input class="form-control" id="doc-title" placeholder="Titre de l'article">
+                <input class="form-control" id="doc-category" placeholder="Catégorie (ex: Sécurité Web, Cryptographie)">
+                <input class="form-control" id="doc-tags" placeholder="Tags (séparés par virgule, ex: SQLi, XSS)">
+                <select class="form-control" id="doc-difficulty">
+                    <option value="">Choisir un niveau (optionnel)</option>
+                    <option value="Débutant">Débutant</option>
+                    <option value="Intermédiaire">Intermédiaire</option>
+                    <option value="Avancé">Avancé</option>
+                </select>
+                <textarea class="form-control" id="doc-content" placeholder="Contenu de l'article (Markdown supporté)"></textarea>
+                <button class="btn primary" id="create-doc-button">Sauvegarder l'Article</button>
+                <p id="doc-create-message"></p>
+            </div>
+            </div>
     </div>
 
     <script>
@@ -207,6 +235,7 @@
                     managementSection.classList.remove('hidden');
                     fetchPlayers();
                     fetchTeams();
+                    // Initialiser d'autres sections admin si besoin
                 } else {
                     const errorData = await response.json();
                     console.warn('Admin status check failed:', errorData.message);
@@ -227,6 +256,7 @@
         }
 
         async function logoutAdmin() {
+            // ... (code existant pour logoutAdmin)
             console.log('logoutAdmin clicked');
             try {
                 const response = await fetch('/admin_logout', { method: 'POST' });
@@ -246,6 +276,7 @@
         }
 
         async function fetchPlayers() {
+            // ... (code existant pour fetchPlayers)
             console.log('fetchPlayers called');
             const messageEl = document.getElementById('players-message');
             messageEl.textContent = 'Chargement des joueurs...';
@@ -286,6 +317,7 @@
         }
 
         async function fetchTeams() {
+            // ... (code existant pour fetchTeams)
             console.log('fetchTeams called');
             const messageEl = document.getElementById('teams-message');
             messageEl.textContent = 'Chargement des équipes...';
@@ -327,6 +359,7 @@
         }
 
         async function createChallenge() {
+            // ... (code existant pour createChallenge)
             console.log('createChallenge clicked');
             const name = document.getElementById('challenge-name').value;
             const description = document.getElementById('challenge-description').value;
@@ -380,7 +413,8 @@
         }
 
         async function handleDeletePlayer(playerId, playerName) {
-            if (confirm(`Êtes-vous sûr de vouloir supprimer le joueur "${playerName}" (ID: ${playerId}) ?\nCette action est irréversible.`)) {
+            // ... (code existant pour handleDeletePlayer)
+             if (confirm(`Êtes-vous sûr de vouloir supprimer le joueur "${playerName}" (ID: ${playerId}) ?\nCette action est irréversible.`)) {
                 const messageEl = document.getElementById('players-message');
                 messageEl.className = 'info';
                 messageEl.textContent = `Suppression du joueur ${playerName}...`;
@@ -404,6 +438,7 @@
         }
 
         async function handleDeleteTeam(teamId, teamName) {
+            // ... (code existant pour handleDeleteTeam)
             if (confirm(`Êtes-vous sûr de vouloir supprimer l'équipe "${teamName}" (ID: ${teamId}) ?\nCette action est irréversible.`)) {
                 const messageEl = document.getElementById('teams-message');
                 messageEl.className = 'info';
@@ -427,9 +462,64 @@
             }
         }
 
+        // NOUVEAU: Fonction pour créer un article de documentation
+        async function createDocumentationArticle() {
+            console.log('createDocumentationArticle clicked');
+            const title = document.getElementById('doc-title').value;
+            const category = document.getElementById('doc-category').value;
+            const tags = document.getElementById('doc-tags').value;
+            const difficulty = document.getElementById('doc-difficulty').value;
+            const content = document.getElementById('doc-content').value;
+            const messageEl = document.getElementById('doc-create-message');
+            messageEl.className = '';
+            messageEl.textContent = '';
+
+            if (!title || !content) {
+                messageEl.textContent = 'Le titre et le contenu de l\'article sont obligatoires.';
+                messageEl.className = 'error';
+                return;
+            }
+
+            try {
+                const response = await fetch('/admin/documentation/create', { // Nouvelle route backend à créer
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title,
+                        category: category || null,
+                        tags: tags || null,
+                        difficulty_level: difficulty || null,
+                        content
+                    })
+                });
+                const data = await response.json();
+                messageEl.textContent = data.message;
+                messageEl.className = response.ok ? 'success' : 'error';
+
+                if (response.ok) {
+                    // Vider le formulaire
+                    document.getElementById('doc-title').value = '';
+                    document.getElementById('doc-category').value = '';
+                    document.getElementById('doc-tags').value = '';
+                    document.getElementById('doc-difficulty').value = '';
+                    document.getElementById('doc-content').value = '';
+                    // Optionnel: actualiser une liste d'articles si elle était affichée ici
+                }
+            } catch (error) {
+                console.error('Error creating documentation article:', error);
+                messageEl.textContent = 'Erreur réseau lors de la création de l\'article.';
+                messageEl.className = 'error';
+            }
+        }
+        // FIN NOUVEAU
+
+        // Écouteurs d’événements
         document.getElementById('admin-logout-button').addEventListener('click', logoutAdmin);
         document.getElementById('create-challenge-button').addEventListener('click', createChallenge);
+        // NOUVEAU: Écouteur pour le bouton de création de documentation
+        document.getElementById('create-doc-button').addEventListener('click', createDocumentationArticle);
 
+        // Délégation d'événements pour les boutons de suppression
         document.addEventListener('click', function(event) {
             if (event.target.classList.contains('btn-delete-player')) {
                 const playerId = event.target.dataset.id;

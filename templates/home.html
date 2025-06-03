@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Accueil - Plateforme CTF</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
@@ -36,22 +37,21 @@
             font-family: var(--font-primary);
             background-color: var(--bg-dark);
             color: var(--text-color);
-            display: flex; /* Permet au container de se centrer si besoin */
+            display: flex; 
             flex-direction: column;
             align-items: center;
             padding: 20px;
             min-height: 100vh;
-            overflow-x: hidden; /* Empêche le scroll horizontal si particles-js dépasse un peu */
+            overflow-x: hidden; 
         }
         
-        /* --- Animation de fond et scanlines (identiques à login.html) --- */
         #particles-js {
-            position: fixed; /* Fixé pour couvrir tout l'arrière-plan */
+            position: fixed; 
             width: 100%;
             height: 100%;
             top: 0;
             left: 0;
-            z-index: -1; /* Derrière tout le contenu */
+            z-index: -1; 
         }
 
         body::after {
@@ -65,11 +65,11 @@
                 0deg,
                 rgba(0,0,0,0) 0px,
                 rgba(0,0,0,0) 2px,
-                rgba(255,255,255,0.015) 3px, /* Lignes encore plus subtiles */
+                rgba(255,255,255,0.015) 3px, 
                 rgba(255,255,255,0.015) 4px
             );
             pointer-events: none;
-            z-index: -1; /* S'assurer qu'il est derrière le contenu mais peut être au-dessus du fond particles */
+            z-index: -1; 
             animation: scanlineAnim 80s linear infinite;
         }
 
@@ -81,7 +81,7 @@
         .container {
             width: 100%;
             max-width: 1100px;
-            margin: 0 auto; /* Centrage du contenu principal */
+            margin: 0 auto; 
         }
 
         .header {
@@ -132,7 +132,7 @@
             overflow: hidden;
         }
         
-        .menu-item::before { /* Effet de lueur subtile au survol */
+        .menu-item::before { 
             content: '';
             position: absolute;
             top: 0; left: 0;
@@ -179,7 +179,7 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), var(--card-glow-shadow);
         }
 
-        .section h2, .section h3 { /* Style pour les titres de section et sous-section */
+        .section h2, .section h3 { 
             font-family: var(--font-mono);
             font-size: 1.8rem;
             color: var(--text-color);
@@ -190,7 +190,7 @@
             padding-bottom: 12px;
         }
         .section h3 {
-            font-size: 1.4rem; /* Taille pour les sous-titres comme "Créer une Équipe" */
+            font-size: 1.4rem; 
             color: var(--primary-accent);
             border-bottom-style: dashed;
         }
@@ -207,7 +207,7 @@
         textarea {
             width: 100%;
             padding: 12px 15px;
-            margin: 8px 0 15px 0; /* Ajout de marge en bas */
+            margin: 8px 0 15px 0; 
             font-size: 1rem;
             border-radius: 6px;
             border: 1px solid var(--border-color);
@@ -234,7 +234,7 @@
         button, .btn {
             padding: 10px 22px;
             margin: 10px 5px 10px 0;
-            font-size: 0.95rem; /* Légèrement plus petit */
+            font-size: 0.95rem; 
             font-weight: 500;
             border-radius: 6px;
             cursor: pointer;
@@ -247,7 +247,7 @@
 
         button.primary, .btn.primary {
             background-color: var(--primary-accent);
-            color: var(--bg-dark); /* Contraste élevé */
+            color: var(--bg-dark); 
             box-shadow: 0 0 10px rgba(88, 166, 255, 0.2);
         }
         button.primary:hover, .btn.primary:hover {
@@ -272,12 +272,12 @@
 
         table {
             width: 100%;
-            border-collapse: separate; /* Pour utiliser border-spacing */
-            border-spacing: 0; /* Enlever l'espacement par défaut */
+            border-collapse: separate; 
+            border-spacing: 0; 
             margin-top: 20px;
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            overflow: hidden; /* Pour que le radius s'applique aux coins de la table */
+            overflow: hidden; 
         }
 
         th, td {
@@ -285,20 +285,19 @@
             text-align: left;
             border-bottom: 1px solid var(--border-color);
         }
-        td:not(:last-child), th:not(:last-child) { /* Ajouter une bordure à droite sauf pour la dernière cellule */
+        td:not(:last-child), th:not(:last-child) { 
              border-right: 1px solid var(--border-color);
         }
 
-
         th {
-            background-color: rgba(48, 54, 61, 0.5); /* Fond d'en-tête plus subtil */
+            background-color: rgba(48, 54, 61, 0.5); 
             color: var(--primary-accent);
             font-weight: 500;
             font-family: var(--font-mono);
             text-transform: uppercase;
         }
         
-        tbody tr { /* Pour que la bordure du bas de la dernière ligne ne soit pas doublée par celle de la table */
+        tbody tr { 
             border-bottom: none;
         }
         tbody tr:last-child td {
@@ -306,11 +305,11 @@
         }
 
         tbody tr:nth-of-type(even) {
-             background-color: rgba(1, 4, 9, 0.3); /* Lignes paires encore plus subtiles */
+             background-color: rgba(1, 4, 9, 0.3); 
         }
 
         tbody tr:hover {
-            background-color: rgba(88, 166, 255, 0.08); /* Survol avec lueur bleue très légère */
+            background-color: rgba(88, 166, 255, 0.08); 
         }
         
         td a {
@@ -353,6 +352,60 @@
             color: var(--text-secondary-color);
         }
 
+        /* NOUVEAU: Documentation Specific Styles */
+        .documentation-article-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .documentation-article-list li {
+            background-color: rgba(44, 44, 62, 0.3); /* Fond légèrement différent pour les items */
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border-left: 3px solid var(--primary-accent);
+            cursor: pointer;
+            transition: background-color 0.3s ease, border-left-color 0.3s ease;
+        }
+        .documentation-article-list li:hover {
+            background-color: rgba(88, 166, 255, 0.1);
+            border-left-color: #79c0ff;
+        }
+        .documentation-article-list h4 { /* Titre de l'article dans la liste */
+            margin: 0 0 5px 0;
+            color: var(--primary-accent);
+            font-family: var(--font-mono);
+        }
+        .documentation-article-list p { /* Catégorie/tags/difficulté dans la liste */
+            font-size: 0.85rem;
+            color: var(--text-secondary-color);
+            margin: 0;
+        }
+        .documentation-content-view {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: var(--input-bg); /* Fond plus sombre pour le contenu de l'article */
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+        .documentation-content-view h3 { /* Titre de l'article affiché */
+            color: var(--primary-accent);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .documentation-content-view div { /* Pour le contenu de l'article */
+            line-height: 1.7;
+            white-space: pre-wrap; /* Pour respecter les retours à la ligne et espaces du Markdown/texte */
+        }
+        .documentation-content-view .back-to-list {
+            display: inline-block;
+            margin-top: 20px;
+            color: var(--primary-accent);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        /* FIN NOUVEAU: Documentation Specific Styles */
+
     </style>
 </head>
 <body>
@@ -379,6 +432,11 @@
                 <i class="fas fa-laptop-code fa-2x" style="color:var(--primary-accent); margin-bottom:10px;"></i>
                 <h2>Modules de Défis</h2>
                 <p>Explorez et sélectionnez les simulations disponibles.</p>
+            </div>
+             <div class="menu-item" onclick="showSection('documentation')">
+                <i class="fas fa-book-reader fa-2x" style="color:var(--primary-accent); margin-bottom:10px;"></i>
+                <h2>Base de Connaissances</h2>
+                <p>Consultez la documentation et les guides utiles.</p>
             </div>
             <div class="menu-item" onclick="showSection('team-management')">
                 <i class="fas fa-users-cog fa-2x" style="color:var(--primary-accent); margin-bottom:10px;"></i>
@@ -428,6 +486,21 @@
                 <tbody></tbody>
             </table>
             <p id="challenges-message" class="info"></p>
+        </div>
+        
+        <div class="section hidden" id="documentation-section">
+            <h2><i class="fas fa-atlas"></i> Base de Connaissances Cyber</h2>
+            <div id="documentation-list-container">
+                <ul id="documentation-article-list" class="documentation-article-list"></ul>
+                <p id="documentation-list-message" class="info"></p>
+            </div>
+            <div id="documentation-article-view" class="hidden">
+                <button class="btn secondary" id="back-to-doc-list" style="margin-bottom:15px;"><i class="fas fa-arrow-left"></i> Retour à la liste</button>
+                <div id="documentation-article-content" class="documentation-content-view">
+                    <h3 id="article-title"></h3>
+                    <div id="article-body"></div>
+                </div>
+            </div>
         </div>
 
         <div class="section hidden" id="team-management-section">
@@ -505,29 +578,11 @@
 
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script>
-        // Configuration de Particles.js (optionnelle, à adapter)
+        // Configuration de Particles.js
         if (document.getElementById('particles-js')) {
-            particlesJS('particles-js', { /* COPIEZ LA CONFIGURATION DE PARTICLES.JS DEPUIS LOGIN.HTML ICI SI VOUS VOULEZ L'UTILISER */
-                "particles": { "number": { "value": 60, "density": { "enable": true, "value_area": 800 } }, "color": { "value": "#30363d" }, "shape": { "type": "circle" }, "opacity": { "value": 0.2, "random": true }, "size": { "value": 2, "random": true }, "line_linked": { "enable": true, "distance": 180, "color": "#30363d", "opacity": 0.15, "width": 1 }, "move": { "enable": true, "speed": 0.8, "direction": "none", "random": true, "straight": false, "out_mode": "out" } }, "interactivity": { "detect_on": "canvas", "events": { "onhover": { "enable": false, "mode": "repulse" }, "onclick": { "enable": false, "mode": "push" }, "resize": true } }, "retina_detect": true
-            });
+            particlesJS('particles-js', { "particles": { "number": { "value": 60, "density": { "enable": true, "value_area": 800 } }, "color": { "value": "#30363d" }, "shape": { "type": "circle" }, "opacity": { "value": 0.2, "random": true }, "size": { "value": 2, "random": true }, "line_linked": { "enable": true, "distance": 180, "color": "#30363d", "opacity": 0.15, "width": 1 }, "move": { "enable": true, "speed": 0.8, "direction": "none", "random": true, "straight": false, "out_mode": "out" } }, "interactivity": { "detect_on": "canvas", "events": { "onhover": { "enable": false, "mode": "repulse" }, "onclick": { "enable": false, "mode": "push" }, "resize": true } }, "retina_detect": true });
         }
 
-        // --- VOTRE CODE JAVASCRIPT EXISTANT POUR HOME.HTML VIENT ICI ---
-        // Assurez-vous de copier l'intégralité de votre bloc <script> précédent ici,
-        // en adaptant les sélecteurs si j'ai modifié des ID ou des classes dans le HTML ci-dessus.
-        // Par exemple, la logique pour :
-        // - updateProfileDisplay()
-        // - updateTeamManagementSection()
-        // - updateMatchOperationsSection()
-        // - showSection()
-        // - createTeam(), joinExistingTeam(), leaveCurrentTeam()
-        // - fetchLeaderboard(), fetchChallenges()
-        // - joinSelectedMatch(), leaveCurrentMatch()
-        // - submitTeamFlag(), submitTeamDefense()
-        // - logout()
-        // - initializePage()
-
-        // --- COLLER VOTRE BLOC SCRIPT DE HOME.HTML (ENVIRON 700 LIGNES) CI-DESSOUS ---
         let userId = sessionStorage.getItem('userId') || null;
         let username = sessionStorage.getItem('username') || null;
         let userRole = sessionStorage.getItem('preferred_role') || null; 
@@ -545,7 +600,7 @@
                     infoText += ` | Escouade: ${teamName} (ID: ${teamId}, Rôle: ${teamRole || 'N/A'}${isTeamCreator ? ', Commandant' : ''})`;
                 }
                 profileInfoEl.textContent = infoText;
-                profileInfoEl.className = 'success'; // Ou une classe neutre si ce n'est pas un message de succès
+                profileInfoEl.className = 'success'; 
             } else {
                 profileInfoEl.textContent = 'Anomalie de session. Veuillez vous reconnecter.';
                 profileInfoEl.className = 'error';
@@ -676,6 +731,8 @@
 
             if (sectionId === 'leaderboard') fetchLeaderboard();
             if (sectionId === 'challenges') fetchChallenges();
+            // NOUVEAU: Appel pour la documentation
+            if (sectionId === 'documentation') fetchDocumentationArticles();
             if (sectionId === 'team-management') updateTeamManagementSection();
             if (sectionId === 'match-operations') updateMatchOperationsSection();
         }
@@ -857,6 +914,91 @@
             }
         }
 
+        // NOUVEAU: Fonctions pour la Documentation
+        async function fetchDocumentationArticles() {
+            const listContainer = document.getElementById('documentation-article-list');
+            const messageEl = document.getElementById('documentation-list-message');
+            messageEl.className = 'info';
+            messageEl.textContent = 'Chargement de la base de connaissances...';
+            listContainer.innerHTML = ''; // Vider la liste précédente
+            document.getElementById('documentation-list-container').classList.remove('hidden');
+            document.getElementById('documentation-article-view').classList.add('hidden');
+
+            try {
+                // Vous devrez créer cette route '/api/documentation/articles' dans app.py
+                const response = await fetch('/api/documentation/articles'); 
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `Erreur HTTP: ${response.status}`);
+                }
+                const data = await response.json();
+                if (data.articles && data.articles.length > 0) {
+                    data.articles.forEach(article => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                            <h4>${article.title}</h4>
+                            <p>Catégorie: ${article.category || 'N/A'} | Niveau: ${article.difficulty_level || 'N/A'}</p>
+                            <p>Tags: ${article.tags || 'Aucun'}</p>
+                        `;
+                        li.addEventListener('click', () => fetchAndDisplayArticle(article.id));
+                        listContainer.appendChild(li);
+                    });
+                    messageEl.textContent = '';
+                } else {
+                    messageEl.textContent = 'Aucun article de documentation disponible pour le moment.';
+                }
+            } catch (error) {
+                console.error('Erreur fetchDocumentationArticles:', error);
+                messageEl.textContent = error.message || 'Erreur réseau lors du chargement de la documentation.';
+                messageEl.className = 'error';
+            }
+        }
+
+        // Dans home.html, à l'intérieur de votre bloc <script>
+
+        async function fetchAndDisplayArticle(articleId) {
+            console.log(`Affichage de l'article ID: ${articleId}`);
+            const articleListContainer = document.getElementById('documentation-list-container');
+            const articleViewContainer = document.getElementById('documentation-article-view');
+            const articleTitleEl = document.getElementById('article-title');
+            const articleBodyEl = document.getElementById('article-body');
+
+            articleListContainer.classList.add('hidden');
+            articleViewContainer.classList.remove('hidden');
+            articleTitleEl.textContent = 'Chargement de l\'article...';
+            articleBodyEl.innerHTML = ''; // innerHTML ici car le contenu sera du HTML
+
+            try {
+                const response = await fetch(`/api/documentation/article/${articleId}`);
+                if (!response.ok) {
+                    const errorData = await response.json(); // Supposons que les erreurs API renvoient du JSON
+                    throw new Error(errorData.message || `Erreur HTTP: ${response.status}`);
+                }
+                const article = await response.json(); // article.content contient le Markdown brut
+                articleTitleEl.textContent = article.title;
+
+                // Correction pour vérifier correctement window.marked et la méthode parse
+                if (window.marked && typeof window.marked.parse === 'function') {
+                    // Option pour configurer marked (si besoin, par exemple pour les sauts de ligne GFM)
+                    // window.marked.setOptions({
+                    //   breaks: true, // Interprète les retours à la ligne simples comme des <br>
+                    //   gfm: true     // Active les spécificités GitHub Flavored Markdown
+                    // });
+                    articleBodyEl.innerHTML = window.marked.parse(article.content || '');
+                } else {
+                    console.warn("La bibliothèque marked.js n'est pas chargée ou la fonction parse est manquante. Affichage du Markdown brut.");
+                    // Fallback si marked n'est pas disponible, en convertissant manuellement les sauts de ligne pour une meilleure lisibilité du brut
+                    articleBodyEl.textContent = article.content ? article.content.replace(/\\n/g, '\n') : 'Contenu non disponible ou erreur de chargement de la librairie Markdown.';
+                }
+
+            } catch (error) {
+                console.error('Erreur fetchAndDisplayArticle:', error);
+                articleTitleEl.textContent = 'Erreur de chargement';
+                articleBodyEl.textContent = error.message || 'Impossible de charger le contenu de l\'article.';
+            }
+        }
+
+
         async function joinSelectedMatch() {
             const matchId = document.getElementById('match-id-to-join').value;
             const messageEl = document.getElementById('match-join-message');
@@ -866,7 +1008,7 @@
                 messageEl.textContent = 'Veuillez spécifier l\'ID de la simulation.';
                 messageEl.className = 'error'; return;
             }
-            if (!isTeamCreator ) { // Redondant car le formulaire est caché, mais double sécurité
+            if (!isTeamCreator ) { 
                 messageEl.textContent = 'Autorisation refusée : Seul le commandant d\'escouade peut initier.';
                 messageEl.className = 'error'; return;
             }
