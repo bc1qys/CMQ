@@ -522,13 +522,14 @@
             </div>
             <hr>
             <div id="join-team-subsection">
-                 <h3><i class="fas fa-link"></i> Rejoindre une Escouade</h3>
-                 <p id="team-join-warning" class="info"></p>
-                 <div id="team-join-form" class="hidden">
+                <h3><i class="fas fa-link"></i> Rejoindre une Escouade</h3>
+                <p id="team-join-warning" class="info"></p>
+                <div id="team-join-form" class="hidden">
                     <input id="join-team-id" type="number" placeholder="Identifiant de l'escouade cible">
+                    <input id="join-team-password" type="password" placeholder="Mot de passe de l'escouade">
                     <button class="btn primary" onclick="joinExistingTeam()"><i class="fas fa-project-diagram"></i> Intégrer Escouade</button>
-                 </div>
-                 <p id="team-join-message"></p>
+                </div>
+                <p id="team-join-message"></p>
             </div>
              <hr>
             <div id="leave-team-subsection">
@@ -742,7 +743,8 @@
             const password = document.getElementById('team-password').value;
             const role = document.getElementById('team-role').value;
             const messageEl = document.getElementById('team-create-message');
-            messageEl.className = '';
+            messageEl.className = ''; 
+            messageEl.textContent = ''; // Vider le message précédent
 
             if (!name || !password || !role) {
                 messageEl.textContent = 'Tous les champs sont requis pour la formation de l\'escouade.';
@@ -753,26 +755,33 @@
                 const response = await fetch('/register', { 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, password, role })
+                    body: JSON.stringify({ name, password, role }) // user_id est géré en session côté serveur
                 });
                 const data = await response.json();
-                messageEl.textContent = data.message;
-                messageEl.className = response.ok ? 'success' : 'error';
-                if (response.ok) {
-                    teamId = data.team_id;
-                    teamName = data.team_name;
-                    teamRole = data.team_role;
+                
+                if (response.ok) { 
+                    teamId = data.team_id; 
+                    teamName = data.team_name; 
+                    teamRole = data.team_role; 
                     isTeamCreator = true; 
-                    sessionStorage.setItem('teamId', teamId);
+                    sessionStorage.setItem('teamId', teamId); 
                     sessionStorage.setItem('teamName', teamName);
                     sessionStorage.setItem('teamRole', teamRole);
                     sessionStorage.setItem('isTeamCreator', 'true');
                     
-                    document.getElementById('team-name').value = '';
+                    // Afficher le message de succès AVEC l'ID et le nom de l'équipe
+                    messageEl.textContent = `${data.message} L'ID de votre escouade "${data.team_name}" est : ${data.team_id}. Partagez cet ID avec les membres.`;
+                    messageEl.className = 'success';
+                    
+                    document.getElementById('team-name').value = ''; 
                     document.getElementById('team-password').value = '';
-                    updateProfileDisplay();
-                    updateTeamManagementSection();
-                    updateMatchOperationsSection();
+                    updateProfileDisplay(); 
+                    updateTeamManagementSection(); 
+                    updateMatchOperationsSection(); 
+                } else {
+                    // Afficher le message d'erreur du backend
+                    messageEl.textContent = data.message;
+                    messageEl.className = 'error';
                 }
             } catch (error) {
                 console.error('Error in createTeam:', error);
@@ -783,18 +792,31 @@
 
         async function joinExistingTeam() {
             const teamIdToJoin = document.getElementById('join-team-id').value;
+            const teamPassword = document.getElementById('join-team-password').value; // Récupérer le mot de passe
             const messageEl = document.getElementById('team-join-message');
-            messageEl.className = '';
+            messageEl.className = ''; // Réinitialiser les classes pour le message
+            messageEl.textContent = ''; // Vider le message précédent
+
             if (!teamIdToJoin) {
                 messageEl.textContent = "Veuillez spécifier l'identifiant de l'escouade cible.";
                 messageEl.className = 'error';
                 return;
             }
+            if (!teamPassword) {
+                messageEl.textContent = "Veuillez entrer le mot de passe de l'escouade.";
+                messageEl.className = 'error';
+                return;
+            }
+
             try {
                 const response = await fetch('/join_team', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ team_id: parseInt(teamIdToJoin) })
+                    // Envoyer l'ID de l'équipe ET le mot de passe
+                    body: JSON.stringify({ 
+                        team_id: parseInt(teamIdToJoin), 
+                        password: teamPassword // Ajout du mot de passe ici
+                    })
                 });
                 const data = await response.json();
                 messageEl.textContent = data.message;
@@ -803,27 +825,23 @@
                     teamId = data.team_id;
                     teamName = data.team_name;
                     teamRole = data.team_role;
-                    
+
                     sessionStorage.setItem('teamId', teamId);
                     sessionStorage.setItem('teamName', teamName);
                     sessionStorage.setItem('teamRole', teamRole);
-                     const creatorCheckResponse = await fetch('/teams', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ team_id: teamId })
-                    });
-                    if(creatorCheckResponse.ok) {
-                        const creatorData = await creatorCheckResponse.json();
-                        isTeamCreator = creatorData.is_creator;
-                    } else { isTeamCreator = false; }
-                    sessionStorage.setItem('isTeamCreator', isTeamCreator.toString());
+                    // Après avoir rejoint, l'utilisateur n'est généralement pas le créateur, sauf cas particulier
+                    // La vérification du créateur sera faite par updateMatchOperationsSection si nécessaire
+                    isTeamCreator = false; 
+                    sessionStorage.setItem('isTeamCreator', 'false'); 
 
                     updateProfileDisplay();
                     updateTeamManagementSection();
                     updateMatchOperationsSection(); 
+                    document.getElementById('join-team-id').value = ''; // Vider les champs
+                    document.getElementById('join-team-password').value = '';
                 }
             } catch (error) {
-                 console.error('Error in joinExistingTeam:', error);
+                console.error('Error in joinExistingTeam:', error);
                 messageEl.textContent = 'Erreur réseau : impossible de rejoindre l\'escouade.';
                 messageEl.className = 'error';
             }

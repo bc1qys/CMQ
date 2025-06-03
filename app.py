@@ -434,50 +434,67 @@ def login_team():
 # Rejoindre une équipe
 @app.route('/join_team', methods=['POST'])
 def join_team():
-    if 'user_id' not in session:
+    if 'user_id' not in session: 
         app.logger.debug("Rejoindre équipe échoué : pas de user_id")
         return jsonify({"message": "Connexion requise"}), 401
-    
+
     data = request.get_json()
     user_id = session['user_id']
-    team_id_to_join = data.get('team_id') # Renommé pour clarté
-    
+    team_id_to_join = data.get('team_id')
+    password_attempt = data.get('password') # Récupérer le mot de passe fourni
+
     app.logger.debug(f"join_team: user_id={user_id}, team_id={team_id_to_join}")
-    
-    conn = sqlite3.connect('ctf.db')
-    c = conn.cursor()
-    
+
+    if not team_id_to_join or not password_attempt: # Vérifier si l'ID et le mot de passe sont fournis
+        return jsonify({"message": "L'ID de l'équipe et le mot de passe sont requis."}), 400
+
+    conn = None
     try:
-        c.execute("SELECT id FROM users WHERE id = ?", (user_id,))
-        user = c.fetchone()
-        c.execute("SELECT id, role, name FROM teams WHERE id = ?", (team_id_to_join,))
-        team = c.fetchone()
-        
-        if not user or not team:
-            app.logger.debug(f"Rejoindre équipe échoué : user_id={user_id} ou team_id={team_id_to_join} invalide")
-            return jsonify({"message": "Utilisateur ou équipe invalide"}), 400
-        
+        conn = sqlite3.connect('ctf.db')
+        c = conn.cursor()
+
+        # Récupérer aussi le mot de passe hashé de l'équipe
+        c.execute("SELECT id, role, name, password FROM teams WHERE id = ?", (team_id_to_join,))
+        team_data_tuple = c.fetchone() 
+
+        if not team_data_tuple:
+            app.logger.debug(f"Rejoindre équipe échoué : team_id={team_id_to_join} invalide")
+            return jsonify({"message": "Équipe non trouvée."}), 404
+
+        # team_data_tuple contient (id, role, name, hashed_password_db)
+        team_id_db, team_role_db, team_name_db, hashed_password_db = team_data_tuple
+
+        # Vérifier le mot de passe de l'équipe
+        if not bcrypt.checkpw(password_attempt.encode('utf-8'), hashed_password_db):
+            app.logger.debug(f"Tentative de rejoindre l'équipe {team_id_to_join} échouée : mot de passe incorrect.")
+            return jsonify({"message": "Mot de passe de l'équipe incorrect."}), 403 # 403 Forbidden
+
+        # Vérifier si l'utilisateur est déjà dans une équipe
         c.execute("SELECT team_id FROM user_teams WHERE user_id = ?", (user_id,))
         current_team_membership = c.fetchone()
         if current_team_membership:
             app.logger.debug(f"Rejoindre équipe échoué : user_id={user_id} déjà dans l'équipe {current_team_membership[0]}")
-            return jsonify({"message": "Vous êtes déjà dans une équipe"}), 400
-        
-        c.execute("INSERT INTO user_teams (user_id, team_id) VALUES (?, ?)", (user_id, team_id_to_join))
+            return jsonify({"message": "Vous êtes déjà dans une équipe."}), 400
+
+        # Si tout est OK, ajouter l'utilisateur à l'équipe
+        c.execute("INSERT INTO user_teams (user_id, team_id) VALUES (?, ?)", (user_id, team_id_db))
         conn.commit()
-        session['team_id'] = team_id_to_join
-        session['team_role'] = team[1] # team role
-        session['team_name'] = team[2] # team name
-        app.logger.debug(f"Utilisateur a rejoint l'équipe : user_id={user_id}, team_id={team_id_to_join}")
-        return jsonify({"message": "Équipe rejointe avec succès", "team_id": team_id_to_join, "team_role": team[1], "team_name": team[2]})
-    except sqlite3.IntegrityError: # Devrait être géré par la vérification "déjà dans une équipe"
-        app.logger.error(f"Erreur d'intégrité dans join_team pour user_id={user_id}, team_id={team_id_to_join}")
-        return jsonify({"message": "Erreur lors de la tentative de rejoindre l'équipe."}), 400
+        session['team_id'] = team_id_db
+        session['team_role'] = team_role_db 
+        session['team_name'] = team_name_db 
+        app.logger.debug(f"Utilisateur {user_id} a rejoint l'équipe {team_id_db} ('{team_name_db}')")
+        return jsonify({"message": "Équipe rejointe avec succès !", "team_id": team_id_db, "team_role": team_role_db, "team_name": team_name_db})
+
     except sqlite3.Error as e:
-        app.logger.error(f"Erreur dans join_team : {e}")
-        return jsonify({"message": "Erreur serveur"}), 500
+        if conn: conn.rollback()
+        app.logger.error(f"Erreur SQLite dans join_team : {e}")
+        return jsonify({"message": "Erreur serveur lors de la tentative de rejoindre l'équipe."}), 500
+    except Exception as e:
+        app.logger.error(f"Erreur générale dans join_team : {e}")
+        return jsonify({"message": "Erreur serveur inattendue."}), 500
     finally:
-        conn.close()
+        if conn:
+            conn.close()
 
 # Quitter une équipe
 @app.route('/leave_team', methods=['POST'])
