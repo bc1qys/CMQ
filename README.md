@@ -56,8 +56,8 @@ Avant de commencer, assurez-vous d'avoir installé :
 
 1. **Cloner le dépôt (si sur GitHub) :**
    ```bash
-   git clone <URL_DE_VOTRE_DEPOT_GITHUB>
-   cd <NOM_DU_DOSSIER_DU_PROJET>
+   git clone https://github.com/bc1qys/CMQ.git
+   cd CMQ
    ```
 
 2. **Créer et activer un environnement virtuel :**  
