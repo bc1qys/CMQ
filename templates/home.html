@@ -404,6 +404,13 @@
             cursor: pointer;
             text-decoration: underline;
         }
+        .btn-danger {
+            background-color: var(--error-color);
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
         /* FIN NOUVEAU: Documentation Specific Styles */
 
     </style>
@@ -532,12 +539,11 @@
                 <p id="team-join-message"></p>
             </div>
              <hr>
-            <div id="leave-team-subsection">
-                <h3><i class="fas fa-user-minus"></i> Quitter l'Escouade</h3>
-                <p id="team-leave-warning" class="info"></p>
-                <button class="btn secondary hidden" id="leave-team-button" onclick="leaveCurrentTeam()"><i class="fas fa-door-open"></i> Se désengager</button>
-                <p id="team-leave-message"></p>
-            </div>
+            <div id="leave-team-subsection"> <h3><i class="fas fa-user-cog"></i> Options d'Escouade (Membre / Commandant)</h3>
+                <p id="team-actions-warning" class="info">Vous n'êtes actuellement dans aucune escouade.</p> 
+                <button class="btn secondary hidden" id="leave-team-button" onclick="leaveCurrentTeam()"><i class="fas fa-door-open"></i> Quitter l'Escouade</button>
+                <button class="btn btn-danger hidden" id="dissolve-team-button" onclick="dissolveCurrentTeam()"><i class="fas fa-bomb"></i> Dissoudre l'Escouade</button>
+                <p id="team-action-message"></p> </div>
         </div>
         
         <div class="section hidden" id="match-operations-section">
@@ -609,50 +615,66 @@
             }
         }
         
+        // Dans home.html, dans le bloc <script>
         function updateTeamManagementSection() {
             const createTeamForm = document.getElementById('team-create-form');
             const createTeamWarning = document.getElementById('team-create-warning');
             const joinTeamForm = document.getElementById('team-join-form');
             const joinTeamWarning = document.getElementById('team-join-warning');
+
+            // Nouveaux sélecteurs et renommage
             const leaveTeamButton = document.getElementById('leave-team-button');
-            const leaveTeamWarning = document.getElementById('team-leave-warning');
+            const dissolveTeamButton = document.getElementById('dissolve-team-button');
+            const teamActionsWarning = document.getElementById('team-actions-warning'); // Remplacera team-leave-warning
 
             createTeamWarning.className = 'info'; 
             joinTeamWarning.className = 'info';
-            leaveTeamWarning.className = 'info';
+            teamActionsWarning.className = 'info'; // Reset class
 
             if (userId) { 
-                if (teamId) { 
+                if (teamId) { // Utilisateur dans une équipe
                     createTeamForm.classList.add('hidden');
                     createTeamWarning.classList.remove('hidden');
-                    createTeamWarning.textContent = `Vous êtes assigné à l'escouade "${teamName}". Pour former ou rejoindre une autre unité, un désengagement est requis.`;
+                    createTeamWarning.textContent = `Vous êtes assigné à l'escouade "${teamName}".`;
                     joinTeamForm.classList.add('hidden');
                     joinTeamWarning.classList.remove('hidden');
                     joinTeamWarning.textContent = `Affiliation actuelle : escouade "${teamName}".`;
-                    leaveTeamButton.classList.remove('hidden');
-                    leaveTeamWarning.classList.add('hidden');
-                } else { 
+                    teamActionsWarning.classList.add('hidden'); // Cacher le warning général puisqu'on est dans une équipe
+
+                    if (isTeamCreator) {
+                        leaveTeamButton.classList.add('hidden'); // Le créateur ne "quitte" pas, il dissout
+                        dissolveTeamButton.classList.remove('hidden');
+                    } else {
+                        leaveTeamButton.classList.remove('hidden');
+                        dissolveTeamButton.classList.add('hidden');
+                    }
+                } else { // Utilisateur connecté mais pas dans une équipe
                     createTeamForm.classList.remove('hidden');
                     createTeamWarning.classList.add('hidden');
                     joinTeamForm.classList.remove('hidden');
                     joinTeamWarning.classList.add('hidden');
+
                     leaveTeamButton.classList.add('hidden');
-                    leaveTeamWarning.classList.remove('hidden');
-                    leaveTeamWarning.textContent = "Aucune affiliation d'escouade détectée.";
+                    dissolveTeamButton.classList.add('hidden');
+                    teamActionsWarning.classList.remove('hidden');
+                    teamActionsWarning.textContent = "Aucune affiliation d'escouade détectée. Vous pouvez en créer ou en rejoindre une.";
                 }
-            } else { 
+            } else { // Utilisateur non connecté
+                // ... (votre logique existante pour cacher les formulaires de création/rejoindre) ...
                 createTeamForm.classList.add('hidden');
                 createTeamWarning.classList.remove('hidden');
                 createTeamWarning.textContent = 'Authentification requise pour la formation d\'escouade.';
-                createTeamWarning.className = 'error';
+                createTeamWarning.className = 'error'; // Peut-être garder en info
                 joinTeamForm.classList.add('hidden');
                 joinTeamWarning.classList.remove('hidden');
                 joinTeamWarning.textContent = 'Authentification requise pour rejoindre une escouade.';
-                joinTeamWarning.className = 'error';
+                joinTeamWarning.className = 'error'; // Peut-être garder en info
+
                 leaveTeamButton.classList.add('hidden');
-                leaveTeamWarning.classList.remove('hidden');
-                leaveTeamWarning.textContent = 'Authentification requise pour la gestion d\'escouade.';
-                leaveTeamWarning.className = 'error';
+                dissolveTeamButton.classList.add('hidden');
+                teamActionsWarning.classList.remove('hidden');
+                teamActionsWarning.textContent = 'Authentification requise pour la gestion d\'escouade.';
+                teamActionsWarning.className = 'error'; // Peut-être garder en info
             }
         }
 

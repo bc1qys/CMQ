@@ -1061,6 +1061,89 @@ def admin_create_documentation():
         if conn:
             conn.close()
 
+@app.route('/dissolve_team', methods=['POST'])
+def dissolve_team():
+    if 'user_id' not in session:
+        app.logger.warning("Tentative de dissolution d'équipe : utilisateur non connecté.")
+        return jsonify({"message": "Connexion requise."}), 401
+    if 'team_id' not in session:
+        app.logger.warning(f"Tentative de dissolution d'équipe par user_id {session['user_id']} : pas de team_id en session.")
+        return jsonify({"message": "Vous n'êtes pas dans une équipe ou votre session d'équipe a expiré."}), 400
+
+    user_id = session['user_id']
+    team_id_to_dissolve = session['team_id']
+    conn = None
+    try:
+        conn = sqlite3.connect('ctf.db')
+        c = conn.cursor()
+
+        # Vérifier si l'utilisateur est bien le créateur de l'équipe
+        c.execute("SELECT creator_id FROM teams WHERE id = ?", (team_id_to_dissolve,))
+        team_data = c.fetchone()
+
+        if not team_data:
+            app.logger.warning(f"Tentative de dissolution de l'équipe {team_id_to_dissolve} par user_id {user_id} : équipe non trouvée.")
+            # Nettoyer la session au cas où
+            session.pop('team_id', None)
+            session.pop('team_name', None)
+            session.pop('team_role', None)
+            session.pop('isTeamCreator', None)
+            return jsonify({"message": "Équipe non trouvée."}), 404
+
+        if team_data[0] != user_id:
+            app.logger.warning(f"Tentative de dissolution de l'équipe {team_id_to_dissolve} par user_id {user_id} : non autorisé (pas le créateur).")
+            return jsonify({"message": "Seul le créateur de l'équipe peut la dissoudre."}), 403
+
+        # Si l'utilisateur est le créateur, procéder à la dissolution
+        app.logger.info(f"Dissolution de l'équipe ID: {team_id_to_dissolve} par le créateur ID: {user_id}")
+
+        # 1. Supprimer les appartenances des utilisateurs à cette équipe dans 'user_teams'
+        c.execute("DELETE FROM user_teams WHERE team_id = ?", (team_id_to_dissolve,))
+        app.logger.debug(f"Membres de l'équipe ID: {team_id_to_dissolve} supprimés de user_teams.")
+
+        # 2. Supprimer les participations de cette équipe aux matchs dans 'team_matches'
+        c.execute("DELETE FROM team_matches WHERE team_id = ?", (team_id_to_dissolve,))
+        app.logger.debug(f"Participations aux matchs de l'équipe ID: {team_id_to_dissolve} supprimées de team_matches.")
+
+        # 3. Supprimer les soumissions de défense de cette équipe dans 'defenses'
+        c.execute("DELETE FROM defenses WHERE team_id = ?", (team_id_to_dissolve,))
+        app.logger.debug(f"Soumissions de défense de l'équipe ID: {team_id_to_dissolve} supprimées de defenses.")
+
+        # 4. Supprimer les challenges résolus par cette équipe dans 'solved_challenges'
+        c.execute("DELETE FROM solved_challenges WHERE team_id = ?", (team_id_to_dissolve,))
+        app.logger.debug(f"Challenges résolus par l'équipe ID: {team_id_to_dissolve} supprimés de solved_challenges.")
+
+        # 5. Supprimer l'équipe de la table 'teams'
+        delete_result = c.execute("DELETE FROM teams WHERE id = ?", (team_id_to_dissolve,))
+        conn.commit()
+
+        if delete_result.rowcount > 0:
+            # Nettoyer la session de l'utilisateur créateur
+            session.pop('team_id', None)
+            session.pop('team_name', None)
+            session.pop('team_role', None)
+            session.pop('isTeamCreator', None)
+            app.logger.info(f"Équipe ID: {team_id_to_dissolve} dissoute avec succès.")
+            return jsonify({"message": "Équipe dissoute avec succès."})
+        else:
+            # Ne devrait pas arriver si la vérification team_data a fonctionné
+            app.logger.error(f"Échec de la suppression de l'équipe {team_id_to_dissolve} de la table 'teams' alors qu'elle existait.")
+            return jsonify({"message": "Erreur lors de la suppression de l'équipe."}), 500
+
+    except sqlite3.Error as e:
+        if conn:
+            conn.rollback()
+        app.logger.error(f"Erreur SQLite lors de la dissolution de l'équipe ID {team_id_to_dissolve} : {e}")
+        return jsonify({"message": "Erreur serveur lors de la dissolution de l'équipe."}), 500
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        app.logger.error(f"Erreur générale lors de la dissolution de l'équipe ID {team_id_to_dissolve} : {e}")
+        return jsonify({"message": "Erreur serveur inattendue."}), 500
+    finally:
+        if conn:
+            conn.close()
+
 # Initialiser la base de données au démarrage
 with app.app_context():
     init_db()
