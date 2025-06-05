@@ -8,27 +8,22 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         :root {
-            --bg-light: #f8f9fa; /* Fond principal très clair */
-            --bg-sidebar: #2c3e50; /* Bleu marine/gris foncé pour la sidebar */
-            --text-sidebar: #ecf0f1; /* Texte clair pour la sidebar */
-            --text-dark: #34495e; /* Texte foncé principal */
-            --text-muted: #7f8c8d; /* Texte plus discret */
-            --border-color: #dee2e6; /* Couleur de bordure standard */
-            --primary-accent: #3498db; /* Bleu principal */
-            --danger-accent: #e74c3c; /* Rouge pour suppression/erreur */
-            --success-accent: #2ecc71; /* Vert pour succès */
-            --warning-accent: #f39c12; /* Orange pour avertissement */
-            --card-bg: #ffffff; /* Fond des cartes/sections */
+            --bg-light: #f8f9fa;
+            --bg-sidebar: #2c3e50;
+            --text-sidebar: #ecf0f1;
+            --text-dark: #34495e;
+            --text-muted: #7f8c8d;
+            --border-color: #dee2e6;
+            --primary-accent: #3498db;
+            --danger-accent: #e74c3c;
+            --success-accent: #2ecc71;
+            --warning-accent: #f39c12;
+            --card-bg: #ffffff;
             --font-primary: 'Roboto', sans-serif;
             --box-shadow-light: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-            --box-shadow-medium: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: var(--font-primary);
@@ -38,116 +33,53 @@
             min-height: 100vh;
         }
 
-        .sidebar {
-            width: 260px;
-            background-color: var(--bg-sidebar);
-            color: var(--text-sidebar);
-            padding: 20px 0;
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            height: 100%;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        .sidebar { /* Styles de la sidebar (inchangés par rapport à la version "design" précédente) */
+            width: 260px; background-color: var(--bg-sidebar); color: var(--text-sidebar);
+            padding: 20px 0; display: flex; flex-direction: column; position: fixed;
+            height: 100%; box-shadow: 2px 0 5px rgba(0,0,0,0.1);
         }
-
-        .sidebar-header {
-            padding: 0 20px 20px 20px;
-            text-align: center;
-            border-bottom: 1px solid #3e5165; /* Ligne de séparation dans la sidebar */
-        }
-
-        .sidebar-header h1 {
-            font-size: 1.5rem;
-            margin: 0;
-            color: var(--primary-accent);
-        }
-        .sidebar-header h1 .fas {
-            margin-right: 10px;
-        }
-
-        .sidebar-nav ul {
-            list-style-type: none;
-            padding: 0;
-            margin-top: 20px;
-        }
-
+        .sidebar-header { padding: 0 20px 20px 20px; text-align: center; border-bottom: 1px solid #3e5165; }
+        .sidebar-header h1 { font-size: 1.5rem; margin: 0; color: var(--primary-accent); }
+        .sidebar-header h1 .fas { margin-right: 10px; }
+        .sidebar-nav ul { list-style-type: none; padding: 0; margin-top: 20px; }
         .sidebar-nav li a {
-            display: block;
-            padding: 12px 20px;
-            color: var(--text-sidebar);
-            text-decoration: none;
-            font-size: 0.95rem;
-            transition: background-color 0.2s ease, padding-left 0.2s ease;
+            display: block; padding: 12px 20px; color: var(--text-sidebar); text-decoration: none;
+            font-size: 0.95rem; transition: background-color 0.2s ease, padding-left 0.2s ease;
             border-left: 3px solid transparent;
         }
-        .sidebar-nav li a .fas {
-            margin-right: 12px;
-            width: 20px; /* Pour alignement */
-            text-align: center;
+        .sidebar-nav li a .fas { margin-right: 12px; width: 20px; text-align: center; }
+        .sidebar-nav li a:hover, .sidebar-nav li a.active {
+            background-color: rgba(236, 240, 241, 0.1); border-left: 3px solid var(--primary-accent);
+            padding-left: 25px;
         }
-
-        .sidebar-nav li a:hover,
-        .sidebar-nav li a.active {
-            background-color: rgba(236, 240, 241, 0.1);
-            border-left: 3px solid var(--primary-accent);
-            padding-left: 25px; /* Léger décalage au survol/actif */
-        }
-        
-        .sidebar-footer {
-            margin-top: auto; /* Pousse le footer en bas */
-            padding: 20px;
-            text-align: center;
-            border-top: 1px solid #3e5165;
-        }
-        .sidebar-footer button {
-             width: 100%;
-        }
-
+        .sidebar-footer { margin-top: auto; padding: 20px; text-align: center; border-top: 1px solid #3e5165;}
+        .sidebar-footer button { width: 100%; }
 
         .main-content {
-            margin-left: 260px; /* Largeur de la sidebar */
-            padding: 30px;
-            width: calc(100% - 260px);
-            overflow-y: auto; /* Scroll si contenu dépasse */
+            margin-left: 260px; padding: 30px; width: calc(100% - 260px); overflow-y: auto;
         }
-
-        .content-header {
-            margin-bottom: 30px;
-        }
-        .content-header h2 {
-            font-size: 1.8rem;
-            color: var(--text-dark);
-            margin: 0;
-        }
+        .content-header { margin-bottom: 30px; }
+        .content-header h2 { font-size: 1.8rem; color: var(--text-dark); margin: 0; }
 
         .card {
-            background-color: var(--card-bg);
-            padding: 25px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            box-shadow: var(--box-shadow-light);
+            background-color: var(--card-bg); padding: 25px; border-radius: 8px;
+            margin-bottom: 25px; box-shadow: var(--box-shadow-light);
         }
         .card h3 {
-            font-size: 1.3rem;
-            color: var(--primary-accent);
-            margin-top: 0;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--border-color);
+            font-size: 1.3rem; color: var(--primary-accent); margin-top: 0; margin-bottom: 20px;
+            padding-bottom: 10px; border-bottom: 1px solid var(--border-color);
         }
 
         .error { color: var(--danger-accent); }
         .success { color: var(--success-accent); }
         .info { color: var(--text-muted); }
 
-        input[type="text"],
-        input[type="number"],
-        input[type="password"], /* Ajout pour si besoin */
-        select,
-        textarea {
+        /* Styles unifiés pour les champs de formulaire pleine largeur */
+        .form-control {
+            display: block;
             width: 100%;
             padding: 10px 12px;
-            margin-bottom: 15px; /* Espace sous chaque champ */
+            margin-bottom: 15px;
             font-size: 0.95rem;
             border-radius: 5px;
             border: 1px solid var(--border-color);
@@ -155,90 +87,44 @@
             color: var(--text-dark);
             transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
-        input:focus, select:focus, textarea:focus {
+        .form-control:focus {
             outline: none;
             border-color: var(--primary-accent);
             box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
         }
-        textarea {
+        textarea.form-control { /* Spécifique pour textarea si besoin de plus de hauteur */
             min-height: 120px;
             resize: vertical;
         }
         
         button, .btn {
-            padding: 10px 18px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.2s ease, opacity 0.2s ease;
-            border: none;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            padding: 10px 18px; font-size: 0.9rem; font-weight: 500; border-radius: 5px;
+            cursor: pointer; transition: background-color 0.2s ease, opacity 0.2s ease;
+            border: none; text-transform: uppercase; letter-spacing: 0.5px;
+            margin-top: 10px; /* Pour espacer des champs au-dessus */
         }
 
-        .btn-primary {
-            background-color: var(--primary-accent);
-            color: white;
-        }
-        .btn-primary:hover {
-            background-color: #2980b9; /* Bleu plus foncé */
-        }
-
-        .btn-secondary {
-            background-color: #7f8c8d;
-            color: white;
-        }
-        .btn-secondary:hover {
-            background-color: #6c7a89;
-        }
-        
-        .btn-danger {
-            background-color: var(--danger-accent);
-            color: white;
-        }
-        .btn-danger:hover {
-            background-color: #c0392b; /* Rouge plus foncé */
-        }
-        .btn-success {
-            background-color: var(--success-accent);
-            color: white;
-        }
-        .btn-success:hover {
-            background-color: #27ae60;
-        }
-
+        .btn-primary { background-color: var(--primary-accent); color: white; }
+        .btn-primary:hover { background-color: #2980b9; }
+        .btn-secondary { background-color: #7f8c8d; color: white; }
+        .btn-secondary:hover { background-color: #6c7a89; }
+        .btn-danger { background-color: var(--danger-accent); color: white; }
+        .btn-danger:hover { background-color: #c0392b; }
+        .btn-success { background-color: var(--success-accent); color: white; }
+        .btn-success:hover { background-color: #27ae60; }
 
         .hidden { display: none !important; }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); }
         th {
-            background-color: #e9ecef; /* Fond clair pour les en-têtes */
-            color: var(--text-dark);
-            font-weight: 500;
-            text-transform: uppercase;
-            font-size: 0.85rem;
+            background-color: #e9ecef; color: var(--text-dark); font-weight: 500;
+            text-transform: uppercase; font-size: 0.85rem;
         }
         tr:nth-child(even) { background-color: #fdfdfe; }
         tr:hover { background-color: #f1f4f8; }
-
-        td.actions-cell { 
-            text-align: right; /* Boutons à droite */
-        }
-        .actions-cell button {
-            margin-left: 5px; /* Espace entre les boutons d'action */
-            padding: 5px 10px;
-            font-size: 0.8rem;
-        }
+        td.actions-cell { text-align: right; }
+        .actions-cell button { margin-left: 5px; padding: 5px 10px; font-size: 0.8rem; }
     </style>
 </head>
 <body>
@@ -248,12 +134,12 @@
         </div>
         <nav class="sidebar-nav">
             <ul>
-                <li><a href="#" onclick="showAdminSection('dashboard')"><i class="fas fa-tachometer-alt"></i> Tableau de Bord</a></li>
+                <li><a href="#" onclick="showAdminSection('dashboard')" class="active"><i class="fas fa-tachometer-alt"></i> Tableau de Bord</a></li>
                 <li><a href="#" onclick="showAdminSection('players')"><i class="fas fa-users"></i> Gestion Joueurs</a></li>
                 <li><a href="#" onclick="showAdminSection('teams')"><i class="fas fa-users-cog"></i> Gestion Équipes</a></li>
                 <li><a href="#" onclick="showAdminSection('challenges')"><i class="fas fa-laptop-code"></i> Gestion Challenges</a></li>
                 <li><a href="#" onclick="showAdminSection('documentation')"><i class="fas fa-book-open"></i> Gestion Documentation</a></li>
-                </ul>
+            </ul>
         </nav>
         <div class="sidebar-footer">
             <button class="btn-secondary" id="admin-logout-button"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
@@ -317,46 +203,45 @@
             <div class="content-header"><h2>Gestion des Challenges</h2></div>
             <div class="card">
                 <h3>Créer un Nouveau Challenge</h3>
-                <input id="challenge-name" placeholder="Nom du challenge">
-                <textarea id="challenge-description" placeholder="Description du challenge"></textarea>
-                <select id="challenge-level">
+                <input class="form-control" id="challenge-name" placeholder="Nom du challenge">
+                <textarea class="form-control" id="challenge-description" placeholder="Description du challenge"></textarea>
+                <select class="form-control" id="challenge-level">
                     <option value="debutant">Débutant</option>
                     <option value="intermediaire">Intermédiaire</option>
                     <option value="avance">Avancé</option>
                 </select>
-                <input id="challenge-points" type="number" placeholder="Points attribués">
-                <input id="challenge-flag" placeholder="Flag (ex: CTF{solution_flag})">
-                <input id="challenge-ip" placeholder="Adresse IP de la VM (optionnel)">
+                <input class="form-control" id="challenge-points" type="number" placeholder="Points attribués">
+                <input class="form-control" id="challenge-flag" placeholder="Flag (ex: CTF{solution_flag})">
+                <input class="form-control" id="challenge-ip" placeholder="Adresse IP de la VM (optionnel)">
                 <button class="btn-primary" id="create-challenge-button"><i class="fas fa-plus-circle"></i> Créer Challenge</button>
                 <p id="challenge-message"></p>
             </div>
-            </div>
+        </div>
 
         <div class="admin-section hidden" id="documentation-section">
             <div class="content-header"><h2>Gestion de la Documentation</h2></div>
             <div class="card">
                 <h3>Ajouter un Nouvel Article</h3>
-                <input id="doc-title" placeholder="Titre de l'article">
-                <input id="doc-category" placeholder="Catégorie (ex: Sécurité Web, Cryptographie)">
-                <input id="doc-tags" placeholder="Tags (séparés par virgule, ex: SQLi, XSS)">
-                <select id="doc-difficulty">
+                <input class="form-control" id="doc-title" placeholder="Titre de l'article">
+                <input class="form-control" id="doc-category" placeholder="Catégorie (ex: Sécurité Web, Cryptographie)">
+                <input class="form-control" id="doc-tags" placeholder="Tags (séparés par virgule, ex: SQLi, XSS)">
+                <select class="form-control" id="doc-difficulty">
                     <option value="">Choisir un niveau de difficulté</option>
                     <option value="Débutant">Débutant</option>
                     <option value="Intermédiaire">Intermédiaire</option>
                     <option value="Avancé">Avancé</option>
                 </select>
-                <textarea id="doc-content" placeholder="Contenu de l'article (Markdown supporté)"></textarea>
+                <textarea class="form-control" id="doc-content" placeholder="Contenu de l'article (Markdown supporté)"></textarea>
                 <button class="btn-primary" id="create-doc-button"><i class="fas fa-save"></i> Sauvegarder Article</button>
                 <p id="doc-create-message"></p>
             </div>
-            </div>
+        </div>
 
         <div class="admin-section" id="admin-access-denied-section-fallback">
              <h2>Accès Refusé</h2>
              <p class="error">Authentification administrateur requise. JavaScript peut être nécessaire.</p>
              <p><a href="/login" class="btn-primary" style="text-decoration:none; display:inline-block;">Retour à la Connexion</a></p>
         </div>
-
     </div>
 
     <script>
