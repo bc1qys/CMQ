@@ -102,6 +102,21 @@ def init_db():
                     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
                     UNIQUE (team_id, challenge_id)
                     )''')
+        # Table feedback
+        c.execute('''CREATE TABLE IF NOT EXISTS feedback (
+             id INTEGER PRIMARY KEY AUTOINCREMENT,
+             user_id INTEGER,                       -- Qui a soumis le feedback (peut être NULL si anonyme ou non connecté)
+             username TEXT,                         -- Nom de l'utilisateur qui soumet (pour affichage facile)
+             timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+             type TEXT NOT NULL,                    -- Ex: 'Problème Challenge', 'Suggestion', 'Bug Interface', 'Autre'
+             challenge_id_associated INTEGER,       -- Optionnel, si le feedback concerne un challenge spécifique
+             subject TEXT,                          -- Un sujet court pour le feedback
+             message TEXT NOT NULL,
+             status TEXT DEFAULT 'Nouveau',         -- Ex: 'Nouveau', 'En cours', 'Résolu', 'Fermé'
+             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+             FOREIGN KEY (challenge_id_associated) REFERENCES challenges(id) ON DELETE SET NULL 
+             )''')
+        app.logger.debug("Table feedback vérifiée/créée.")
         
         # Créer le compte admin par défaut
         hashed_password = bcrypt.hashpw('admin'.encode('utf-8'), bcrypt.gensalt())
@@ -1140,6 +1155,137 @@ def dissolve_team():
             conn.rollback()
         app.logger.error(f"Erreur générale lors de la dissolution de l'équipe ID {team_id_to_dissolve} : {e}")
         return jsonify({"message": "Erreur serveur inattendue."}), 500
+    finally:
+        if conn:
+            conn.close()
+
+@app.route('/api/feedback/submit', methods=['POST'])
+def submit_feedback():
+    if 'user_id' not in session:
+        # Permettre un feedback anonyme ou refuser si l'utilisateur doit être connecté
+        # Pour l'instant, on récupère user_id et username s'ils existent, sinon on met NULL/Anonyme
+        user_id = None
+        username = "Anonyme" 
+        # Si la connexion est obligatoire pour le feedback :
+        # return jsonify({"message": "Connexion requise pour soumettre un feedback."}), 401
+    else:
+        user_id = session['user_id']
+        username = session.get('username', 'Utilisateur Inconnu') # Utiliser .get pour éviter KeyError
+
+    data = request.get_json()
+    feedback_type = data.get('type')
+    challenge_id_associated = data.get('challenge_id_associated') # Peut être null
+    subject = data.get('subject')
+    message = data.get('message')
+
+    if not feedback_type or not message or not subject:
+        return jsonify({"message": "Le type, le sujet et le message du feedback sont obligatoires."}), 400
+
+    # Conversion optionnelle de l'ID du challenge en entier si fourni
+    if challenge_id_associated:
+        try:
+            challenge_id_associated = int(challenge_id_associated)
+        except ValueError:
+            return jsonify({"message": "L'ID du challenge associé doit être un nombre."}), 400
+    else:
+        challenge_id_associated = None # S'assurer qu'il est bien NULL si non fourni ou vide
+
+    conn = None
+    try:
+        conn = sqlite3.connect('ctf.db')
+        c = conn.cursor()
+        c.execute("""
+            INSERT INTO feedback (user_id, username, type, challenge_id_associated, subject, message) 
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (user_id, username, feedback_type, challenge_id_associated, subject, message))
+        conn.commit()
+        app.logger.info(f"Feedback soumis par {'user_id ' + str(user_id) if user_id else 'Anonyme'}: '{subject}'")
+        return jsonify({"message": "Merci ! Votre feedback a été envoyé avec succès."}), 201
+    except sqlite3.Error as e:
+        if conn: conn.rollback()
+        app.logger.error(f"Erreur SQLite lors de la soumission du feedback : {e}")
+        return jsonify({"message": "Erreur serveur lors de l'envoi du feedback."}), 500
+    except Exception as e:
+        if conn: conn.rollback()
+        app.logger.error(f"Erreur générale lors de la soumission du feedback : {e}")
+        return jsonify({"message": "Erreur serveur inattendue."}), 500
+    finally:
+        if conn:
+            conn.close()
+
+# Dans app.py
+
+@app.route('/admin/api/feedback', methods=['GET'])
+def admin_get_feedback():
+    if 'admin_id' not in session:
+        return jsonify({"message": "Accès admin requis."}), 401
+
+    conn = None
+    try:
+        conn = sqlite3.connect('ctf.db')
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        # Trier par statut (ex: 'Nouveau' en premier) puis par date
+        c.execute("SELECT id, user_id, username, strftime('%Y-%m-%d %H:%M:%S', timestamp) as timestamp_formatted, type, challenge_id_associated, subject, message, status FROM feedback ORDER BY CASE status WHEN 'Nouveau' THEN 1 WHEN 'En cours' THEN 2 ELSE 3 END, timestamp DESC")
+        feedbacks_raw = c.fetchall()
+        feedbacks_list = [dict(row) for row in feedbacks_raw] if feedbacks_raw else []
+        return jsonify({"feedbacks": feedbacks_list})
+    except sqlite3.Error as e:
+        app.logger.error(f"Erreur SQLite - admin_get_feedback: {e}")
+        return jsonify({"message": "Erreur serveur récupération des feedbacks."}), 500
+    finally:
+        if conn:
+            conn.close()
+
+@app.route('/admin/api/feedback/update_status/<int:feedback_id>', methods=['POST'])
+def admin_update_feedback_status(feedback_id):
+    if 'admin_id' not in session:
+        return jsonify({"message": "Accès admin requis."}), 401
+
+    data = request.get_json()
+    new_status = data.get('status')
+    valid_statuses = ['Nouveau', 'En cours', 'En attente', 'Résolu', 'Fermé', 'Rejeté'] # Statuts valides
+    if not new_status or new_status not in valid_statuses:
+        return jsonify({"message": "Statut invalide fourni."}), 400
+
+    conn = None
+    try:
+        conn = sqlite3.connect('ctf.db')
+        c = conn.cursor()
+        result = c.execute("UPDATE feedback SET status = ? WHERE id = ?", (new_status, feedback_id))
+        conn.commit()
+        if result.rowcount > 0:
+            app.logger.info(f"Statut du feedback ID {feedback_id} mis à jour à '{new_status}' par admin ID {session['admin_id']}")
+            return jsonify({"message": f"Statut du feedback mis à jour à '{new_status}'."})
+        else:
+            return jsonify({"message": "Feedback non trouvé."}), 404
+    except sqlite3.Error as e:
+        if conn: conn.rollback()
+        app.logger.error(f"Erreur SQLite - admin_update_feedback_status: {e}")
+        return jsonify({"message": "Erreur serveur mise à jour statut feedback."}), 500
+    finally:
+        if conn:
+            conn.close()
+
+@app.route('/admin/api/feedback/delete/<int:feedback_id>', methods=['DELETE'])
+def admin_delete_feedback(feedback_id):
+    if 'admin_id' not in session:
+        return jsonify({"message": "Accès admin requis."}), 401
+    conn = None
+    try:
+        conn = sqlite3.connect('ctf.db')
+        c = conn.cursor()
+        result = c.execute("DELETE FROM feedback WHERE id = ?", (feedback_id,))
+        conn.commit()
+        if result.rowcount > 0:
+            app.logger.info(f"Feedback ID {feedback_id} supprimé par admin ID {session['admin_id']}")
+            return jsonify({"message": "Feedback supprimé avec succès."})
+        else:
+            return jsonify({"message": "Feedback non trouvé."}), 404
+    except sqlite3.Error as e:
+        if conn: conn.rollback()
+        app.logger.error(f"Erreur SQLite - admin_delete_feedback: {e}")
+        return jsonify({"message": "Erreur serveur suppression feedback."}), 500
     finally:
         if conn:
             conn.close()

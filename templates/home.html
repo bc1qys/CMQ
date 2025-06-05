@@ -497,6 +497,11 @@
                 <h2>Interface de Match</h2>
                 <p>Engagez-vous, soumettez vos exploits et défenses.</p>
             </div>
+            <div class="menu-item" onclick="showSection('feedback')">
+                <i class="fas fa-comment-dots fa-2x" style="color:var(--primary-accent); margin-bottom:10px;"></i>
+                <h2>Feedback / Aide</h2>
+                <p>Signalez un problème ou laissez une suggestion.</p>
+            </div>
         </div>
 
         <div class="section" id="profile-section">
@@ -624,6 +629,38 @@
                  <input id="match-id-to-leave" type="number" placeholder="ID de la simulation à quitter">
                  <button class="btn secondary" onclick="leaveCurrentMatch()"><i class="fas fa-power-off"></i> Terminer Session</button>
                  <p id="match-leave-message"></p>
+            </div>
+            <hr>
+            <div class="section hidden" id="feedback-section">
+                <h2><i class="fas fa-paper-plane"></i> Soumettre un Feedback ou un Rapport</h2>
+                <p>Votre avis nous aide à améliorer la plateforme. Si vous signalez un problème avec un challenge, n'oubliez pas de mentionner son nom ou son ID.</p>
+
+                <div id="submit-feedback-form">
+                    <div class="form-group">
+                        <label for="feedback-type">Type de retour :</label>
+                        <select id="feedback-type" class="form-control">
+                            <option value="Suggestion">Suggestion d'amélioration</option>
+                            <option value="Bug Interface">Bug d'interface</option>
+                            <option value="Problème Challenge">Problème avec un Challenge</option>
+                            <option value="Documentation">Concernant la documentation</option>
+                            <option value="Autre">Autre</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="feedback-challenge-id">ID du Challenge concerné (si applicable) :</label>
+                        <input type="number" id="feedback-challenge-id" class="form-control" placeholder="Ex: 42">
+                    </div>
+                    <div class="form-group">
+                        <label for="feedback-subject">Sujet :</label>
+                        <input type="text" id="feedback-subject" class="form-control" placeholder="Sujet de votre message" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="feedback-message">Message :</label>
+                        <textarea id="feedback-message" class="form-control" rows="5" placeholder="Décrivez votre problème ou suggestion en détail..." required></textarea>
+                    </div>
+                    <button class="btn primary" onclick="submitUserFeedback()"><i class="fas fa-envelope"></i> Envoyer le Feedback</button>
+                    <p id="user-feedback-message"></p>
+                </div>
             </div>
         </div>
     </div>
@@ -1286,6 +1323,64 @@
             updateProfileDisplay();
             updateTeamManagementSection(); // Important de l'appeler ici aussi pour initialiser correctement l'état des boutons
             showSection('profile'); 
+        }
+        // Dans home.html, dans le bloc <script>
+
+        function showSection(sectionId) {
+            // ... (votre fonction existante)
+            if (sectionId === 'feedback') { /* Peut-être charger des challenges pour le champ ID, ou juste afficher le formulaire */ }
+            // ...
+        }
+
+        async function submitUserFeedback() {
+            const feedbackType = document.getElementById('feedback-type').value;
+            let challengeIdAssociated = document.getElementById('feedback-challenge-id').value;
+            const subject = document.getElementById('feedback-subject').value;
+            const message = document.getElementById('feedback-message').value;
+            const messageEl = document.getElementById('user-feedback-message');
+            messageEl.className = '';
+            messageEl.textContent = '';
+
+            if (!feedbackType || !subject || !message) {
+                messageEl.textContent = 'Veuillez sélectionner un type, entrer un sujet et un message.';
+                messageEl.className = 'error';
+                return;
+            }
+
+            const payload = {
+                type: feedbackType,
+                subject: subject,
+                message: message
+            };
+            if (challengeIdAssociated) {
+                payload.challenge_id_associated = parseInt(challengeIdAssociated);
+                if (isNaN(payload.challenge_id_associated)) {
+                    messageEl.textContent = "L'ID du challenge doit être un nombre.";
+                    messageEl.className = 'error';
+                    return;
+                }
+            }
+
+            try {
+                const response = await fetch('/api/feedback/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                messageEl.textContent = data.message;
+                messageEl.className = response.ok ? 'success' : 'error';
+
+                if (response.ok) {
+                    document.getElementById('feedback-challenge-id').value = '';
+                    document.getElementById('feedback-subject').value = '';
+                    document.getElementById('feedback-message').value = '';
+                }
+            } catch (error) {
+                console.error('Erreur soumission feedback:', error);
+                messageEl.textContent = 'Erreur réseau lors de l\'envoi du feedback.';
+                messageEl.className = 'error';
+            }
         }
 
         initializePage();
