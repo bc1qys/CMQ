@@ -459,7 +459,6 @@
 </head>
 <body>
     <div id="particles-js"></div>
-
     <div class="container">
         <div class="header">
             <h1>&lt; Plateforme C.T.F /&gt;</h1>
@@ -482,7 +481,7 @@
                 <h2>Modules de Défis</h2>
                 <p>Explorez et sélectionnez les simulations disponibles.</p>
             </div>
-             <div class="menu-item" onclick="showSection('documentation')">
+            <div class="menu-item" onclick="showSection('documentation')">
                 <i class="fas fa-book-reader fa-2x" style="color:var(--primary-accent); margin-bottom:10px;"></i>
                 <h2>Base de Connaissances</h2>
                 <p>Consultez la documentation et les guides utiles.</p>
@@ -587,12 +586,12 @@
                  <p id="team-join-message"></p>
             </div>
              <hr>
-             <div id="leave-team-subsection"> 
+            <div id="leave-team-subsection"> 
                 <h3><i class="fas fa-user-cog"></i> Options d'Escouade</h3>
                 <p id="team-actions-warning" class="info">Vous n'êtes actuellement dans aucune escouade.</p> 
                 <button class="btn secondary hidden" id="leave-team-button" onclick="leaveCurrentTeam()"><i class="fas fa-door-open"></i> Quitter l'Escouade</button>
                 <button class="btn btn-danger hidden" id="dissolve-team-button" onclick="dissolveCurrentTeam()"><i class="fas fa-bomb"></i> Dissoudre l'Escouade</button>
-                <p id="team-action-message"></p> {/* Message unique pour les actions */}
+                <p id="team-action-message"></p>
             </div>
         </div>
         
@@ -630,44 +629,44 @@
                  <button class="btn secondary" onclick="leaveCurrentMatch()"><i class="fas fa-power-off"></i> Terminer Session</button>
                  <p id="match-leave-message"></p>
             </div>
-            <hr>
-            <div class="section hidden" id="feedback-section">
-                <h2><i class="fas fa-paper-plane"></i> Soumettre un Feedback ou un Rapport</h2>
-                <p>Votre avis nous aide à améliorer la plateforme. Si vous signalez un problème avec un challenge, n'oubliez pas de mentionner son nom ou son ID.</p>
+        </div>
 
-                <div id="submit-feedback-form">
-                    <div class="form-group">
-                        <label for="feedback-type">Type de retour :</label>
-                        <select id="feedback-type" class="form-control">
-                            <option value="Suggestion">Suggestion d'amélioration</option>
-                            <option value="Bug Interface">Bug d'interface</option>
-                            <option value="Problème Challenge">Problème avec un Challenge</option>
-                            <option value="Documentation">Concernant la documentation</option>
-                            <option value="Autre">Autre</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="feedback-challenge-id">ID du Challenge concerné (si applicable) :</label>
-                        <input type="number" id="feedback-challenge-id" class="form-control" placeholder="Ex: 42">
-                    </div>
-                    <div class="form-group">
-                        <label for="feedback-subject">Sujet :</label>
-                        <input type="text" id="feedback-subject" class="form-control" placeholder="Sujet de votre message" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="feedback-message">Message :</label>
-                        <textarea id="feedback-message" class="form-control" rows="5" placeholder="Décrivez votre problème ou suggestion en détail..." required></textarea>
-                    </div>
-                    <button class="btn primary" onclick="submitUserFeedback()"><i class="fas fa-envelope"></i> Envoyer le Feedback</button>
-                    <p id="user-feedback-message"></p>
+        <div class="section hidden" id="feedback-section">
+            <h2><i class="fas fa-paper-plane"></i> Soumettre un Feedback ou un Rapport</h2>
+            <p>Votre avis nous aide à améliorer la plateforme. Si vous signalez un problème avec un challenge, n'oubliez pas de mentionner son nom ou son ID.</p>
+    
+            <div id="submit-feedback-form">
+                <div class="form-group">
+                    <label for="feedback-type">Type de retour :</label>
+                    <select id="feedback-type" class="form-control">
+                        <option value="Suggestion">Suggestion d'amélioration</option>
+                        <option value="Bug Interface">Bug d'interface</option>
+                        <option value="Problème Challenge">Problème avec un Challenge</option>
+                        <option value="Documentation">Concernant la documentation</option>
+                        <option value="Autre">Autre</option>
+                    </select>
                 </div>
+                <div class="form-group">
+                    <label for="feedback-challenge-id">ID du Challenge concerné (si applicable) :</label>
+                    <input type="number" id="feedback-challenge-id" class="form-control" placeholder="Ex: 42">
+                </div>
+                <div class="form-group">
+                    <label for="feedback-subject">Sujet :</label>
+                    <input type="text" id="feedback-subject" class="form-control" placeholder="Sujet de votre message" required>
+                </div>
+                <div class="form-group">
+                    <label for="feedback-message">Message :</label>
+                    <textarea id="feedback-message" class="form-control" rows="5" placeholder="Décrivez votre problème ou suggestion en détail..." required></textarea>
+                </div>
+                <button class="btn primary" onclick="submitUserFeedback()"><i class="fas fa-envelope"></i> Envoyer le Feedback</button>
+                <p id="user-feedback-message"></p>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script>
-        // Configuration de Particles.js (identique à celle de login.html)
+        // Configuration de Particles.js
         if (document.getElementById('particles-js')) {
             particlesJS('particles-js', { "particles": { "number": { "value": 60, "density": { "enable": true, "value_area": 800 } }, "color": { "value": "#30363d" }, "shape": { "type": "circle" }, "opacity": { "value": 0.2, "random": true }, "size": { "value": 2, "random": true }, "line_linked": { "enable": true, "distance": 180, "color": "#30363d", "opacity": 0.15, "width": 1 }, "move": { "enable": true, "speed": 0.8, "direction": "none", "random": true, "straight": false, "out_mode": "out" } }, "interactivity": { "detect_on": "canvas", "events": { "onhover": { "enable": false, "mode": "repulse" }, "onclick": { "enable": false, "mode": "push" }, "resize": true } }, "retina_detect": true });
         }
@@ -680,6 +679,7 @@
         let teamRole = sessionStorage.getItem('teamRole') || null;
         let isTeamCreator = sessionStorage.getItem('isTeamCreator') === 'true';
 
+        // ... (coller TOUT le reste du JavaScript à partir de la fonction updateProfileDisplay() ici)
         function updateProfileDisplay() {
             const profileInfoEl = document.getElementById('profile-info');
             if (userId && username) {
@@ -696,7 +696,6 @@
             }
         }
         
-        // MODIFICATION de updateTeamManagementSection
         async function updateTeamManagementSection() {
             const createTeamForm = document.getElementById('team-create-form');
             const createTeamWarning = document.getElementById('team-create-warning');
@@ -712,22 +711,21 @@
             teamActionsWarning.className = 'info'; 
 
             if (userId) { 
-                // Rafraîchir isTeamCreator au cas où la situation a changé
-                if (teamId) {
+                if (teamId) { 
                     try {
                         const response = await fetch('/teams', { 
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ team_id: teamId })
+                            body: JSON.stringify({ team_id: teamId }) 
                         });
                         if (response.ok) {
                             const data = await response.json();
                             isTeamCreator = data.is_creator;
                             sessionStorage.setItem('isTeamCreator', isTeamCreator.toString());
-                        } else { isTeamCreator = false; /* fallback */ }
-                    } catch (error) { isTeamCreator = false; /* fallback */ }
+                        } else { isTeamCreator = false; }
+                    } catch (error) { isTeamCreator = false; }
                 } else {
-                    isTeamCreator = false; // Pas d'équipe, donc pas créateur
+                    isTeamCreator = false; 
                     sessionStorage.setItem('isTeamCreator', 'false');
                 }
 
@@ -742,7 +740,7 @@
                     teamActionsWarning.classList.add('hidden');
 
                     if (isTeamCreator) {
-                        leaveTeamButton.classList.add('hidden');
+                        leaveTeamButton.classList.add('hidden'); 
                         dissolveTeamButton.classList.remove('hidden');
                     } else {
                         leaveTeamButton.classList.remove('hidden');
@@ -775,11 +773,10 @@
                 teamActionsWarning.textContent = 'Authentification requise pour la gestion d\'escouade.';
                 teamActionsWarning.className = 'error'; 
             }
-            updateProfileDisplay(); // S'assurer que le profil est à jour avec le statut de créateur
+            updateProfileDisplay(); 
         }
 
         async function updateMatchOperationsSection() {
-            // ... (votre code existant pour updateMatchOperationsSection, il utilise déjà isTeamCreator)
             const matchJoinStatus = document.getElementById('match-join-status');
             const matchJoinForm = document.getElementById('match-join-form');
             const submitFlagSection = document.getElementById('submit-flag-subsection');
@@ -801,12 +798,7 @@
                 [matchJoinForm, submitFlagSection, submitDefenseSection, leaveMatchSection].forEach(el => el.classList.add('hidden'));
                 return;
             }
-
-            // isTeamCreator est normalement déjà à jour grâce à updateTeamManagementSection ou d'autres actions
-            // mais un check ici aussi ne fait pas de mal si on appelle cette fonction isolément.
-            // Cependant, pour éviter des appels API multiples, on va se fier à la valeur globale
-            // mise à jour par updateTeamManagementSection ou lors de la création/jonction d'équipe.
-
+            
             if (isTeamCreator) {
                 matchJoinStatus.classList.add('hidden');
                 matchJoinForm.classList.remove('hidden');
@@ -841,8 +833,9 @@
             if (sectionId === 'leaderboard') fetchLeaderboard();
             if (sectionId === 'challenges') fetchChallenges();
             if (sectionId === 'documentation') fetchDocumentationArticles();
-            if (sectionId === 'team-management') updateTeamManagementSection(); // Appel critique ici
+            if (sectionId === 'team-management') updateTeamManagementSection();
             if (sectionId === 'match-operations') updateMatchOperationsSection();
+            if (sectionId === 'feedback') { /* Pas d'action de fetch nécessaire pour afficher le formulaire */ }
         }
 
         async function createTeam() {
@@ -870,7 +863,7 @@
                     teamId = data.team_id; 
                     teamName = data.team_name; 
                     teamRole = data.team_role; 
-                    isTeamCreator = true; //  L'utilisateur qui crée est le créateur
+                    isTeamCreator = true; 
                     sessionStorage.setItem('teamId', teamId); 
                     sessionStorage.setItem('teamName', teamName);
                     sessionStorage.setItem('teamRole', teamRole);
@@ -881,9 +874,9 @@
                     
                     document.getElementById('team-name').value = ''; 
                     document.getElementById('team-password').value = '';
-                    updateProfileDisplay(); 
                     updateTeamManagementSection(); 
                     updateMatchOperationsSection(); 
+                    updateProfileDisplay(); 
                 } else {
                     messageEl.textContent = data.message;
                     messageEl.className = 'error';
@@ -924,15 +917,15 @@
                     teamId = data.team_id;
                     teamName = data.team_name;
                     teamRole = data.team_role;
-                    isTeamCreator = false; // En rejoignant, on n'est pas le créateur par défaut
+                    isTeamCreator = false; 
                     sessionStorage.setItem('teamId', teamId);
                     sessionStorage.setItem('teamName', teamName);
                     sessionStorage.setItem('teamRole', teamRole);
                     sessionStorage.setItem('isTeamCreator', 'false'); 
 
-                    updateProfileDisplay();
-                    updateTeamManagementSection();
+                    updateTeamManagementSection(); 
                     updateMatchOperationsSection(); 
+                    updateProfileDisplay();
                     document.getElementById('join-team-id').value = ''; 
                     document.getElementById('join-team-password').value = '';
                 }
@@ -944,7 +937,7 @@
         }
 
         async function leaveCurrentTeam() {
-            const messageEl = document.getElementById('team-action-message'); // Message pour quitter/dissoudre
+            const messageEl = document.getElementById('team-action-message'); 
             messageEl.className = '';
             messageEl.textContent = '';
             try {
@@ -958,9 +951,9 @@
                     sessionStorage.removeItem('teamName');
                     sessionStorage.removeItem('teamRole');
                     sessionStorage.removeItem('isTeamCreator');
-                    updateProfileDisplay();
-                    updateTeamManagementSection();
+                    updateTeamManagementSection(); 
                     updateMatchOperationsSection();
+                    updateProfileDisplay();
                 }
             } catch (error) {
                 console.error('Error in leaveCurrentTeam:', error);
@@ -968,8 +961,7 @@
                 messageEl.className = 'error';
             }
         }
-
-        // NOUVELLE FONCTION pour dissoudre l'équipe
+        
         async function dissolveCurrentTeam() {
             const messageEl = document.getElementById('team-action-message');
             messageEl.className = '';
@@ -999,9 +991,9 @@
                         sessionStorage.removeItem('teamName');
                         sessionStorage.removeItem('teamRole');
                         sessionStorage.removeItem('isTeamCreator');
-                        updateProfileDisplay();
-                        updateTeamManagementSection();
+                        updateTeamManagementSection(); 
                         updateMatchOperationsSection();
+                        updateProfileDisplay();
                     }
                 } catch (error) {
                     console.error('Error in dissolveCurrentTeam:', error);
@@ -1011,9 +1003,7 @@
             }
         }
 
-
         async function fetchLeaderboard() {
-            // ... (votre code fetchLeaderboard existant)
             const messageEl = document.getElementById('leaderboard-message');
             messageEl.className = 'info';
             messageEl.textContent = 'Chargement du classement...';
@@ -1044,7 +1034,6 @@
         }
 
         async function fetchChallenges() {
-            // ... (votre code fetchChallenges existant, mais qui utilise challenge.solved_by_team)
             const messageEl = document.getElementById('challenges-message');
             messageEl.className = 'info';
             messageEl.textContent = 'Chargement des modules de défis...';
@@ -1082,7 +1071,6 @@
         }
 
         async function fetchDocumentationArticles() {
-            // ... (votre code fetchDocumentationArticles existant)
             const listContainer = document.getElementById('documentation-article-list');
             const messageEl = document.getElementById('documentation-list-message');
             messageEl.className = 'info';
@@ -1094,8 +1082,9 @@
             try {
                 const response = await fetch('/api/documentation/articles'); 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || `Erreur HTTP: ${response.status}`);
+                    let errorMsg = `Erreur HTTP: ${response.status}`;
+                    try { const errorData = await response.json(); errorMsg = errorData.message || errorMsg; } catch(e){}
+                    throw new Error(errorMsg);
                 }
                 const data = await response.json();
                 if (data.articles && data.articles.length > 0) {
@@ -1121,7 +1110,6 @@
         }
 
         async function fetchAndDisplayArticle(articleId) {
-            // ... (votre code fetchAndDisplayArticle existant avec la correction pour marked.js)
             console.log(`Affichage de l'article ID: ${articleId}`);
             const articleListContainer = document.getElementById('documentation-list-container');
             const articleViewContainer = document.getElementById('documentation-article-view');
@@ -1137,10 +1125,7 @@
                 const response = await fetch(`/api/documentation/article/${articleId}`);
                 if (!response.ok) {
                     let errorMsg = `Erreur HTTP: ${response.status}`;
-                    try { 
-                        const errorData = await response.json();
-                        errorMsg = errorData.message || errorMsg;
-                    } catch (e) { /* Ignorer si le corps de l'erreur n'est pas JSON */ }
+                    try { const errorData = await response.json(); errorMsg = errorData.message || errorMsg; } catch(e){}
                     throw new Error(errorMsg);
                 }
                 const article = await response.json(); 
@@ -1249,7 +1234,7 @@
                 if (response.ok && data.newly_solved) { 
                     document.getElementById('flag-to-submit').value = '';
                     updateProfileDisplay(); 
-                    fetchChallenges(); // Mettre à jour la liste des challenges pour afficher la coche
+                    fetchChallenges(); 
                 } else if (response.ok && data.already_solved) {
                      document.getElementById('flag-to-submit').value = ''; 
                 }
@@ -1313,25 +1298,7 @@
                 profileInfoEl.className = 'error';
             }
         }
-
-        function initializePage() {
-            if (!userId && !window.location.pathname.endsWith('/login') && !window.location.pathname.endsWith('/login.html') ) {
-                 console.log("Utilisateur non authentifié, redirection vers le portail de connexion depuis home.html JS.");
-                 window.location.href = '/login';
-                 return; 
-            }
-            updateProfileDisplay();
-            updateTeamManagementSection(); // Important de l'appeler ici aussi pour initialiser correctement l'état des boutons
-            showSection('profile'); 
-        }
-        // Dans home.html, dans le bloc <script>
-
-        function showSection(sectionId) {
-            // ... (votre fonction existante)
-            if (sectionId === 'feedback') { /* Peut-être charger des challenges pour le champ ID, ou juste afficher le formulaire */ }
-            // ...
-        }
-
+        
         async function submitUserFeedback() {
             const feedbackType = document.getElementById('feedback-type').value;
             let challengeIdAssociated = document.getElementById('feedback-challenge-id').value;
@@ -1346,18 +1313,14 @@
                 messageEl.className = 'error';
                 return;
             }
-
-            const payload = {
-                type: feedbackType,
-                subject: subject,
-                message: message
-            };
+            
+            const payload = { type: feedbackType, subject: subject, message: message };
             if (challengeIdAssociated) {
                 payload.challenge_id_associated = parseInt(challengeIdAssociated);
                 if (isNaN(payload.challenge_id_associated)) {
-                    messageEl.textContent = "L'ID du challenge doit être un nombre.";
-                    messageEl.className = 'error';
-                    return;
+                     messageEl.textContent = "L'ID du challenge doit être un nombre.";
+                     messageEl.className = 'error';
+                     return;
                 }
             }
 
@@ -1381,6 +1344,17 @@
                 messageEl.textContent = 'Erreur réseau lors de l\'envoi du feedback.';
                 messageEl.className = 'error';
             }
+        }
+
+        function initializePage() {
+            if (!userId && !window.location.pathname.endsWith('/login') && !window.location.pathname.endsWith('/login.html') ) {
+                 console.log("Utilisateur non authentifié, redirection vers le portail de connexion depuis home.html JS.");
+                 window.location.href = '/login';
+                 return; 
+            }
+            updateProfileDisplay();
+            updateTeamManagementSection(); 
+            showSection('profile'); 
         }
 
         initializePage();
