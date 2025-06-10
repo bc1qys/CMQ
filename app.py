@@ -1290,6 +1290,37 @@ def admin_delete_feedback(feedback_id):
         if conn:
             conn.close()
 
+
+@app.route('/api/matches', methods=['GET'])
+def get_available_matches():
+    if 'user_id' not in session and 'admin_id' not in session:
+        return jsonify({"message": "Authentification requise."}), 401
+
+    conn = None
+    try:
+        conn = sqlite3.connect('ctf.db')
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        
+        c.execute("""
+            SELECT m.id, m.status, ch.name as challenge_name, ch.level, ch.points 
+            FROM matches m
+            JOIN challenges ch ON m.challenge_id = ch.id
+            WHERE m.status IS NOT NULL AND m.status != 'terminé'
+            ORDER BY m.id DESC
+        """)
+        matches_raw = c.fetchall()
+        matches_list = [dict(row) for row in matches_raw] if matches_raw else []
+        
+        return jsonify({"matches": matches_list})
+
+    except sqlite3.Error as e:
+        app.logger.error(f"Erreur SQLite lors de la récupération des matchs : {e}")
+        return jsonify({"message": "Erreur serveur lors de la récupération des matchs."}), 500
+    finally:
+        if conn:
+            conn.close()
+
 # Initialiser la base de données au démarrage
 with app.app_context():
     init_db()

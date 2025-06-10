@@ -600,9 +600,28 @@
             
             <div id="join-match-subsection">
                 <h3><i class="fas fa-network-wired"></i> Connexion au Match</h3>
-                <p id="match-join-status" class="info"></p>
+
+                <h4>Matchs Disponibles</h4>
+                <p class="info">Consultez la liste des matchs actifs et utilisez leur ID pour vous engager.</p>
+                <table id="available-matches-table">
+                    <thead>
+                        <tr>
+                            <th>ID Match</th>
+                            <th>Nom du Challenge</th>
+                            <th>Niveau</th>
+                            <th>Points</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+                <p id="available-matches-message"></p>
+                <hr>
+
+                <p id="match-join-status" class="info">Veuillez sélectionner un ID de match ci-dessus.</p>
                 <div id="match-join-form" class="hidden">
-                    <input id="match-id-to-join" type="number" placeholder="ID de la simulation de match">
+                    <input id="match-id-to-join" type="number" placeholder="Entrez l'ID du match à rejoindre">
                     <button class="btn primary" onclick="joinSelectedMatch()"><i class="fas fa-plug"></i> Lancer Connexion</button>
                 </div>
                 <p id="match-join-message"></p>
@@ -821,23 +840,55 @@
         }
 
         function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(section => section.classList.add('hidden'));
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('hidden');
+            });
+
             const activeSection = document.getElementById(`${sectionId}-section`);
             if (activeSection) {
                 activeSection.classList.remove('hidden');
             } else {
-                 console.warn(`Section avec id "${sectionId}-section" non trouvée.`);
-                 document.getElementById('profile-section').classList.remove('hidden');
+                console.warn(`Section avec id "${sectionId}-section" non trouvée.`);
+                document.getElementById('profile-section').classList.remove('hidden');
+                sectionId = 'profile';
             }
 
-            if (sectionId === 'leaderboard') fetchLeaderboard();
-            if (sectionId === 'challenges') fetchChallenges();
-            if (sectionId === 'documentation') fetchDocumentationArticles();
-            if (sectionId === 'team-management') updateTeamManagementSection();
-            if (sectionId === 'match-operations') updateMatchOperationsSection();
-            if (sectionId === 'feedback') { /* Pas d'action de fetch nécessaire pour afficher le formulaire */ }
-        }
+            document.querySelectorAll('.menu-item').forEach(item => {
+                const itemSectionId = item.getAttribute('onclick').match(/showSection\('([^']+)'\)/);
+                if (itemSectionId && itemSectionId[1] === sectionId) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
 
+            switch (sectionId) {
+                case 'leaderboard':
+                    fetchLeaderboard();
+                    break;
+                case 'challenges':
+                    fetchChallenges();
+                    break;
+                case 'documentation':
+                    fetchDocumentationArticles();
+                    break;
+                case 'team-management':
+                    updateTeamManagementSection();
+                    break;
+                case 'match-operations':
+                    updateMatchOperationsSection();
+                    break;
+                case 'feedback':
+                    break;
+                case 'profile':
+                    updateProfileDisplay();
+                    break;
+                default:
+                    break;
+            }
+        }   
+
+       
         async function createTeam() {
             const name = document.getElementById('team-name').value;
             const password = document.getElementById('team-password').value;
@@ -1356,6 +1407,44 @@
             updateTeamManagementSection(); 
             showSection('profile'); 
         }
+
+        async function fetchAvailableMatches() {
+        const messageEl = document.getElementById('available-matches-message');
+        const tbody = document.getElementById('available-matches-table').querySelector('tbody');
+        tbody.innerHTML = ''; // Vider la liste précédente
+        messageEl.textContent = 'Chargement des matchs disponibles...';
+        messageEl.className = 'info';
+
+        try {
+            const response = await fetch('/api/matches');
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `Erreur HTTP: ${response.status}`);
+            }
+            const data = await response.json();
+
+            if (data.matches && data.matches.length > 0) {
+                data.matches.forEach(match => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${match.id}</td>
+                        <td>${match.challenge_name}</td>
+                        <td>${match.level}</td>
+                        <td>${match.points}</td>
+                        <td>${match.status}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                messageEl.textContent = ''; // Effacer le message de chargement
+            } else {
+                messageEl.textContent = 'Aucun match n\'est actuellement disponible.';
+            }
+        } catch (error) {
+            console.error('Erreur fetchAvailableMatches:', error);
+            messageEl.textContent = error.message || 'Erreur réseau lors du chargement des matchs.';
+            messageEl.className = 'error';
+        }
+    }
 
         initializePage();
     </script>
