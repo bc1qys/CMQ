@@ -299,8 +299,9 @@
         }
 
         async function loginUser() {
-            const username = usernameInput.value;
-            const password = passwordInput.value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const messageEl = document.getElementById('message');
             messageEl.textContent = '';
             messageEl.className = '';
 
@@ -309,32 +310,54 @@
                 messageEl.className = 'error';
                 return;
             }
-            // ... (le reste de votre logique fetch pour /login_user)
-            // Exemple :
-             try {
+            
+            try {
                 const response = await fetch('/login_user', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
                 });
                 const data = await response.json();
-                messageEl.textContent = data.message;
+                
                 if (response.ok && data.redirect) {
+                    messageEl.textContent = data.message;
                     messageEl.className = 'success';
-                    if (data.user_id) { 
+
+                    // Cas d'un administrateur
+                    if (data.message.includes('admin')) { 
+                        sessionStorage.setItem('isAdminLoggedIn', 'true');
+                    } 
+                    // Cas d'un joueur
+                    else if (data.user_id) { 
+                        console.log('Login response data:', data);
                         sessionStorage.setItem('userId', data.user_id);
                         sessionStorage.setItem('username', username);
                         sessionStorage.setItem('preferred_role', data.preferred_role); 
-                    } else if (data.message.includes('admin')) { 
-                        sessionStorage.setItem('isAdminLoggedIn', 'true');
+
+                        // Correction : Sauvegarder les infos de l'équipe si elles sont renvoyées par le backend
+                        if (data.team_id) {
+                            sessionStorage.setItem('teamId', data.team_id);
+                            sessionStorage.setItem('teamName', data.team_name);
+                            sessionStorage.setItem('teamRole', data.team_role);
+                            sessionStorage.setItem('isTeamCreator', data.is_creator);
+                        } else {
+                            // Nettoyer les anciennes infos d'équipe si l'utilisateur n'en a plus
+                            sessionStorage.removeItem('teamId');
+                            sessionStorage.removeItem('teamName');
+                            sessionStorage.removeItem('teamRole');
+                            sessionStorage.removeItem('isTeamCreator');
+                        }
                     }
-                    // Petite animation/délai avant redirection
+                    
                     messageEl.textContent = "Connexion réussie. Redirection...";
-                    setTimeout(() => { window.location.href = data.redirect; }, 1500);
+                    setTimeout(() => { window.location.href = data.redirect; }, 1000); 
+
                 } else {
+                     messageEl.textContent = data.message || "Erreur inconnue.";
                      messageEl.className = 'error';
                 }
             } catch (error) {
+                console.error('Error in loginUser:', error);
                 messageEl.textContent = 'Erreur réseau lors de la connexion.';
                 messageEl.className = 'error';
             }

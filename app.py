@@ -203,46 +203,75 @@ def register_user():
 def login_user():
     data = request.get_json()
     if not data or 'username' not in data or 'password' not in data:
-        app.logger.debug("Connexion échouée : username ou password manquant")
         return jsonify({"message": "Données invalides"}), 400
     
     username = data['username']
     password = data['password']
     app.logger.debug(f"Tentative de connexion : username={username}")
     
-    conn = sqlite3.connect('ctf.db')
-    c = conn.cursor()
+    conn = None
     try:
+        conn = sqlite3.connect('ctf.db')
+        conn.row_factory = sqlite3.Row # Important pour accéder aux colonnes par nom
+        c = conn.cursor()
         c.execute("SELECT id, password, preferred_role FROM users WHERE username = ?", (username,))
-        result = c.fetchone()
+        user_data = c.fetchone()
         
-        if result and bcrypt.checkpw(password.encode('utf-8'), result[1]):
-            if result[2] == 'admin': # preferred_role est utilisé ici pour identifier l'admin
-                session['admin_id'] = result[0]
-                app.logger.debug(f"Connexion admin réussie : username={username}, admin_id={result[0]}")
-                return jsonify({
-                    "message": "Connexion admin réussie",
-                    "redirect": "/admin"
-                })
+        if user_data and bcrypt.checkpw(password.encode('utf-8'), user_data['password']):
+            # Si le mot de passe est correct
+            user_id = user_data['id']
+            user_role = user_data['preferred_role']
+
+            if user_role == 'admin':
+                session['admin_id'] = user_id
+                app.logger.debug(f"Connexion admin réussie : username={username}, admin_id={user_id}")
+                return jsonify({"message": "Connexion admin réussie", "redirect": "/admin"})
             else:
-                session['user_id'] = result[0]
+                # C'est un joueur, on met ses infos de base en session
+                session['user_id'] = user_id
                 session['username'] = username
-                session['preferred_role'] = result[2] # Sera NULL pour les joueurs
-                app.logger.debug(f"Connexion joueur réussie : username={username}, user_id={result[0]}, session['user_id']={result[0]}")
-                return jsonify({
+                session['preferred_role'] = user_role
+                
+                # --- NOUVELLE LOGIQUE : Chercher l'équipe de l'utilisateur ---
+                c.execute("SELECT team_id FROM user_teams WHERE user_id = ?", (user_id,))
+                team_membership = c.fetchone()
+                
+                response_data = {
                     "message": "Connexion réussie",
-                    "user_id": result[0],
-                    "preferred_role": result[2], # Sera null pour les joueurs
+                    "user_id": user_id,
+                    "preferred_role": user_role,
                     "redirect": "/"
-                })
+                }
+
+                if team_membership:
+                    team_id = team_membership['team_id']
+                    c.execute("SELECT id, name, role, creator_id FROM teams WHERE id = ?", (team_id,))
+                    team_data = c.fetchone()
+                    
+                    if team_data:
+                        # Ajouter les infos de l'équipe à la session serveur
+                        session['team_id'] = team_data['id']
+                        session['team_name'] = team_data['name']
+                        session['team_role'] = team_data['role']
+                        
+                        # Ajouter les infos de l'équipe à la réponse JSON pour le client
+                        response_data['team_id'] = team_data['id']
+                        response_data['team_name'] = team_data['name']
+                        response_data['team_role'] = team_data['role']
+                        response_data['is_creator'] = (user_id == team_data['creator_id'])
+                        app.logger.debug(f"Utilisateur {user_id} est dans l'équipe {team_id}. Infos ajoutées à la session.")
+                
+                app.logger.debug(f"Connexion joueur réussie : username={username}, user_id={user_id}")
+                return jsonify(response_data)
         else:
-            app.logger.debug("Connexion échouée : identifiants invalides")
+            app.logger.debug(f"Connexion échouée pour {username} : identifiants invalides")
             return jsonify({"message": "Nom ou mot de passe incorrect"}), 401
-    except sqlite3.Error as e:
+    except Exception as e:
         app.logger.error(f"Erreur dans login_user : {e}")
         return jsonify({"message": "Erreur serveur"}), 500
     finally:
-        conn.close()
+        if conn:
+            conn.close()
 
 # Liste des joueurs (admin)
 @app.route('/admin_players', methods=['GET'])
