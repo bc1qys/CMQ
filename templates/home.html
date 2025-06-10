@@ -454,6 +454,7 @@
             cursor: pointer;
             text-decoration: underline;
         }
+        .btn-sm { padding: 5px 10px; font-size: 0.8rem; }
 
     </style>
 </head>
@@ -534,7 +535,8 @@
                         <th>Description Tactique</th>
                         <th>Points Strat.</th>
                         <th>Niveau de Menace</th>
-                        <th>Statut</th> 
+                        <th>Statut</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -1084,12 +1086,13 @@
             }
         }
 
+
         async function fetchChallenges() {
             const messageEl = document.getElementById('challenges-message');
             messageEl.className = 'info';
             messageEl.textContent = 'Chargement des modules de défis...';
             try {
-                const response = await fetch('/challenges'); 
+                const response = await fetch('/challenges');
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(errorData.message || `Erreur HTTP: ${response.status}`);
@@ -1100,13 +1103,20 @@
                 if (data.challenges && data.challenges.length > 0) {
                     data.challenges.forEach(challenge => {
                         const row = document.createElement('tr');
+
+                        // Le bouton "Lancer Match" est visible seulement si l'utilisateur est chef d'équipe et dans une équipe
+                        const startButtonHtml = (isTeamCreator && teamId)
+                            ? `<button class="btn primary btn-sm" onclick="startNewMatch(${challenge.id})"><i class="fas fa-play-circle"></i> Lancer Match</button>`
+                            : `<small class="info">Seul le chef d'équipe peut lancer.</small>`; // Message pour les autres
+
                         row.innerHTML = `
                             <td>${challenge.id}</td>
                             <td>${challenge.name}</td>
                             <td>${challenge.description || 'N/A'}</td>
                             <td>${challenge.points}</td>
                             <td>${challenge.level}</td>
-                            <td>${challenge.solved_by_team ? '✅ Résolu' : 'À faire'}</td> 
+                            <td>${challenge.solved_by_team ? '✅ Résolu' : 'À faire'}</td>
+                            <td>${startButtonHtml}</td>
                         `;
                         tbody.appendChild(row);
                     });
