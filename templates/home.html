@@ -1104,7 +1104,6 @@
                     data.challenges.forEach(challenge => {
                         const row = document.createElement('tr');
 
-                        // Le bouton "Lancer Match" est visible seulement si l'utilisateur est chef d'équipe et dans une équipe
                         const startButtonHtml = (isTeamCreator && teamId)
                             ? `<button class="btn primary btn-sm" onclick="startNewMatch(${challenge.id})"><i class="fas fa-play-circle"></i> Lancer Match</button>`
                             : `<small class="info">Seul le chef d'équipe peut lancer.</small>`; // Message pour les autres
@@ -1245,7 +1244,6 @@
         }
         
         async function leaveCurrentMatch() {
-            // ... (votre code leaveCurrentMatch existant)
             const matchIdToLeave = document.getElementById('match-id-to-leave').value;
             const messageEl = document.getElementById('match-leave-message');
             messageEl.className = '';
@@ -1273,7 +1271,6 @@
         }
 
         async function submitTeamFlag() {
-            // ... (votre code submitTeamFlag existant, avec l'appel à fetchChallenges() en cas de succès)
             const flag = document.getElementById('flag-to-submit').value;
             const messageEl = document.getElementById('flag-submit-message');
             messageEl.className = '';
@@ -1307,7 +1304,6 @@
         }
 
         async function submitTeamDefense() {
-            // ... (votre code submitTeamDefense existant)
             const challengeId = document.getElementById('defense-challenge-id').value;
             const proof = document.getElementById('defense-proof').value;
             const messageEl = document.getElementById('defense-submit-message');
@@ -1341,7 +1337,6 @@
         }
 
         async function logout() {
-            // ... (votre code logout existant)
             const profileInfoEl = document.getElementById('profile-info');
             try {
                 const response = await fetch('/logout', { method: 'POST' });
