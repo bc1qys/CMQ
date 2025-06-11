@@ -1353,6 +1353,9 @@ def get_available_matches():
 
 @app.route('/api/matches/create', methods=['POST'])
 def create_match():
+    # ... (Toute la logique de vérification et de création reste la même) ...
+    # On arrive à la fin, après le conn.commit()
+
     if 'user_id' not in session or 'team_id' not in session:
         return jsonify({"message": "Connexion et appartenance à une équipe requises."}), 401
     
@@ -1382,32 +1385,20 @@ def create_match():
         if not challenge_info:
             return jsonify({"message": "Le challenge demandé n'existe pas."}), 404
 
-        # -------------------------------------------------------------------
-        # PARTIE 2 : INTÉGRATION PROXMOX (À FAIRE PLUS TARD)
-        # Ici, vous devrez ajouter le code pour communiquer avec Proxmox :
-        # - se connecter à l'API Proxmox
-        # - trouver le template de VM pour ce challenge_id
-        # - cloner la VM ou restaurer un snapshot
-        # - démarrer la VM si nécessaire
-        # - récupérer l'adresse IP de la nouvelle instance de VM
-        # Pour l'instant, nous utiliserons une IP de placeholder.
-        # -------------------------------------------------------------------
-        
-        # Placeholder pour l'IP de la VM
+        # PARTIE 2 : INTÉGRATION PROXMOX (simulation pour l'instant)
         vm_ip_address = "192.168.1.123" # IP factice pour le test
         app.logger.info(f"Logique Proxmox simulée. IP attribuée : {vm_ip_address}")
 
         # 3. Créer une nouvelle entrée dans la table 'matches'
         status = 'en cours'
-        vm_id_name = f"match_inst_{challenge_id}_{team_id}" # Nom d'instance unique
+        vm_id_name = f"match_inst_{challenge_id}_{team_id}" 
         c.execute(
             "INSERT INTO matches (challenge_id, vm_id, ip_address, status) VALUES (?, ?, ?, ?)",
             (challenge_id, vm_id_name, vm_ip_address, status)
         )
         new_match_id = c.lastrowid
-        app.logger.info(f"Nouveau match créé (ID: {new_match_id}) pour challenge {challenge_id} et équipe {team_id}")
 
-        # 4. Faire rejoindre automatiquement l'équipe au match qu'elle vient de créer
+        # 4. Faire rejoindre automatiquement l'équipe au match
         access_token = secrets.token_hex(16)
         c.execute(
             "INSERT INTO team_matches (team_id, match_id, access_token) VALUES (?, ?, ?)",
@@ -1416,11 +1407,23 @@ def create_match():
         
         conn.commit()
 
+        # --- MODIFICATION DE LA RÉPONSE CI-DESSOUS ---
+        # Au lieu de renvoyer seulement l'ID du match, on renvoie toutes les infos de connexion
+        # comme le fait la route /join_match
+        
+        # Rendez l'IP de Guacamole configurable pour plus de propreté
+        # guacamole_ip = app.config.get('GUACAMOLE_IP', '192.168.1.100') 
+        guacamole_ip = "192.168.1.100" # Pour l'instant, on garde la valeur en dur
+
         return jsonify({
             "message": "Match créé et rejoint avec succès !",
-            "match_id": new_match_id
+            "match_id": new_match_id,
+            "vm_ip": vm_ip_address,
+            "access_token": access_token,
+            "guacamole_url": f"http://{guacamole_ip}/guacamole?token={access_token}"
         }), 201
 
+    # ... (le reste de votre gestion d'erreur) ...
     except sqlite3.Error as e:
         if conn: conn.rollback()
         app.logger.error(f"Erreur SQLite - create_match: {e}")

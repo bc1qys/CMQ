@@ -1087,22 +1087,23 @@
         }
 
 
+        // Dans home.html, remplacez la fonction startNewMatch par celle-ci
+
         async function startNewMatch(challengeId) {
             if (!isTeamCreator) {
                 alert("Seul le créateur de l'équipe peut lancer un nouveau match.");
                 return;
             }
 
-            if (!confirm(`Voulez-vous démarrer un nouveau match pour le challenge ID ${challengeId} ? Cela pourrait utiliser des ressources sur le serveur.`)) {
+            if (!confirm(`Voulez-vous démarrer un nouveau match pour le challenge ID ${challengeId} ?`)) {
                 return;
             }
 
-            const messageEl = document.getElementById('challenges-message'); // Pour afficher le retour
-            messageEl.textContent = `Création du match pour le challenge ${challengeId} en cours... Veuillez patienter.`;
+            const messageEl = document.getElementById('challenges-message');
+            messageEl.textContent = `Création du match en cours... Veuillez patienter.`;
             messageEl.className = 'info';
 
             try {
-                // Appel à une nouvelle route API pour créer le match
                 const response = await fetch('/api/matches/create', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1110,16 +1111,26 @@
                 });
 
                 const data = await response.json();
-                messageEl.textContent = data.message;
-                messageEl.className = response.ok ? 'success' : 'error';
-
+                
+                // --- MODIFICATION DE LA LOGIQUE DE SUCCÈS CI-DESSOUS ---
                 if (response.ok) {
-                    // Si la création a réussi, le backend a créé un match et nous a rejoint automatiquement.
-                    // On peut maintenant rediriger l'utilisateur vers la section des matchs pour voir les détails.
-                    messageEl.textContent += ` Match ID ${data.match_id} créé ! Redirection vers l'interface de match...`;
-                    setTimeout(() => {
-                        showSection('match-operations');
-                    }, 2000);
+                    // Afficher le message de succès dans la section des challenges
+                    messageEl.textContent = data.message;
+                    messageEl.className = 'success';
+
+                    // Afficher les détails de connexion dans la section des opérations de match
+                    const matchJoinMessageEl = document.getElementById('match-join-message');
+                    matchJoinMessageEl.innerHTML = 
+                        `<strong>Vous avez rejoint le match ${data.match_id} !</strong><br>` +
+                        `Accès VM: <a href="http://${data.vm_ip}" target="_blank">${data.vm_ip}</a><br>` +
+                        (data.guacamole_url ? `Interface Guacamole: <a href="${data.guacamole_url}" target="_blank">Cliquez ici pour vous connecter</a>` : '');
+                    matchJoinMessageEl.className = 'success';
+                    
+                    // Basculer automatiquement vers la section des opérations de match
+                    showSection('match-operations');
+                } else {
+                    messageEl.textContent = data.message;
+                    messageEl.className = 'error';
                 }
             } catch (error) {
                 console.error('Error in startNewMatch:', error);
