@@ -586,79 +586,68 @@ def leave_team():
 # Rejoindre un match
 @app.route('/join_match', methods=['POST'])
 def join_match():
-    if 'user_id' not in session or 'team_id' not in session: # L'utilisateur doit être connecté et dans une équipe
-        app.logger.debug("Rejoindre match échoué : pas de user_id ou team_id dans la session")
-        return jsonify({"message": "Connexion et appartenance à une équipe requises"}), 401
+    if 'user_id' not in session or 'team_id' not in session:
+        return jsonify({"message": "Connexion et appartenance à une équipe requises."}), 401
     
-    data = request.get_json()
-    # team_id est pris de la session, pas de data.get('team_id')
-    team_id = session['team_id']
-    match_id = data.get('match_id')
     user_id = session['user_id']
+    team_id = session['team_id']
+    data = request.get_json()
+    match_id = data.get('match_id')
+
+    if not match_id:
+        return jsonify({"message": "ID de match manquant."}), 400
     
-    app.logger.debug(f"join_match: user_id={user_id}, team_id={team_id}, match_id={match_id}")
-    
-    conn = sqlite3.connect('ctf.db')
-    c = conn.cursor()
-    
+    conn = None
     try:
+        conn = sqlite3.connect('ctf.db')
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+
+        # --- NOUVELLE VÉRIFICATION : L'équipe est-elle déjà dans un match actif ? ---
+        c.execute("""
+            SELECT tm.match_id FROM team_matches tm
+            JOIN matches m ON tm.match_id = m.id
+            WHERE tm.team_id = ? AND m.status = 'en cours'
+        """, (team_id,))
+        active_match = c.fetchone()
+        if active_match:
+            conn.close() # Important de fermer la connexion avant de retourner la réponse
+            return jsonify({"message": f"Votre équipe est déjà engagée dans le match ID {active_match['match_id']}. Veuillez d'abord quitter ce match."}), 400
+        # --- FIN DE LA VÉRIFICATION ---
+
+        # Vérifier si l'utilisateur est le créateur (logique existante)
         c.execute("SELECT creator_id FROM teams WHERE id = ?", (team_id,))
-        team_creator_info = c.fetchone() # Renommé pour clarté
-        if not team_creator_info:
-            app.logger.debug(f"Rejoindre match échoué : team_id={team_id} invalide")
-            return jsonify({"message": "Équipe invalide"}), 400
-        if team_creator_info[0] != user_id:
-            app.logger.debug(f"Rejoindre match échoué : user_id={user_id} n'est pas créateur de team_id={team_id}")
-            return jsonify({"message": "Seul le créateur de l'équipe peut engager l'équipe dans un match"}), 403
+        team_info = c.fetchone()
+        if not team_info or team_info['creator_id'] != user_id:
+            return jsonify({"message": "Seul le créateur de l'équipe peut engager l'équipe dans un match."}), 403
         
-        c.execute("SELECT id, challenge_id, vm_id, ip_address FROM matches WHERE id = ? AND status = 'en cours'", (match_id,))
-        match_info = c.fetchone() # Renommé
+        # Vérifier si le match à rejoindre existe et est disponible
+        c.execute("SELECT id, challenge_id, ip_address FROM matches WHERE id = ? AND (status = 'disponible' OR status = 'en cours')", (match_id,))
+        match_data = c.fetchone()
+        if not match_data:
+            return jsonify({"message": "Match non trouvé ou non disponible."}), 404
         
-        if match_info:
-            actual_match_id, challenge_id, vm_id, ip_address = match_info
+        # Le reste de la logique pour rejoindre le match
+        access_token = secrets.token_hex(16)
+        c.execute("INSERT INTO team_matches (team_id, match_id, access_token) VALUES (?, ?, ?)",
+                  (match_data['id'], team_id, access_token)) # Ordre corrigé : team_id, match_id
+        conn.commit()
 
-            # Vérifier si l'équipe est déjà dans ce match pour ce challenge
-            c.execute("""SELECT tm.id FROM team_matches tm
-                         JOIN matches m ON tm.match_id = m.id
-                         WHERE tm.team_id = ? AND m.challenge_id = ?""", (team_id, challenge_id))
-            existing_team_match_for_challenge = c.fetchone()
-            if existing_team_match_for_challenge:
-                 app.logger.debug(f"L'équipe {team_id} est déjà dans un match pour le challenge {challenge_id}")
-                 # Optionnel: retourner les infos existantes ou un message spécifique
-                 # Pour l'instant, on interdit de rejoindre un "nouveau" match pour le même challenge si déjà engagé
-                 # Ou alors, on permet de rejoindre le *même* match_id si la session a été perdue.
-                 # Le code actuel insère une nouvelle ligne dans team_matches, ce qui peut être problématique.
-                 # Vérifions si l'équipe est DÉJÀ dans CE match_id précis:
-                 c.execute("SELECT access_token FROM team_matches WHERE team_id = ? AND match_id = ?", (team_id, actual_match_id))
-                 already_in_this_specific_match = c.fetchone()
-                 if already_in_this_specific_match:
-                    app.logger.debug(f"L'équipe {team_id} est déjà dans ce match spécifique {actual_match_id}.")
-                    # On pourrait retourner les infos existantes
-                    # Pour l'instant, on laisse la logique originale qui pourrait créer un doublon de token si pas géré
-                    # La logique /submit_flag utilise "match_id IN (SELECT id FROM matches WHERE challenge_id = ?)"
-                    # ce qui est bien, mais avoir plusieurs tokens pour le même (team,match) n'est pas idéal.
-                    # Idéalement, on devrait avoir une contrainte UNIQUE(team_id, match_id) sur team_matches.
-                    # Pour l'instant, nous allons suivre le code original qui permet de rejoindre (potentiellement à nouveau).
+        guacamole_ip = "192.168.1.100" # À rendre configurable
+        return jsonify({
+            "message": "Match rejoint !",
+            "vm_ip": match_data['ip_address'],
+            "access_token": access_token,
+            "guacamole_url": f"http://{guacamole_ip}/guacamole?token={access_token}"
+        })
 
-            access_token = secrets.token_hex(16)
-            c.execute("INSERT INTO team_matches (team_id, match_id, access_token) VALUES (?, ?, ?)",
-                      (team_id, actual_match_id, access_token))
-            conn.commit()
-            app.logger.debug(f"Équipe a rejoint le match : team_id={team_id}, match_id={actual_match_id}")
-            return jsonify({
-                "message": "Match rejoint !",
-                "vm_ip": ip_address,
-                "access_token": access_token,
-                "guacamole_url": f"http://192.168.1.100/guacamole?token={access_token}" # L'IP Guacamole doit être configurable
-            })
-        else:
-            app.logger.debug(f"Rejoindre match échoué : match_id={match_id} invalide ou terminé")
-            return jsonify({"message": "Match invalide ou terminé !"}), 400
     except sqlite3.Error as e:
-        app.logger.error(f"Erreur dans join_match : {e}")
-        return jsonify({"message": "Erreur serveur"}), 500
+        if conn: conn.rollback()
+        app.logger.error(f"Erreur SQLite - join_match: {e}")
+        return jsonify({"message": "Erreur serveur."}), 500
     finally:
-        conn.close()
+        if conn:
+            conn.close()
 
 # Quitter un match
 @app.route('/leave_match', methods=['POST'])
@@ -1351,11 +1340,10 @@ def get_available_matches():
             conn.close()
 
 
+# Dans app.py, remplacez la fonction create_match
+
 @app.route('/api/matches/create', methods=['POST'])
 def create_match():
-    # ... (Toute la logique de vérification et de création reste la même) ...
-    # On arrive à la fin, après le conn.commit()
-
     if 'user_id' not in session or 'team_id' not in session:
         return jsonify({"message": "Connexion et appartenance à une équipe requises."}), 401
     
@@ -1373,48 +1361,43 @@ def create_match():
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
 
-        # 1. Vérifier si l'utilisateur est le créateur de l'équipe
+        # --- NOUVELLE VÉRIFICATION : L'équipe est-elle déjà dans un match actif ? ---
+        c.execute("""
+            SELECT tm.match_id FROM team_matches tm
+            JOIN matches m ON tm.match_id = m.id
+            WHERE tm.team_id = ? AND m.status = 'en cours'
+        """, (team_id,))
+        active_match = c.fetchone()
+        if active_match:
+            conn.close()
+            return jsonify({"message": f"Votre équipe est déjà dans un match (ID {active_match['match_id']}). Vous ne pouvez pas en créer un nouveau."}), 400
+        # --- FIN DE LA VÉRIFICATION ---
+
         c.execute("SELECT creator_id FROM teams WHERE id = ?", (team_id,))
         team_info = c.fetchone()
         if not team_info or team_info['creator_id'] != user_id:
             return jsonify({"message": "Seul le créateur de l'équipe peut démarrer un match."}), 403
         
-        # 2. Vérifier si le challenge existe
         c.execute("SELECT name FROM challenges WHERE id = ?", (challenge_id,))
-        challenge_info = c.fetchone()
-        if not challenge_info:
+        if not c.fetchone():
             return jsonify({"message": "Le challenge demandé n'existe pas."}), 404
 
-        # PARTIE 2 : INTÉGRATION PROXMOX (simulation pour l'instant)
-        vm_ip_address = "192.168.1.123" # IP factice pour le test
-        app.logger.info(f"Logique Proxmox simulée. IP attribuée : {vm_ip_address}")
-
-        # 3. Créer une nouvelle entrée dans la table 'matches'
+        # Placeholder pour l'intégration Proxmox
+        vm_ip_address = "192.168.1.123" # IP factice
+        
         status = 'en cours'
         vm_id_name = f"match_inst_{challenge_id}_{team_id}" 
-        c.execute(
-            "INSERT INTO matches (challenge_id, vm_id, ip_address, status) VALUES (?, ?, ?, ?)",
-            (challenge_id, vm_id_name, vm_ip_address, status)
-        )
+        c.execute("INSERT INTO matches (challenge_id, vm_id, ip_address, status) VALUES (?, ?, ?, ?)",
+                  (challenge_id, vm_id_name, vm_ip_address, status))
         new_match_id = c.lastrowid
 
-        # 4. Faire rejoindre automatiquement l'équipe au match
         access_token = secrets.token_hex(16)
-        c.execute(
-            "INSERT INTO team_matches (team_id, match_id, access_token) VALUES (?, ?, ?)",
-            (team_id, new_match_id, access_token)
-        )
+        c.execute("INSERT INTO team_matches (team_id, match_id, access_token) VALUES (?, ?, ?)",
+                  (team_id, new_match_id, access_token))
         
         conn.commit()
 
-        # --- MODIFICATION DE LA RÉPONSE CI-DESSOUS ---
-        # Au lieu de renvoyer seulement l'ID du match, on renvoie toutes les infos de connexion
-        # comme le fait la route /join_match
-        
-        # Rendez l'IP de Guacamole configurable pour plus de propreté
-        # guacamole_ip = app.config.get('GUACAMOLE_IP', '192.168.1.100') 
-        guacamole_ip = "192.168.1.100" # Pour l'instant, on garde la valeur en dur
-
+        guacamole_ip = "192.168.1.100"
         return jsonify({
             "message": "Match créé et rejoint avec succès !",
             "match_id": new_match_id,
@@ -1423,7 +1406,6 @@ def create_match():
             "guacamole_url": f"http://{guacamole_ip}/guacamole?token={access_token}"
         }), 201
 
-    # ... (le reste de votre gestion d'erreur) ...
     except sqlite3.Error as e:
         if conn: conn.rollback()
         app.logger.error(f"Erreur SQLite - create_match: {e}")
@@ -1431,7 +1413,7 @@ def create_match():
     finally:
         if conn:
             conn.close()
-
+            
 # Initialiser la base de données au démarrage
 with app.app_context():
     init_db()
