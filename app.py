@@ -1350,6 +1350,85 @@ def get_available_matches():
         if conn:
             conn.close()
 
+
+@app.route('/api/matches/create', methods=['POST'])
+def create_match():
+    if 'user_id' not in session or 'team_id' not in session:
+        return jsonify({"message": "Connexion et appartenance à une équipe requises."}), 401
+    
+    user_id = session['user_id']
+    team_id = session['team_id']
+    data = request.get_json()
+    challenge_id = data.get('challenge_id')
+
+    if not challenge_id:
+        return jsonify({"message": "ID de challenge manquant."}), 400
+
+    conn = None
+    try:
+        conn = sqlite3.connect('ctf.db')
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+
+        # 1. Vérifier si l'utilisateur est le créateur de l'équipe
+        c.execute("SELECT creator_id FROM teams WHERE id = ?", (team_id,))
+        team_info = c.fetchone()
+        if not team_info or team_info['creator_id'] != user_id:
+            return jsonify({"message": "Seul le créateur de l'équipe peut démarrer un match."}), 403
+        
+        # 2. Vérifier si le challenge existe
+        c.execute("SELECT name FROM challenges WHERE id = ?", (challenge_id,))
+        challenge_info = c.fetchone()
+        if not challenge_info:
+            return jsonify({"message": "Le challenge demandé n'existe pas."}), 404
+
+        # -------------------------------------------------------------------
+        # PARTIE 2 : INTÉGRATION PROXMOX (À FAIRE PLUS TARD)
+        # Ici, vous devrez ajouter le code pour communiquer avec Proxmox :
+        # - se connecter à l'API Proxmox
+        # - trouver le template de VM pour ce challenge_id
+        # - cloner la VM ou restaurer un snapshot
+        # - démarrer la VM si nécessaire
+        # - récupérer l'adresse IP de la nouvelle instance de VM
+        # Pour l'instant, nous utiliserons une IP de placeholder.
+        # -------------------------------------------------------------------
+        
+        # Placeholder pour l'IP de la VM
+        vm_ip_address = "192.168.1.123" # IP factice pour le test
+        app.logger.info(f"Logique Proxmox simulée. IP attribuée : {vm_ip_address}")
+
+        # 3. Créer une nouvelle entrée dans la table 'matches'
+        status = 'en cours'
+        vm_id_name = f"match_inst_{challenge_id}_{team_id}" # Nom d'instance unique
+        c.execute(
+            "INSERT INTO matches (challenge_id, vm_id, ip_address, status) VALUES (?, ?, ?, ?)",
+            (challenge_id, vm_id_name, vm_ip_address, status)
+        )
+        new_match_id = c.lastrowid
+        app.logger.info(f"Nouveau match créé (ID: {new_match_id}) pour challenge {challenge_id} et équipe {team_id}")
+
+        # 4. Faire rejoindre automatiquement l'équipe au match qu'elle vient de créer
+        access_token = secrets.token_hex(16)
+        c.execute(
+            "INSERT INTO team_matches (team_id, match_id, access_token) VALUES (?, ?, ?)",
+            (team_id, new_match_id, access_token)
+        )
+        
+        conn.commit()
+
+        return jsonify({
+            "message": "Match créé et rejoint avec succès !",
+            "match_id": new_match_id
+        }), 201
+
+    except sqlite3.Error as e:
+        if conn: conn.rollback()
+        app.logger.error(f"Erreur SQLite - create_match: {e}")
+        return jsonify({"message": "Erreur serveur lors de la création du match."}), 500
+    finally:
+        if conn:
+            conn.close()
+
 # Initialiser la base de données au démarrage
 with app.app_context():
     init_db()

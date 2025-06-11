@@ -1087,6 +1087,47 @@
         }
 
 
+        async function startNewMatch(challengeId) {
+            if (!isTeamCreator) {
+                alert("Seul le créateur de l'équipe peut lancer un nouveau match.");
+                return;
+            }
+
+            if (!confirm(`Voulez-vous démarrer un nouveau match pour le challenge ID ${challengeId} ? Cela pourrait utiliser des ressources sur le serveur.`)) {
+                return;
+            }
+
+            const messageEl = document.getElementById('challenges-message'); // Pour afficher le retour
+            messageEl.textContent = `Création du match pour le challenge ${challengeId} en cours... Veuillez patienter.`;
+            messageEl.className = 'info';
+
+            try {
+                // Appel à une nouvelle route API pour créer le match
+                const response = await fetch('/api/matches/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ challenge_id: challengeId })
+                });
+
+                const data = await response.json();
+                messageEl.textContent = data.message;
+                messageEl.className = response.ok ? 'success' : 'error';
+
+                if (response.ok) {
+                    // Si la création a réussi, le backend a créé un match et nous a rejoint automatiquement.
+                    // On peut maintenant rediriger l'utilisateur vers la section des matchs pour voir les détails.
+                    messageEl.textContent += ` Match ID ${data.match_id} créé ! Redirection vers l'interface de match...`;
+                    setTimeout(() => {
+                        showSection('match-operations');
+                    }, 2000);
+                }
+            } catch (error) {
+                console.error('Error in startNewMatch:', error);
+                messageEl.textContent = 'Erreur réseau lors de la création du match.';
+                messageEl.className = 'error';
+            }
+        }
+
         async function fetchChallenges() {
             const messageEl = document.getElementById('challenges-message');
             messageEl.className = 'info';
