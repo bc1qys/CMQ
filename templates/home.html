@@ -90,6 +90,24 @@
             padding: 20px 0;
         }
 
+        .header .scramble-title {
+            font-family: var(--font-mono);
+            font-size: 2.8rem;
+            color: var(--primary-accent);
+            font-weight: 700;
+            margin: 0 0 10px 0;
+            text-shadow: 0 0 10px rgba(88, 166, 255, 0.6);
+            cursor: pointer; /* Le curseur indique qu'on peut cliquer pour relancer l'animation */
+            -webkit-tap-highlight-color: transparent; /* Pour les mobiles */
+        }
+
+        .header .scramble-subtitle {
+            color: var(--text-secondary-color);
+            font-size: 1.1rem;
+            font-weight: 300;
+            min-height: 1.2em; /* Pour éviter les sauts de layout pendant l'animation */
+        }
+
         .header h1 {
             font-family: var(--font-mono);
             font-size: 2.8rem;
@@ -99,95 +117,6 @@
             text-shadow: 0 0 10px var(--primary-accent);
             animation: textGlow 1.5s ease-in-out infinite alternate;
         }
-
-        /* --- MODIFICATION : Styles pour l'animation du titre --- */
-
-        .glitch-wrapper {
-            position: relative;
-            display: inline-block; /* Pour que le wrapper prenne la taille du titre */
-        }
-
-        .glitch-title {
-            font-family: var(--font-mono);
-            font-size: 2.8rem;
-            color: var(--primary-accent);
-            font-weight: 700;
-            margin: 0;
-            text-shadow: 0 0 10px rgba(88, 166, 255, 0.5); /* Lueur de base */
-            position: relative; /* Essentiel pour que les pseudo-éléments se superposent */
-            animation: textFlicker 3s linear infinite; /* Animation de scintillement */
-        }
-
-        /* On crée deux copies du texte (une rouge, une cyan) pour l'effet de glitch */
-        .glitch-title::before,
-        .glitch-title::after {
-            content: attr(data-text); /* Récupère le texte depuis l'attribut data-text */
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--bg-dark); /* Cache le texte original en dessous */
-            overflow: hidden;
-        }
-
-        /* Copie du dessus (cyan) */
-        .glitch-title::before {
-            color: #00ffff; /* Cyan */
-            left: 2px;
-            text-shadow: -2px 0 #ff00ff; /* Magenta */
-            animation: glitch-anim-1 2s linear infinite reverse;
-        }
-
-        /* Copie du dessous (rouge) */
-        .glitch-title::after {
-            color: #ff0000; /* Rouge */
-            left: -2px;
-            text-shadow: 2px 0 #00ffff; /* Cyan */
-            animation: glitch-anim-2 3s linear infinite reverse;
-        }
-
-        /* Keyframes pour les animations de glitch */
-        @keyframes glitch-anim-1 {
-            0% { clip-path: inset(15% 0 86% 0); }
-            10% { clip-path: inset(5% 0 90% 0); }
-            20% { clip-path: inset(20% 0 70% 0); }
-            30% { clip-path: inset(45% 0 50% 0); }
-            40% { clip-path: inset(30% 0 65% 0); }
-            50% { clip-path: inset(10% 0 85% 0); }
-            60% { clip-path: inset(60% 0 35% 0); }
-            70% { clip-path: inset(80% 0 10% 0); }
-            80% { clip-path: inset(40% 0 55% 0); }
-            90% { clip-path: inset(25% 0 78% 0); }
-            100% { clip-path: inset(5% 0 92% 0); }
-        }
-
-        @keyframes glitch-anim-2 {
-            0% { clip-path: inset(90% 0 5% 0); }
-            10% { clip-path: inset(40% 0 58% 0); }
-            20% { clip-path: inset(20% 0 75% 0); }
-            30% { clip-path: inset(60% 0 30% 0); }
-            40% { clip-path: inset(85% 0 5% 0); }
-            50% { clip-path: inset(35% 0 62% 0); }
-            60% { clip-path: inset(10% 0 88% 0); }
-            70% { clip-path: inset(92% 0 5% 0); }
-            80% { clip-path: inset(50% 0 45% 0); }
-            90% { clip-path: inset(70% 0 25% 0); }
-            100% { clip-path: inset(45% 0 50% 0); }
-        }
-
-        /* Animation de scintillement du texte principal */
-        @keyframes textFlicker {
-            0% { opacity: 1; }
-            49% { opacity: 1; }
-            50% { opacity: 0.7; }
-            51% { opacity: 1; }
-            99% { opacity: 1; }
-            100% { opacity: 0.8; }
-        }
-
-/* Supprimer l'ancienne animation de lueur si elle existe toujours */
-/* Retirez la règle @keyframes textGlow si elle est toujours dans votre CSS */
         
         @keyframes textGlow {
             from { text-shadow: 0 0 5px var(--primary-accent), 0 0 10px var(--primary-accent); }
@@ -551,8 +480,9 @@
     <div id="particles-js"></div>
     <div class="container">
         <div class="header">
-            <div class="glitch-wrapper">
-                <h1 class="glitch-title" data-text="< Plateforme C.T.F />">&lt; Plateforme C.T.F /&gt;</h1>
+            <div class="header">
+                <h1 class="scramble-title">&lt; Plateforme C.T.F /&gt;</h1>
+                <p class="scramble-subtitle">Initialisation des protocoles... Accès autorisé. Choisissez votre module.</p>
             </div>
             <p>Initialisation des protocoles... Accès autorisé. Choisissez votre module.</p>
         </div>
@@ -791,7 +721,96 @@
         let teamRole = sessionStorage.getItem('teamRole') || null;
         let isTeamCreator = sessionStorage.getItem('isTeamCreator') === 'true';
 
-        // ... (coller TOUT le reste du JavaScript à partir de la fonction updateProfileDisplay() ici)
+
+        class TextScramble {
+            constructor(el) {
+                this.el = el;
+                // Caractères à utiliser pour l'effet de "brouillage"
+                this.chars = '!<>-_\\/[]{}—=+*^?#________';
+                this.update = this.update.bind(this);
+            }
+
+            setText(newText) {
+                const oldText = this.el.innerText;
+                const length = Math.max(oldText.length, newText.length);
+                const promise = new Promise((resolve) => this.resolve = resolve);
+                this.queue = [];
+
+                for (let i = 0; i < length; i++) {
+                    const from = oldText[i] || '';
+                    const to = newText[i] || '';
+                    const start = Math.floor(Math.random() * 40);
+                    const end = start + Math.floor(Math.random() * 40);
+                    this.queue.push({ from, to, start, end });
+                }
+                
+                cancelAnimationFrame(this.frameRequest);
+                this.frame = 0;
+                this.update();
+                return promise;
+            }
+
+            update() {
+                let output = '';
+                let complete = 0;
+                for (let i = 0, n = this.queue.length; i < n; i++) {
+                    let { from, to, start, end, char } = this.queue[i];
+                    if (this.frame >= end) {
+                        complete++;
+                        output += to;
+                    } else if (this.frame >= start) {
+                        if (!char || Math.random() < 0.28) {
+                            char = this.randomChar();
+                            this.queue[i].char = char;
+                        }
+                        output += `<span class="scramble-char">${char}</span>`;
+                    } else {
+                        output += from;
+                    }
+                }
+
+                this.el.innerHTML = output;
+                if (complete === this.queue.length) {
+                    this.resolve();
+                } else {
+                    this.frameRequest = requestAnimationFrame(this.update);
+                    this.frame++;
+                }
+            }
+
+            randomChar() {
+                return this.chars[Math.floor(Math.random() * this.chars.length)];
+            }
+        }
+
+        // --- Initialisation de l'animation ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const titleEl = document.querySelector('.scramble-title');
+            const subtitleEl = document.querySelector('.scramble-subtitle');
+            
+            if (titleEl && subtitleEl) {
+                const fxTitle = new TextScramble(titleEl);
+                const fxSubtitle = new TextScramble(subtitleEl);
+                
+                const originalTitle = titleEl.innerText;
+                const originalSubtitle = subtitleEl.innerText;
+
+                const runAnimation = () => {
+                    fxTitle.setText(originalTitle);
+                    setTimeout(() => {
+                        fxSubtitle.setText(originalSubtitle);
+                    }, 500); // Lancer le sous-titre un peu après
+                };
+
+                // Lancer l'animation au chargement de la page
+                setTimeout(runAnimation, 500);
+
+                // Relancer l'animation au clic sur le titre
+                titleEl.addEventListener('click', runAnimation);
+            }
+        });
+        /* --- FIN : Animation de texte "Scramble/Decoder" --- */
+
         function updateProfileDisplay() {
             const profileInfoEl = document.getElementById('profile-info');
             if (userId && username) {
