@@ -1309,6 +1309,81 @@ def admin_delete_feedback(feedback_id):
             conn.close()
 
 
+@app.route('/admin/challenges', methods=['GET'])
+def admin_get_challenges():
+    if 'admin_id' not in session:
+        return jsonify({"message": "Accès admin requis."}), 401
+    
+    conn = None
+    try:
+        conn = sqlite3.connect('ctf.db')
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute("SELECT id, name, level, points, flag FROM challenges ORDER BY id DESC")
+        challenges_raw = c.fetchall()
+        challenges_list = [dict(row) for row in challenges_raw] if challenges_raw else []
+        return jsonify({"challenges": challenges_list})
+    except sqlite3.Error as e:
+        app.logger.error(f"Erreur SQLite - admin_get_challenges: {e}")
+        return jsonify({"message": "Erreur serveur lors de la récupération des challenges."}), 500
+    finally:
+        if conn:
+            conn.close()
+
+
+@app.route('/admin/delete_challenge/<int:challenge_id>', methods=['DELETE'])
+def admin_delete_challenge(challenge_id):
+    if 'admin_id' not in session:
+        return jsonify({"message": "Accès admin requis."}), 401
+    
+    app.logger.info(f"Tentative de suppression du challenge ID: {challenge_id} par l'admin ID: {session['admin_id']}")
+    conn = None
+    try:
+        conn = sqlite3.connect('ctf.db')
+        c = conn.cursor()
+        
+        # Avant de supprimer le challenge, il faut supprimer toutes les données qui en dépendent !
+        
+        # 1. Trouver tous les matchs associés à ce challenge
+        c.execute("SELECT id FROM matches WHERE challenge_id = ?", (challenge_id,))
+        matches_to_delete = c.fetchall()
+        if matches_to_delete:
+            match_ids = [row[0] for row in matches_to_delete]
+            # 2. Supprimer les participations des équipes à ces matchs
+            c.execute(f"DELETE FROM team_matches WHERE match_id IN ({','.join('?' for _ in match_ids)})", match_ids)
+            app.logger.debug(f"Suppression des team_matches pour les matchs IDs: {match_ids}")
+            # 3. Supprimer les matchs eux-mêmes
+            c.execute("DELETE FROM matches WHERE challenge_id = ?", (challenge_id,))
+            app.logger.debug(f"Suppression des matchs pour le challenge ID: {challenge_id}")
+
+        # 4. Supprimer les soumissions de défense liées à ce challenge
+        c.execute("DELETE FROM defenses WHERE challenge_id = ?", (challenge_id,))
+        app.logger.debug(f"Suppression des defenses pour le challenge ID: {challenge_id}")
+        
+        # 5. Supprimer les enregistrements de challenges résolus liés à ce challenge
+        c.execute("DELETE FROM solved_challenges WHERE challenge_id = ?", (challenge_id,))
+        app.logger.debug(f"Suppression des solved_challenges pour le challenge ID: {challenge_id}")
+        
+        # 6. Enfin, supprimer le challenge lui-même
+        delete_result = c.execute("DELETE FROM challenges WHERE id = ?", (challenge_id,))
+        
+        conn.commit()
+
+        if delete_result.rowcount > 0:
+            app.logger.info(f"Challenge ID: {challenge_id} et toutes ses données associées ont été supprimés.")
+            return jsonify({"message": "Challenge supprimé avec succès."})
+        else:
+            app.logger.warning(f"Aucun challenge trouvé avec l'ID: {challenge_id} pour suppression.")
+            return jsonify({"message": "Challenge non trouvé."}), 404
+
+    except sqlite3.Error as e:
+        if conn: conn.rollback()
+        app.logger.error(f"Erreur SQLite - admin_delete_challenge: {e}")
+        return jsonify({"message": "Erreur serveur lors de la suppression du challenge."}), 500
+    finally:
+        if conn:
+            conn.close()
+
 @app.route('/api/matches', methods=['GET'])
 def get_available_matches():
     if 'user_id' not in session and 'admin_id' not in session:
