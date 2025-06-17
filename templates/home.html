@@ -474,6 +474,15 @@
         }
         .btn-sm { padding: 5px 10px; font-size: 0.8rem; }
 
+        .btn-danger {
+            background-color: var(--error-color); /* Utilise votre variable --error-color */
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #c0392b; /* Un rouge plus foncé au survol */
+            transform: translateY(-1px);
+        }
+
     </style>
 </head>
 <body>
@@ -609,7 +618,7 @@
                  <p id="team-join-message"></p>
             </div>
              <hr>
-            <div id="leave-team-subsection"> 
+             <div id="leave-team-subsection"> 
                 <h3><i class="fas fa-user-cog"></i> Options d'Escouade</h3>
                 <p id="team-actions-warning" class="info">Vous n'êtes actuellement dans aucune escouade.</p> 
                 <button class="btn secondary hidden" id="leave-team-button" onclick="leaveCurrentTeam()"><i class="fas fa-door-open"></i> Quitter l'Escouade</button>
@@ -842,25 +851,30 @@
             teamActionsWarning.className = 'info'; 
 
             if (userId) { 
-                if (teamId) { 
+                if (teamId) {
+                    // Rafraîchir isTeamCreator pour être sûr d'avoir le bon statut
                     try {
                         const response = await fetch('/teams', { 
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ team_id: teamId }) 
+                            body: JSON.stringify({ team_id: teamId })
                         });
                         if (response.ok) {
                             const data = await response.json();
                             isTeamCreator = data.is_creator;
                             sessionStorage.setItem('isTeamCreator', isTeamCreator.toString());
-                        } else { isTeamCreator = false; }
-                    } catch (error) { isTeamCreator = false; }
+                        } else { 
+                            isTeamCreator = false; // Sécurité en cas d'erreur
+                        }
+                    } catch (error) { 
+                        console.error('Erreur vérification créateur:', error);
+                        isTeamCreator = false; // Sécurité en cas d'erreur
+                    }
                 } else {
                     isTeamCreator = false; 
-                    sessionStorage.setItem('isTeamCreator', 'false');
                 }
 
-
+                // Logique d'affichage basée sur le statut mis à jour
                 if (teamId) { 
                     createTeamForm.classList.add('hidden');
                     createTeamWarning.classList.remove('hidden');
@@ -889,22 +903,9 @@
                     teamActionsWarning.textContent = "Aucune affiliation d'escouade détectée. Vous pouvez en créer ou en rejoindre une.";
                 }
             } else { 
-                createTeamForm.classList.add('hidden');
-                createTeamWarning.classList.remove('hidden');
-                createTeamWarning.textContent = 'Authentification requise pour la formation d\'escouade.';
-                createTeamWarning.className = 'error'; 
-                joinTeamForm.classList.add('hidden');
-                joinTeamWarning.classList.remove('hidden');
-                joinTeamWarning.textContent = 'Authentification requise pour rejoindre une escouade.';
-                joinTeamWarning.className = 'error'; 
-
-                leaveTeamButton.classList.add('hidden');
-                dissolveTeamButton.classList.add('hidden');
-                teamActionsWarning.classList.remove('hidden');
-                teamActionsWarning.textContent = 'Authentification requise pour la gestion d\'escouade.';
-                teamActionsWarning.className = 'error'; 
+                // Logique pour utilisateur non connecté... (le reste de votre fonction)
             }
-            updateProfileDisplay(); 
+            updateProfileDisplay(); // Rafraîchir le profil pour afficher "Commandant" si besoin
         }
 
         async function updateMatchOperationsSection() {
@@ -1100,7 +1101,7 @@
         }
 
         async function leaveCurrentTeam() {
-            const messageEl = document.getElementById('team-action-message'); 
+            const messageEl = document.getElementById('team-action-message');
             messageEl.className = '';
             messageEl.textContent = '';
             try {
@@ -1114,9 +1115,9 @@
                     sessionStorage.removeItem('teamName');
                     sessionStorage.removeItem('teamRole');
                     sessionStorage.removeItem('isTeamCreator');
-                    updateTeamManagementSection(); 
-                    updateMatchOperationsSection();
                     updateProfileDisplay();
+                    updateTeamManagementSection();
+                    updateMatchOperationsSection();
                 }
             } catch (error) {
                 console.error('Error in leaveCurrentTeam:', error);
@@ -1154,9 +1155,9 @@
                         sessionStorage.removeItem('teamName');
                         sessionStorage.removeItem('teamRole');
                         sessionStorage.removeItem('isTeamCreator');
-                        updateTeamManagementSection(); 
-                        updateMatchOperationsSection();
                         updateProfileDisplay();
+                        updateTeamManagementSection();
+                        updateMatchOperationsSection();
                     }
                 } catch (error) {
                     console.error('Error in dissolveCurrentTeam:', error);
@@ -1563,17 +1564,17 @@
             }
         }
 
-        function initializePage() {
+         function initializePage() {
             if (!userId && !window.location.pathname.endsWith('/login') && !window.location.pathname.endsWith('/login.html') ) {
                  console.log("Utilisateur non authentifié, redirection vers le portail de connexion depuis home.html JS.");
                  window.location.href = '/login';
                  return; 
             }
             updateProfileDisplay();
-            updateTeamManagementSection(); 
+            updateTeamManagementSection(); // Ajout important ici
             showSection('profile'); 
         }
-
+        
         async function fetchAvailableMatches() {
         const messageEl = document.getElementById('available-matches-message');
         const tbody = document.getElementById('available-matches-table').querySelector('tbody');

@@ -1314,12 +1314,14 @@ def get_available_matches():
     if 'user_id' not in session and 'admin_id' not in session:
         return jsonify({"message": "Authentification requise."}), 401
 
+    current_team_id = session.get('team_id')
     conn = None
     try:
         conn = sqlite3.connect('ctf.db')
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
-        
+
+        # 1. Obtenir la liste de tous les matchs non terminés
         c.execute("""
             SELECT m.id, m.status, ch.name as challenge_name, ch.level, ch.points 
             FROM matches m
@@ -1329,18 +1331,40 @@ def get_available_matches():
         """)
         matches_raw = c.fetchall()
         matches_list = [dict(row) for row in matches_raw] if matches_raw else []
-        
-        return jsonify({"matches": matches_list})
+
+        # 2. Vérifier si l'équipe de l'utilisateur est dans un match actif
+        active_match_details = None
+        if current_team_id:
+            c.execute("""
+                SELECT 
+                    m.id as match_id, 
+                    m.ip_address, 
+                    ch.name as challenge_name,
+                    tm.access_token
+                FROM team_matches tm
+                JOIN matches m ON tm.match_id = m.id
+                JOIN challenges ch ON m.challenge_id = ch.id
+                WHERE tm.team_id = ? AND m.status = 'en cours'
+            """, (current_team_id,))
+            active_match_raw = c.fetchone()
+            if active_match_raw:
+                active_match_details = dict(active_match_raw)
+                # Construire l'URL Guacamole ici
+                guacamole_ip = "192.168.1.100" # A rendre configurable
+                active_match_details['guacamole_url'] = f"http://{guacamole_ip}/guacamole?token={active_match_details['access_token']}"
+
+        # 3. Renvoyer les deux informations
+        return jsonify({
+            "available_matches": matches_list,
+            "active_match": active_match_details # Sera null si l'équipe n'est dans aucun match
+        })
 
     except sqlite3.Error as e:
-        app.logger.error(f"Erreur SQLite lors de la récupération des matchs : {e}")
+        app.logger.error(f"Erreur SQLite - get_available_matches: {e}")
         return jsonify({"message": "Erreur serveur lors de la récupération des matchs."}), 500
     finally:
         if conn:
             conn.close()
-
-
-# Dans app.py, remplacez la fonction create_match
 
 @app.route('/api/matches/create', methods=['POST'])
 def create_match():
