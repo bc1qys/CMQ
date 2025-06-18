@@ -8,20 +8,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         :root {
-            --bg-light: #f8f9fa;
-            --bg-sidebar: #2c3e50;
-            --text-sidebar: #ecf0f1;
-            --text-dark: #34495e;
-            --text-muted: #7f8c8d;
-            --border-color: #dee2e6;
-            --primary-accent: #3498db;
-            --danger-accent: #e74c3c;
-            --success-accent: #2ecc71;
-            --card-bg: #ffffff;
-            --font-primary: 'Roboto', sans-serif;
+            --bg-light: #f8f9fa; --bg-sidebar: #2c3e50; --text-sidebar: #ecf0f1;
+            --text-dark: #34495e; --text-muted: #7f8c8d; --border-color: #dee2e6;
+            --primary-accent: #3498db; --danger-accent: #e74c3c; --success-accent: #2ecc71;
+            --card-bg: #ffffff; --font-primary: 'Roboto', sans-serif;
             --box-shadow-light: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: var(--font-primary); background-color: var(--bg-light); color: var(--text-dark); display: flex; min-height: 100vh; }
         .sidebar { width: 260px; background-color: var(--bg-sidebar); color: var(--text-sidebar); padding: 20px 0; display: flex; flex-direction: column; position: fixed; height: 100%; box-shadow: 2px 0 5px rgba(0,0,0,0.1); z-index: 1000; }
@@ -29,7 +21,7 @@
         .sidebar-header h1 { font-size: 1.5rem; margin: 0; color: var(--primary-accent); }
         .sidebar-header h1 .fas { margin-right: 10px; }
         .sidebar-nav ul { list-style-type: none; padding: 0; margin-top: 20px; }
-        .sidebar-nav li a { display: block; padding: 12px 20px; color: var(--text-sidebar); text-decoration: none; font-size: 0.95rem; transition: background-color 0.2s ease, padding-left 0.2s ease; border-left: 3px solid transparent; }
+        .sidebar-nav li a { display: block; padding: 12px 20px; color: var(--text-sidebar); text-decoration: none; font-size: 0.95rem; transition: all 0.2s ease; border-left: 3px solid transparent; }
         .sidebar-nav li a .fas { margin-right: 12px; width: 20px; text-align: center; }
         .sidebar-nav li a:hover, .sidebar-nav li a.active { background-color: rgba(236, 240, 241, 0.1); border-left: 3px solid var(--primary-accent); padding-left: 25px; }
         .sidebar-footer { margin-top: auto; padding: 20px; text-align: center; border-top: 1px solid #3e5165;}
@@ -54,7 +46,7 @@
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); }
         th { background-color: #e9ecef; font-weight: 500; text-transform: uppercase; font-size: 0.85rem; }
-        td.actions-cell { text-align: right; }
+        td.actions-cell { text-align: right; white-space: nowrap; }
         .actions-cell button { margin-left: 5px; padding: 5px 10px; font-size: 0.8rem; }
         #feedback-detail-modal { margin-top: 20px; padding: 20px; border-radius: 8px; background: #f9f9f9; border: 1px solid var(--border-color); }
         #detail-feedback-message { white-space: pre-wrap; word-wrap: break-word; background: #eee; padding: 10px; border-radius: 4px; }
@@ -63,7 +55,7 @@
 <body>
     <div class="sidebar">
         <div class="sidebar-header">
-            <h1><i class="fas fa-shield-alt"></i> Admin CTF</h1>
+            <h1><i class="fas fa-user-shield"></i> Admin CTF</h1>
         </div>
         <nav class="sidebar-nav">
             <ul>
@@ -95,7 +87,7 @@
                 <h3>Liste des Joueurs</h3>
                 <table id="players-table">
                     <thead><tr><th>ID</th><th>Nom</th><th>Rôle Utilisateur</th><th>Score</th><th class="actions-cell">Actions</th></tr></thead>
-                    <tbody></tbody>
+                    <tbody></tbody> 
                 </table>
                 <p id="players-message" class="info"></p>
             </div>
@@ -107,7 +99,7 @@
                 <h3>Liste des Équipes</h3>
                 <table id="teams-table">
                     <thead><tr><th>ID</th><th>Nom</th><th>Rôle Équipe</th><th>Créateur</th><th>Membres</th><th class="actions-cell">Actions</th></tr></thead>
-                    <tbody></tbody>
+                    <tbody></tbody> 
                 </table>
                 <p id="teams-message" class="info"></p>
             </div>
@@ -164,7 +156,7 @@
             <div class="card">
                 <h3>Liste des Feedbacks Utilisateurs</h3>
                 <table id="feedback-table">
-                    <thead><tr><th>ID</th><th>Date</th><th>Utilisateur</th><th>Type</th><th>Sujet</th><th>Challenge ID</th><th>Statut</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>ID</th><th>Date</th><th>Utilisateur</th><th>Type</th><th>Sujet</th><th>Challenge ID</th><th>Statut</th><th class="actions-cell">Actions</th></tr></thead>
                     <tbody></tbody>
                 </table>
                 <p id="admin-feedback-message" class="info"></p>
@@ -187,6 +179,8 @@
     </div>
 
     <script>
+        // --- BLOC SCRIPT COMPLET ET CORRIGÉ ---
+
         let isAdminLoggedIn = sessionStorage.getItem('isAdminLoggedIn') === 'true';
 
         function showAdminSection(sectionId) {
@@ -258,7 +252,7 @@
                 if (data.players && data.players.length > 0) {
                     data.players.forEach(player => {
                         const row = document.createElement('tr');
-                        row.innerHTML = `<td>${player.id}</td><td>${player.username}</td><td>${player.preferred_role || 'Joueur'}</td><td>${player.score}</td><td class="actions-cell"><button class="btn-danger btn-delete-player" data-id="${player.id}" data-username="${player.username}"><i class="fas fa-trash-alt"></i></button></td>`;
+                        row.innerHTML = `<td>${player.id}</td><td>${player.username}</td><td>${player.preferred_role || 'Joueur'}</td><td>${player.score}</td><td class="actions-cell"><button class="btn-danger btn-delete-player" data-id="${player.id}" data-username="${player.username}" title="Supprimer"><i class="fas fa-trash-alt"></i></button></td>`;
                         tbody.appendChild(row);
                     });
                     messageEl.textContent = ''; 
@@ -277,7 +271,7 @@
                 if (data.teams && data.teams.length > 0) {
                     data.teams.forEach(team => {
                         const row = document.createElement('tr');
-                        row.innerHTML = `<td>${team.id}</td><td>${team.name}</td><td>${team.role}</td><td>${team.creator_username}</td><td>${team.members.join(', ') || 'Aucun'}</td><td class="actions-cell"><button class="btn-danger btn-delete-team" data-id="${team.id}" data-name="${team.name}"><i class="fas fa-trash-alt"></i></button></td>`;
+                        row.innerHTML = `<td>${team.id}</td><td>${team.name}</td><td>${team.role}</td><td>${team.creator_username}</td><td>${team.members.join(', ')}</td><td class="actions-cell"><button class="btn-danger btn-delete-team" data-id="${team.id}" data-name="${team.name}" title="Supprimer"><i class="fas fa-trash-alt"></i></button></td>`;
                         tbody.appendChild(row);
                     });
                     messageEl.textContent = '';
@@ -288,7 +282,10 @@
         async function createChallenge() {
             const payload = { name: document.getElementById('challenge-name').value, description: document.getElementById('challenge-description').value, level: document.getElementById('challenge-level').value, points: parseInt(document.getElementById('challenge-points').value), flag: document.getElementById('challenge-flag').value, ip: document.getElementById('challenge-ip').value || null };
             const messageEl = document.getElementById('challenge-create-message');
-            if (!payload.name || !payload.description || !payload.level || !payload.points || !payload.flag) { messageEl.textContent = 'Champs obligatoires manquants.'; messageEl.className = 'error'; return; }
+            messageEl.className = ''; messageEl.textContent = '';
+            if (!payload.name || !payload.description || !payload.level || !payload.points || !payload.flag) {
+                messageEl.textContent = 'Champs obligatoires manquants.'; messageEl.className = 'error'; return;
+            }
             try {
                 const response = await fetch('/admin_create_challenge', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 const data = await response.json();
@@ -300,7 +297,7 @@
                     document.getElementById('challenge-points').value = '';
                     document.getElementById('challenge-flag').value = '';
                     document.getElementById('challenge-ip').value = '';
-                    fetchAdminChallenges(); 
+                    fetchAdminChallenges(); // Recharger la liste
                 }
             } catch (error) { messageEl.textContent = 'Erreur réseau.'; messageEl.className = 'error'; }
         }
@@ -308,6 +305,7 @@
         async function createDocumentationArticle() {
             const payload = { title: document.getElementById('doc-title').value, category: document.getElementById('doc-category').value || null, tags: document.getElementById('doc-tags').value || null, difficulty_level: document.getElementById('doc-difficulty').value || null, content: document.getElementById('doc-content').value };
             const messageEl = document.getElementById('doc-create-message');
+            messageEl.className = ''; messageEl.textContent = '';
             if (!payload.title || !payload.content) { messageEl.textContent = 'Titre et contenu obligatoires.'; messageEl.className = 'error'; return; }
             try {
                 const response = await fetch('/admin/documentation/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
@@ -326,15 +324,23 @@
 
         async function handleDeletePlayer(playerId, playerName) {
             if (confirm(`Supprimer joueur "${playerName}" (ID: ${playerId}) ?`)) {
-                try { const response = await fetch(`/admin/delete_player/${playerId}`, { method: 'DELETE' }); const data = await response.json(); alert(data.message); if (response.ok) fetchPlayers(); }
-                catch (error) { alert('Erreur réseau.'); }
+                try {
+                    const response = await fetch(`/admin/delete_player/${playerId}`, { method: 'DELETE' });
+                    const data = await response.json();
+                    alert(data.message);
+                    if (response.ok) fetchPlayers(); 
+                } catch (error) { alert('Erreur réseau.'); }
             }
         }
 
         async function handleDeleteTeam(teamId, teamName) {
             if (confirm(`Supprimer équipe "${teamName}" (ID: ${teamId}) ?`)) {
-                try { const response = await fetch(`/admin/delete_team/${teamId}`, { method: 'DELETE' }); const data = await response.json(); alert(data.message); if (response.ok) fetchTeams(); }
-                catch (error) { alert('Erreur réseau.'); }
+                try {
+                    const response = await fetch(`/admin/delete_team/${teamId}`, { method: 'DELETE' });
+                    const data = await response.json();
+                    alert(data.message);
+                    if (response.ok) fetchTeams(); 
+                } catch (error) { alert('Erreur réseau.'); }
             }
         }
 
@@ -359,8 +365,12 @@
 
         async function handleDeleteChallenge(challengeId, challengeName) {
             if (confirm(`Supprimer le challenge "${challengeName}" (ID: ${challengeId}) ?\n\nATTENTION : Ceci supprimera toutes les données associées !`)) {
-                try { const response = await fetch(`/admin/delete_challenge/${challengeId}`, { method: 'DELETE' }); const data = await response.json(); alert(data.message); if (response.ok) fetchAdminChallenges(); }
-                catch (error) { alert('Erreur réseau.'); }
+                try {
+                    const response = await fetch(`/admin/delete_challenge/${challengeId}`, { method: 'DELETE' });
+                    const data = await response.json();
+                    alert(data.message);
+                    if (response.ok) fetchAdminChallenges();
+                } catch (error) { alert('Erreur réseau.'); }
             }
         }
 
@@ -375,9 +385,9 @@
                 if (data.feedbacks && data.feedbacks.length > 0) {
                     data.feedbacks.forEach(fb => {
                         const row = document.createElement('tr');
-                        row.innerHTML = `<td>${fb.id}</td><td>${fb.timestamp_formatted}</td><td>${fb.username || 'Anonyme'}</td><td>${fb.type}</td><td>${fb.subject}</td><td>${fb.challenge_id_associated || 'N/A'}</td><td><select class="form-control feedback-status-select" data-id="${fb.id}"><option value="Nouveau" ${fb.status === 'Nouveau' ? 'selected' : ''}>Nouveau</option><option value="En cours" ${fb.status === 'En cours' ? 'selected' : ''}>En cours</option><option value="Résolu" ${fb.status === 'Résolu' ? 'selected' : ''}>Résolu</option><option value="Fermé" ${fb.status === 'Fermé' ? 'selected' : ''}>Fermé</option></select></td><td class="actions-cell"><button class="btn-primary" title="Voir le message"><i class="fas fa-eye"></i></button><button class="btn-danger btn-delete-feedback" data-id="${fb.id}" title="Supprimer"><i class="fas fa-trash-alt"></i></button></td>`;
-                        row.querySelector('.btn-primary').addEventListener('click', () => viewFeedbackMessage(fb));
-                        row.querySelector('.feedback-status-select').addEventListener('change', (e) => updateFeedbackStatus(e.target.dataset.id, e.target.value));
+                        row.innerHTML = `<td>${fb.id}</td><td>${fb.timestamp_formatted}</td><td>${fb.username || 'Anonyme'}</td><td>${fb.type}</td><td>${fb.subject}</td><td>${fb.challenge_id_associated || 'N/A'}</td><td><select class="form-control feedback-status-select" data-id="${fb.id}" style="width:auto; padding:5px; font-size:0.85rem;"><option value="Nouveau" ${fb.status === 'Nouveau' ? 'selected' : ''}>Nouveau</option><option value="En cours" ${fb.status === 'En cours' ? 'selected' : ''}>En cours</option><option value="Résolu" ${fb.status === 'Résolu' ? 'selected' : ''}>Résolu</option><option value="Fermé" ${fb.status === 'Fermé' ? 'selected' : ''}>Fermé</option></select></td><td class="actions-cell"><button class="btn-primary" title="Voir le message"><i class="fas fa-eye"></i></button><button class="btn-danger btn-delete-feedback" data-id="${fb.id}" title="Supprimer"><i class="fas fa-trash-alt"></i></button></td>`;
+                        row.querySelector('button.btn-primary').addEventListener('click', () => viewFeedbackMessage(fb));
+                        row.querySelector('select.feedback-status-select').addEventListener('change', (e) => updateFeedbackStatus(e.target.dataset.id, e.target.value));
                         tbody.appendChild(row);
                     });
                     messageEl.textContent = '';
@@ -398,7 +408,10 @@
             try {
                 const response = await fetch(`/admin/api/feedback/update_status/${feedbackId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) });
                 const data = await response.json();
-                alert(data.message);
+                const messageEl = document.getElementById('admin-feedback-message');
+                messageEl.textContent = data.message;
+                messageEl.className = response.ok ? 'success' : 'error';
+                setTimeout(() => { messageEl.textContent = ''; }, 3000);
                 if (!response.ok) fetchAdminFeedbacks();
             } catch (error) { alert('Erreur réseau.'); fetchAdminFeedbacks(); }
         }
@@ -421,10 +434,13 @@
         document.addEventListener('click', function(event) {
             const playerDeleteButton = event.target.closest('.btn-delete-player');
             if (playerDeleteButton) { handleDeletePlayer(playerDeleteButton.dataset.id, playerDeleteButton.dataset.username); return; }
+
             const teamDeleteButton = event.target.closest('.btn-delete-team');
             if (teamDeleteButton) { handleDeleteTeam(teamDeleteButton.dataset.id, teamDeleteButton.dataset.name); return; }
+            
             const challengeDeleteButton = event.target.closest('.btn-delete-challenge');
             if (challengeDeleteButton) { handleDeleteChallenge(challengeDeleteButton.dataset.id, challengeDeleteButton.dataset.name); return; }
+            
             const feedbackDeleteButton = event.target.closest('.btn-delete-feedback');
             if (feedbackDeleteButton) { deleteAdminFeedback(feedbackDeleteButton.dataset.id); return; }
         });
