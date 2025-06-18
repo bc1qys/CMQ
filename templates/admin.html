@@ -73,7 +73,7 @@
     </div>
 
     <div class="main-content">
-        <div class="admin-section" id="dashboard-section">
+        <div class="admin-section hidden" id="dashboard-section">
             <div class="content-header"><h2>Tableau de Bord</h2></div>
             <div class="card">
                 <h3>Bienvenue, Administrateur !</h3>
@@ -192,9 +192,9 @@
         </div>
 
         <div class="admin-section" id="admin-access-denied-section-fallback">
-             <h2>Accès Refusé</h2>
-             <p class="error">Authentification administrateur requise.</p>
-             <p><a href="/login" class="btn-primary" style="text-decoration:none; display:inline-block;">Retour à la Connexion</a></p>
+            <h2 id="fallback-title">Vérification de l'accès...</h2>
+            <p id="fallback-message" class="info">Veuillez patienter.</p>
+            <p id="fallback-login-link" class="hidden"><a href="/login" class="btn-primary" style="text-decoration:none; display:inline-block;">Retour à la Connexion</a></p>
         </div>
     </div>
 
@@ -244,20 +244,40 @@
         
         async function checkAdminLoginAndSetup() {
             const accessDeniedSection = document.getElementById('admin-access-denied-section-fallback');
+            const fallbackTitle = document.getElementById('fallback-title');
+            const fallbackMessage = document.getElementById('fallback-message');
+            const fallbackLink = document.getElementById('fallback-login-link');
+            const sidebar = document.querySelector('.sidebar');
+            
             try {
                 const response = await fetch('/admin_players', { method: 'GET' }); 
                 if (response.ok) {
                     sessionStorage.setItem('isAdminLoggedIn', 'true');
-                    accessDeniedSection.classList.add('hidden'); 
-                    showAdminSection('dashboard'); 
+                    isAdminLoggedIn = true;
+                    accessDeniedSection.classList.add('hidden');
+                    sidebar.classList.remove('hidden');
+                    showAdminSection('dashboard');
                 } else {
-                    throw new Error('Not admin or session expired');
+                    throw new Error('Not an admin or session has expired');
                 }
             } catch (error) {
-                document.querySelector('.sidebar').classList.add('hidden');
+                console.warn('Admin status check failed:', error.message);
+                isAdminLoggedIn = false;
+                sessionStorage.removeItem('isAdminLoggedIn');
+                
+                sidebar.classList.add('hidden');
                 document.querySelector('.main-content').style.marginLeft = '0';
-                document.querySelectorAll('.admin-section').forEach(section => section.classList.add('hidden'));
+                document.querySelectorAll('.admin-section').forEach(section => {
+                    if(section.id !== 'admin-access-denied-section-fallback') {
+                        section.classList.add('hidden');
+                    }
+                });
+                
                 accessDeniedSection.classList.remove('hidden'); 
+                fallbackTitle.textContent = 'Accès Refusé';
+                fallbackMessage.textContent = 'Authentification administrateur requise.';
+                fallbackMessage.className = 'error';
+                fallbackLink.classList.remove('hidden');
             }
         }
 
