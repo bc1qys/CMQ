@@ -1498,7 +1498,6 @@ def create_match():
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
 
-        # --- NOUVELLE VÉRIFICATION : L'équipe est-elle déjà dans un match actif ? ---
         c.execute("""
             SELECT tm.match_id FROM team_matches tm
             JOIN matches m ON tm.match_id = m.id
