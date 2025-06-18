@@ -143,6 +143,7 @@
                 <li><a href="#" onclick="showAdminSection('feedback-management')"><i class="fas fa-envelope-open-text"></i> Gestion Feedbacks</a></li>
             </ul>
         </nav>
+        </nav>
         <div class="sidebar-footer">
             <button class="btn-secondary" id="admin-logout-button"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
         </div>
@@ -235,20 +236,27 @@
                 <table id="feedback-table">
                     <thead>
                         <tr>
-                            <th>ID</th><th>Date</th><th>Utilisateur</th><th>Type</th>
-                            <th>Sujet</th><th>Challenge ID</th><th>Statut</th><th>Actions</th>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Utilisateur</th>
+                            <th>Type</th>
+                            <th>Sujet</th>
+                            <th>Challenge ID</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody></tbody>
+                    <tbody>
+                        </tbody>
                 </table>
                 <p id="admin-feedback-message" class="info"></p>
                 
-                <div id="feedback-detail-modal" class="hidden">
+                <div id="feedback-detail-modal" class="hidden" style="margin-top: 20px; padding: 20px; border-radius: 8px; background: #f9f9f9; border: 1px solid var(--border-color);">
                     <h4>Détail du Feedback <span id="detail-feedback-id"></span></h4>
                     <p><strong>De :</strong> <span id="detail-feedback-user"></span></p>
                     <p><strong>Sujet :</strong> <span id="detail-feedback-subject"></span></p>
                     <p><strong>Message :</strong></p>
-                    <pre id="detail-feedback-message"></pre>
+                    <pre id="detail-feedback-message" style="white-space: pre-wrap; word-wrap: break-word; background: #eee; padding: 10px; border-radius: 4px;"></pre>
                     <button class="btn-secondary" onclick="document.getElementById('feedback-detail-modal').classList.add('hidden')">Fermer</button>
                 </div>
             </div>
@@ -268,12 +276,14 @@
             document.querySelectorAll('.admin-section').forEach(section => {
                 section.classList.add('hidden');
             });
+
             const activeSection = document.getElementById(sectionId + '-section');
             if (activeSection) {
                 activeSection.classList.remove('hidden');
             } else {
-                console.warn("Section admin non trouvée:", sectionId);
-                document.getElementById('dashboard-section').classList.remove('hidden'); // Fallback
+                console.warn("Section admin non trouvée:", sectionId, "Affichage du tableau de bord par défaut.");
+                document.getElementById('dashboard-section').classList.remove('hidden');
+                sectionId = 'dashboard';
             }
 
             document.querySelectorAll('.sidebar-nav li a').forEach(link => {
@@ -283,9 +293,21 @@
                 }
             });
 
-            if (sectionId === 'players') fetchPlayers();
-            if (sectionId === 'teams') fetchTeams();
-            if (sectionId === 'feedback-management') fetchAdminFeedbacks();
+            switch (sectionId) {
+                case 'players':
+                    fetchPlayers();
+                    break;
+                case 'teams':
+                    fetchTeams();
+                    break;
+                case 'challenges':
+                    fetchAdminChallenges(); // Appel pour lister les challenges
+                    break;
+                case 'feedback-management':
+                    fetchAdminFeedbacks(); // Appel pour lister les feedbacks
+                    break;
+                // Les autres sections (dashboard, documentation) n'ont pas besoin de fetch de données au clic
+            }
         }
         
         async function checkAdminLoginAndSetup() {
@@ -330,7 +352,6 @@
                 alert('Erreur réseau lors de la déconnexion.');
             }
         }
-        document.getElementById('admin-logout-button').addEventListener('click', logoutAdmin);
 
         async function fetchPlayers() {
             const messageEl = document.getElementById('players-message');
@@ -500,81 +521,119 @@
         }
 
         // Fonctions pour la gestion des feedbacks
-        async function fetchAdminFeedbacks() {
-            const messageEl = document.getElementById('admin-feedback-message');
-            messageEl.textContent = 'Chargement des feedbacks...'; messageEl.className = 'info';
+        async function fetchAdminChallenges() {
+            const messageEl = document.getElementById('admin-challenges-message');
+            const tbody = document.getElementById('admin-challenges-table').querySelector('tbody');
+            tbody.innerHTML = '';
+            messageEl.textContent = 'Chargement des challenges...';
+            messageEl.className = 'info';
+
             try {
-                const response = await fetch('/admin/api/feedback');
-                if (!response.ok) { const err = await response.json(); throw new Error(err.message || `Erreur HTTP: ${response.status}`); }
+                const response = await fetch('/admin/challenges');
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.message || 'Erreur de chargement');
+                }
                 const data = await response.json();
-                const tbody = document.getElementById('feedback-table').querySelector('tbody');
-                tbody.innerHTML = '';
-                if (data.feedbacks && data.feedbacks.length > 0) {
-                    data.feedbacks.forEach(fb => {
+                
+                if (data.challenges && data.challenges.length > 0) {
+                    data.challenges.forEach(challenge => {
                         const row = document.createElement('tr');
-                        // Utiliser des textContent pour éviter les problèmes d'injection si les données contiennent du HTML
-                        const idCell = document.createElement('td'); idCell.textContent = fb.id;
-                        const dateCell = document.createElement('td'); dateCell.textContent = fb.timestamp_formatted;
-                        const userCell = document.createElement('td'); userCell.textContent = `${fb.username || 'Anonyme'} (ID: ${fb.user_id || 'N/A'})`;
-                        const typeCell = document.createElement('td'); typeCell.textContent = fb.type;
-                        const subjectCell = document.createElement('td'); subjectCell.textContent = fb.subject;
-                        const challengeIdCell = document.createElement('td'); challengeIdCell.textContent = fb.challenge_id_associated || 'N/A';
-                        
-                        const statusCell = document.createElement('td');
-                        const statusSelect = document.createElement('select');
-                        statusSelect.className = 'form-control feedback-status-select'; // Appliquer un style si besoin
-                        statusSelect.dataset.id = fb.id;
-                        ['Nouveau', 'En cours', 'En attente', 'Résolu', 'Fermé', 'Rejeté'].forEach(status => {
-                            const option = document.createElement('option');
-                            option.value = status;
-                            option.textContent = status;
-                            if (fb.status === status) option.selected = true;
-                            statusSelect.appendChild(option);
-                        });
-                        statusSelect.addEventListener('change', (event) => updateFeedbackStatus(event.target.dataset.id, event.target.value));
-                        statusCell.appendChild(statusSelect);
-
-                        const actionsCell = document.createElement('td');
-                        actionsCell.className = 'actions-cell';
-                        const viewButton = document.createElement('button');
-                        viewButton.className = 'btn-primary btn-sm'; // btn-sm n'est pas défini, à ajouter si besoin ou utiliser style existant
-                        viewButton.innerHTML = '<i class="fas fa-eye"></i> Voir';
-                        viewButton.onclick = () => viewFeedbackMessage(fb); // Passer l'objet fb entier
-                        
-                        const deleteButton = document.createElement('button');
-                        deleteButton.className = 'btn-danger btn-sm btn-delete-feedback';
-                        deleteButton.dataset.id = fb.id;
-                        deleteButton.innerHTML = '<i class="fas fa-trash-alt"></i>';
-
-                        actionsCell.appendChild(viewButton);
-                        actionsCell.appendChild(deleteButton);
-
-                        row.appendChild(idCell);
-                        row.appendChild(dateCell);
-                        row.appendChild(userCell);
-                        row.appendChild(typeCell);
-                        row.appendChild(subjectCell);
-                        row.appendChild(challengeIdCell);
-                        row.appendChild(statusCell);
-                        row.appendChild(actionsCell);
+                        row.innerHTML = `
+                            <td>${challenge.id}</td>
+                            <td>${challenge.name}</td>
+                            <td>${challenge.level}</td>
+                            <td>${challenge.points}</td>
+                            <td class="actions-cell">
+                                <button class="btn-danger btn-delete-challenge" data-id="${challenge.id}" data-name="${challenge.name}" title="Supprimer le challenge"><i class="fas fa-trash-alt"></i></button>
+                            </td>
+                        `;
                         tbody.appendChild(row);
                     });
                     messageEl.textContent = '';
                 } else {
-                    messageEl.textContent = 'Aucun feedback pour le moment.'; messageEl.className = 'info';
+                    messageEl.textContent = 'Aucun challenge trouvé.';
                 }
             } catch (error) {
-                console.error('Erreur fetchAdminFeedbacks:', error);
-                messageEl.textContent = error.message || 'Erreur réseau.'; messageEl.className = 'error';
+                messageEl.textContent = error.message;
+                messageEl.className = 'error';
             }
         }
-    
+
+        async function handleDeleteChallenge(challengeId, challengeName) {
+            if (confirm(`Supprimer le challenge "${challengeName}" (ID: ${challengeId}) ?\nATTENTION : Ceci supprimera aussi tous les matchs et données associés !`)) {
+                const messageEl = document.getElementById('admin-challenges-message');
+                messageEl.textContent = `Suppression de "${challengeName}"...`;
+                messageEl.className = 'info';
+                try {
+                    const response = await fetch(`/admin/delete_challenge/${challengeId}`, { method: 'DELETE' });
+                    const data = await response.json();
+                    messageEl.textContent = data.message;
+                    messageEl.className = response.ok ? 'success' : 'error';
+                    if (response.ok) {
+                        fetchAdminChallenges();
+                    }
+                } catch (error) {
+                    messageEl.textContent = 'Erreur réseau lors de la suppression.';
+                    messageEl.className = 'error';
+                }
+            }
+        }
+
+        async function fetchAdminFeedbacks() {
+            const messageEl = document.getElementById('admin-feedback-message');
+            const tbody = document.getElementById('feedback-table').querySelector('tbody');
+            tbody.innerHTML = '';
+            messageEl.textContent = 'Chargement des feedbacks...';
+            messageEl.className = 'info';
+
+            try {
+                const response = await fetch('/admin/api/feedback');
+                if (!response.ok) { const err = await response.json(); throw new Error(err.message); }
+                const data = await response.json();
+                
+                if (data.feedbacks && data.feedbacks.length > 0) {
+                    data.feedbacks.forEach(fb => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${fb.id}</td>
+                            <td>${fb.timestamp_formatted}</td>
+                            <td>${fb.username || 'Anonyme'}</td>
+                            <td>${fb.type}</td>
+                            <td>${fb.subject}</td>
+                            <td>${fb.challenge_id_associated || 'N/A'}</td>
+                            <td>
+                                <select class="form-control feedback-status-select" data-id="${fb.id}" style="width:150px; padding:5px; font-size:0.85rem;">
+                                    <option value="Nouveau" ${fb.status === 'Nouveau' ? 'selected' : ''}>Nouveau</option>
+                                    <option value="En cours" ${fb.status === 'En cours' ? 'selected' : ''}>En cours</option>
+                                    <option value="Résolu" ${fb.status === 'Résolu' ? 'selected' : ''}>Résolu</option>
+                                    <option value="Fermé" ${fb.status === 'Fermé' ? 'selected' : ''}>Fermé</option>
+                                </select>
+                            </td>
+                            <td class="actions-cell">
+                                <button class="btn-primary" title="Voir le message"><i class="fas fa-eye"></i></button>
+                                <button class="btn-danger btn-delete-feedback" data-id="${fb.id}" title="Supprimer le feedback"><i class="fas fa-trash-alt"></i></button>
+                            </td>
+                        `;
+                        row.querySelector('.btn-primary').addEventListener('click', () => viewFeedbackMessage(fb));
+                        tbody.appendChild(row);
+                    });
+                    messageEl.textContent = '';
+                } else {
+                    messageEl.textContent = 'Aucun feedback pour le moment.';
+                }
+            } catch (error) {
+                messageEl.textContent = error.message;
+                messageEl.className = 'error';
+            }
+        }
+
         function viewFeedbackMessage(feedbackObject) {
             const modal = document.getElementById('feedback-detail-modal');
             document.getElementById('detail-feedback-id').textContent = `(#${feedbackObject.id})`;
             document.getElementById('detail-feedback-user').textContent = feedbackObject.username || 'Anonyme';
             document.getElementById('detail-feedback-subject').textContent = feedbackObject.subject;
-            document.getElementById('detail-feedback-message').textContent = feedbackObject.message; // Utiliser textContent pour le pre
+            document.getElementById('detail-feedback-message').textContent = feedbackObject.message;
             modal.classList.remove('hidden');
         }
 
@@ -587,15 +646,12 @@
                     body: JSON.stringify({ status: newStatus })
                 });
                 const data = await response.json();
-                // Afficher le message dans une zone dédiée aux actions de feedback, pas celui de la table globale
-                // Pour l'instant, on utilise le messageEl global
                 messageEl.textContent = data.message;
                 messageEl.className = response.ok ? 'success' : 'error';
-                if (!response.ok) fetchAdminFeedbacks(); // Recharger si erreur pour restaurer l'ancien statut dans le select
+                setTimeout(() => { messageEl.textContent = ''; messageEl.className = 'info'; }, 3000);
             } catch (error) {
-                console.error('Erreur updateFeedbackStatus:', error);
-                messageEl.textContent = 'Erreur réseau.'; messageEl.className = 'error';
-                fetchAdminFeedbacks(); 
+                messageEl.textContent = 'Erreur réseau lors de la mise à jour.';
+                messageEl.className = 'error';
             }
         }
 
@@ -603,35 +659,52 @@
             if (confirm(`Êtes-vous sûr de vouloir supprimer le feedback ID ${feedbackId} ?`)) {
                 const messageEl = document.getElementById('admin-feedback-message');
                 try {
-                    const response = await fetch(`/admin/api/feedback/delete/${feedbackId}`, {method: 'DELETE'});
+                    const response = await fetch(`/admin/api/feedback/delete/${feedbackId}`, { method: 'DELETE' });
                     const data = await response.json();
                     messageEl.textContent = data.message;
                     messageEl.className = response.ok ? 'success' : 'error';
-                    if (response.ok) fetchAdminFeedbacks();
+                    if (response.ok) {
+                        fetchAdminFeedbacks();
+                    }
                 } catch (error) {
-                    console.error('Erreur deleteAdminFeedback:', error);
-                    messageEl.textContent = 'Erreur réseau.'; messageEl.className = 'error';
+                    messageEl.textContent = 'Erreur réseau lors de la suppression.';
+                    messageEl.className = 'error';
                 }
             }
         }
+        
+        document.getElementById('admin-logout-button').addEventListener('click', logoutAdmin);
+        document.getElementById('create-challenge-button').addEventListener('click', createChallenge);
+        document.getElementById('create-doc-button').addEventListener('click', createDocumentationArticle);
 
-        // Écouteur d'événements global
         document.addEventListener('click', function(event) {
             const playerDeleteButton = event.target.closest('.btn-delete-player');
             if (playerDeleteButton) {
                 handleDeletePlayer(playerDeleteButton.dataset.id, playerDeleteButton.dataset.username);
+                return;
             }
+
             const teamDeleteButton = event.target.closest('.btn-delete-team');
             if (teamDeleteButton) {
                 handleDeleteTeam(teamDeleteButton.dataset.id, teamDeleteButton.dataset.name);
+                return;
             }
+            
+            const challengeDeleteButton = event.target.closest('.btn-delete-challenge');
+            if (challengeDeleteButton) {
+                handleDeleteChallenge(challengeDeleteButton.dataset.id, challengeDeleteButton.dataset.name);
+                return;
+            }
+            
             const feedbackDeleteButton = event.target.closest('.btn-delete-feedback');
             if (feedbackDeleteButton) {
                 deleteAdminFeedback(feedbackDeleteButton.dataset.id);
+                return;
             }
         });
-        
+
         checkAdminLoginAndSetup();
+
     </script>
 </body>
 </html>
