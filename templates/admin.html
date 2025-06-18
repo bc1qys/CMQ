@@ -203,7 +203,7 @@
         let isAdminLoggedIn = sessionStorage.getItem('isAdminLoggedIn') === 'true';
 
         function showAdminSection(sectionId) {
-                document.querySelectorAll('.admin-section').forEach(section => {
+            document.querySelectorAll('.admin-section').forEach(section => {
                 section.classList.add('hidden');
             });
 
@@ -214,6 +214,7 @@
                 console.warn("Section admin non trouvée:", sectionId, "Affichage du tableau de bord par défaut.");
                 document.getElementById('dashboard-section').classList.remove('hidden');
                 sectionId = 'dashboard';
+            }
 
             document.querySelectorAll('.sidebar-nav li a').forEach(link => {
                 link.classList.remove('active');
