@@ -985,75 +985,75 @@ def admin_delete_team(team_id):
     finally:
         conn.close()
 #Doc
-@app.route('/api/documentation/articles', methods=['GET'])
-def get_documentation_articles():
-    # Assurez-vous que l'utilisateur est connecté pour accéder à la documentation
-    if 'user_id' not in session and 'admin_id' not in session:
-        # Renvoyer une erreur JSON, pas une redirection HTML
-        return jsonify({"message": "Authentification requise pour accéder à la documentation."}), 401
-
-    conn = None  # Initialiser conn à None
-    try:
-        conn = sqlite3.connect('ctf.db')
-        conn.row_factory = sqlite3.Row # Pour accéder aux colonnes par leur nom
-        c = conn.cursor()
-        
-        # Récupérer les champs utiles pour la liste
-        c.execute("SELECT id, title, category, difficulty_level, tags FROM documentation_articles ORDER BY category, title")
-        articles_raw = c.fetchall()
-        
-        articles_list = []
-        if articles_raw:
-            articles_list = [dict(row) for row in articles_raw]
-            
-        app.logger.debug(f"Articles de documentation récupérés : {len(articles_list)} articles.")
-        return jsonify({"articles": articles_list})
-
-    except sqlite3.Error as e:
-        app.logger.error(f"Erreur SQLite lors de la récupération des articles de documentation : {e}")
-        return jsonify({"message": "Erreur serveur lors de la récupération de la documentation."}), 500
-    except Exception as e:
-        app.logger.error(f"Erreur générale lors de la récupération des articles de documentation : {e}")
-        return jsonify({"message": "Erreur serveur inattendue."}), 500
-    finally:
-        if conn:
-            conn.close()
-
-@app.route('/api/documentation/article/<int:article_id>', methods=['GET'])
-def get_documentation_article(article_id):
-    if 'user_id' not in session and 'admin_id' not in session:
-        return jsonify({"message": "Authentification requise."}), 401
-
+@app.route('/admin/api/documentation', methods=['GET'])
+def admin_get_documentation():
+    if 'admin_id' not in session:
+        return jsonify({"message": "Accès admin requis."}), 401
+    
     conn = None
     try:
         conn = sqlite3.connect('ctf.db')
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
-        
-        c.execute("SELECT id, title, content, category, difficulty_level, tags, created_at, updated_at FROM documentation_articles WHERE id = ?", (article_id,))
-        article_raw = c.fetchone()
-        
-        if article_raw:
-            article_dict = dict(article_raw)
-            app.logger.debug(f"Article ID {article_id} trouvé : {article_dict['title']}")
-            # Si vous stockez en Markdown et voulez le convertir en HTML ici :
-            # import markdown
-            # article_dict['content_html'] = markdown.markdown(article_dict['content'])
-            # Puis envoyez 'content_html' au lieu de 'content' brut, ou en plus.
-            return jsonify(article_dict)
-        else:
-            app.logger.warning(f"Aucun article de documentation trouvé avec l'ID: {article_id}")
-            return jsonify({"message": "Article non trouvé."}), 404
-
+        c.execute("SELECT id, title, category, difficulty_level FROM documentation_articles ORDER BY id DESC")
+        articles = [dict(row) for row in c.fetchall()]
+        return jsonify({"articles": articles})
     except sqlite3.Error as e:
-        app.logger.error(f"Erreur SQLite lors de la récupération de l'article ID {article_id} : {e}")
-        return jsonify({"message": "Erreur serveur lors de la récupération de l'article."}), 500
-    except Exception as e:
-        app.logger.error(f"Erreur générale lors de la récupération de l'article ID {article_id} : {e}")
-        return jsonify({"message": "Erreur serveur inattendue."}), 500
+        app.logger.error(f"Erreur SQLite - admin_get_documentation: {e}")
+        return jsonify({"message": "Erreur serveur."}), 500
     finally:
         if conn:
             conn.close()
+
+@app.route('/admin/documentation/delete/<int:article_id>', methods=['DELETE'])
+def admin_delete_documentation(article_id):
+    if 'admin_id' not in session:
+        return jsonify({"message": "Accès admin requis."}), 401
+    
+    conn = None
+    try:
+        conn = sqlite3.connect('ctf.db')
+        c = conn.cursor()
+        delete_result = c.execute("DELETE FROM documentation_articles WHERE id = ?", (article_id,))
+        conn.commit()
+
+        if delete_result.rowcount > 0:
+            app.logger.info(f"Article de documentation ID: {article_id} supprimé par admin ID {session['admin_id']}")
+            return jsonify({"message": "Article supprimé avec succès."})
+        else:
+            return jsonify({"message": "Article non trouvé."}), 404
+    except sqlite3.Error as e:
+        if conn: conn.rollback()
+        app.logger.error(f"Erreur SQLite - admin_delete_documentation: {e}")
+        return jsonify({"message": "Erreur serveur lors de la suppression."}), 500
+    finally:
+        if conn:
+            conn.close()
+
+# Optionnel : Route pour récupérer un article (utile pour un futur formulaire de modification)
+@app.route('/admin/api/documentation/<int:article_id>', methods=['GET'])
+def admin_get_single_documentation(article_id):
+    if 'admin_id' not in session:
+        return jsonify({"message": "Accès admin requis."}), 401
+    
+    conn = None
+    try:
+        conn = sqlite3.connect('ctf.db')
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute("SELECT * FROM documentation_articles WHERE id = ?", (article_id,))
+        article = c.fetchone()
+        if article:
+            return jsonify(dict(article))
+        else:
+            return jsonify({"message": "Article non trouvé."}), 404
+    except sqlite3.Error as e:
+        app.logger.error(f"Erreur SQLite - admin_get_single_documentation: {e}")
+        return jsonify({"message": "Erreur serveur."}), 500
+    finally:
+        if conn:
+            conn.close()
+
 @app.route('/admin/documentation/create', methods=['POST'])
 def admin_create_documentation():
     if 'admin_id' not in session:

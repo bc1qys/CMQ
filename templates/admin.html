@@ -134,11 +134,30 @@
 
         <div class="admin-section hidden" id="documentation-section">
             <div class="content-header"><h2>Gestion de la Documentation</h2></div>
+
             <div class="card">
-                <h3>Ajouter un Nouvel Article</h3>
-                <input class="form-control" id="doc-title" placeholder="Titre de l'article">
-                <input class="form-control" id="doc-category" placeholder="Catégorie (ex: Sécurité Web)">
-                <input class="form-control" id="doc-tags" placeholder="Tags (séparés par virgule)">
+                <h3>Liste des Articles de Documentation</h3>
+                <table id="admin-documentation-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Titre</th>
+                            <th>Catégorie</th>
+                            <th>Niveau</th>
+                            <th class="actions-cell">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <p id="admin-documentation-message" class="info"></p>
+            </div>
+
+            <div class="card">
+                <h3>Ajouter ou Modifier un Article</h3>
+                <p class="info">Pour modifier un article, cliquez sur son bouton "Modifier" dans la liste ci-dessus. Ses informations seront chargées dans ce formulaire.</p>
+                <input type="hidden" id="doc-id"> <input class="form-control" id="doc-title" placeholder="Titre de l'article">
+                <input class="form-control" id="doc-category" placeholder="Catégorie (ex: Sécurité Web, Cryptographie)">
+                <input class="form-control" id="doc-tags" placeholder="Tags (séparés par virgule, ex: SQLi, XSS)">
                 <select class="form-control" id="doc-difficulty">
                     <option value="">Choisir un niveau</option>
                     <option value="Débutant">Débutant</option>
@@ -146,7 +165,8 @@
                     <option value="Avancé">Avancé</option>
                 </select>
                 <textarea class="form-control" id="doc-content" placeholder="Contenu de l'article (Markdown supporté)"></textarea>
-                <button class="btn-primary" id="create-doc-button"><i class="fas fa-save"></i> Sauvegarder Article</button>
+                <button class="btn-primary" id="save-doc-button"><i class="fas fa-save"></i> Sauvegarder Article</button>
+                <button class="btn-secondary" id="clear-doc-form-button" type="button" style="display: none;">Annuler la modification</button>
                 <p id="doc-create-message"></p>
             </div>
         </div>
@@ -179,22 +199,21 @@
     </div>
 
     <script>
-        // --- BLOC SCRIPT COMPLET ET CORRIGÉ ---
-
+        
         let isAdminLoggedIn = sessionStorage.getItem('isAdminLoggedIn') === 'true';
 
         function showAdminSection(sectionId) {
-            document.querySelectorAll('.admin-section').forEach(section => {
+                document.querySelectorAll('.admin-section').forEach(section => {
                 section.classList.add('hidden');
             });
+
             const activeSection = document.getElementById(sectionId + '-section');
             if (activeSection) {
                 activeSection.classList.remove('hidden');
             } else {
-                console.warn("Section admin non trouvée:", sectionId);
+                console.warn("Section admin non trouvée:", sectionId, "Affichage du tableau de bord par défaut.");
                 document.getElementById('dashboard-section').classList.remove('hidden');
                 sectionId = 'dashboard';
-            }
 
             document.querySelectorAll('.sidebar-nav li a').forEach(link => {
                 link.classList.remove('active');
@@ -204,10 +223,21 @@
             });
 
             switch (sectionId) {
-                case 'players': fetchPlayers(); break;
-                case 'teams': fetchTeams(); break;
-                case 'challenges': fetchAdminChallenges(); break;
-                case 'feedback-management': fetchAdminFeedbacks(); break;
+                case 'players':
+                    fetchPlayers();
+                    break;
+                case 'teams':
+                    fetchTeams();
+                    break;
+                case 'challenges':
+                    fetchAdminChallenges();
+                    break;
+                case 'documentation':
+                    fetchAdminDocumentation(); 
+                    break;
+                case 'feedback-management':
+                    fetchAdminFeedbacks();
+                    break;
             }
         }
         
@@ -229,6 +259,59 @@
                 accessDeniedSection.classList.remove('hidden'); 
             }
         }
+
+        async function fetchAdminDocumentation() {
+            const messageEl = document.getElementById('admin-documentation-message');
+            const tbody = document.getElementById('admin-documentation-table').querySelector('tbody');
+            tbody.innerHTML = '';
+            messageEl.textContent = 'Chargement de la documentation...';
+            messageEl.className = 'info';
+
+            try {
+                const response = await fetch('/admin/api/documentation');
+                if (!response.ok) { const err = await response.json(); throw new Error(err.message); }
+                const data = await response.json();
+                
+                if (data.articles && data.articles.length > 0) {
+                    data.articles.forEach(article => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${article.id}</td>
+                            <td>${article.title}</td>
+                            <td>${article.category || 'N/A'}</td>
+                            <td>${article.difficulty_level || 'N/A'}</td>
+                            <td class="actions-cell">
+                                <button class="btn-primary" onclick="loadArticleForEdit(${article.id})" title="Modifier"><i class="fas fa-edit"></i></button>
+                                <button class="btn-danger btn-delete-doc" data-id="${article.id}" data-name="${article.title}" title="Supprimer"><i class="fas fa-trash-alt"></i></button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                    messageEl.textContent = '';
+                } else {
+                    messageEl.textContent = 'Aucun article de documentation trouvé.';
+                }
+            } catch (error) {
+                messageEl.textContent = `Erreur: ${error.message}`;
+                messageEl.className = 'error';
+            }
+        }
+
+        async function handleDeleteDocumentation(articleId, articleTitle) {
+            if (confirm(`Voulez-vous vraiment supprimer l'article "${articleTitle}" (ID: ${articleId}) ?`)) {
+                try {
+                    const response = await fetch(`/admin/documentation/delete/${articleId}`, { method: 'DELETE' });
+                    const data = await response.json();
+                    alert(data.message);
+                    if (response.ok) {
+                        fetchAdminDocumentation();
+                    }
+                } catch (error) {
+                    alert('Erreur réseau lors de la suppression.');
+                }
+            }
+        }
+
 
         async function logoutAdmin() {
             try {
@@ -430,7 +513,6 @@
         document.getElementById('admin-logout-button').addEventListener('click', logoutAdmin);
         document.getElementById('create-challenge-button').addEventListener('click', createChallenge);
         document.getElementById('create-doc-button').addEventListener('click', createDocumentationArticle);
-
         document.addEventListener('click', function(event) {
             const playerDeleteButton = event.target.closest('.btn-delete-player');
             if (playerDeleteButton) { handleDeletePlayer(playerDeleteButton.dataset.id, playerDeleteButton.dataset.username); return; }
@@ -443,7 +525,13 @@
             
             const feedbackDeleteButton = event.target.closest('.btn-delete-feedback');
             if (feedbackDeleteButton) { deleteAdminFeedback(feedbackDeleteButton.dataset.id); return; }
-        });
+
+            const docDeleteButton = event.target.closest('.btn-delete-doc');
+            if (docDeleteButton) {
+                handleDeleteDocumentation(docDeleteButton.dataset.id, docDeleteButton.dataset.name);
+                return;
+            }
+            });
         
         checkAdminLoginAndSetup();
     </script>
