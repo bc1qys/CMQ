@@ -195,29 +195,41 @@
         let isAdminLoggedIn = sessionStorage.getItem('isAdminLoggedIn') === 'true';
 
         function showAdminSection(sectionId) {
-            document.querySelectorAll('.admin-section').forEach(section => section.classList.add('hidden'));
+            document.querySelectorAll('.admin-section').forEach(section => {
+                section.classList.add('hidden');
+            });
             const activeSection = document.getElementById(sectionId + '-section');
             if (activeSection) {
                 activeSection.classList.remove('hidden');
             } else {
-                console.warn("Section admin non trouvée:", sectionId);
+                console.warn("Section admin non trouvée:", sectionId, "Affichage du tableau de bord par défaut.");
                 document.getElementById('dashboard-section').classList.remove('hidden');
                 sectionId = 'dashboard';
             }
 
             document.querySelectorAll('.sidebar-nav li a').forEach(link => {
                 link.classList.remove('active');
-                if (link.getAttribute('onclick')?.includes(`'${sectionId}'`)) {
+                if (link.getAttribute('onclick') && link.getAttribute('onclick').includes(`'${sectionId}'`)) {
                     link.classList.add('active');
                 }
             });
 
             switch (sectionId) {
-                case 'players': fetchPlayers(); break;
-                case 'teams': fetchTeams(); break;
-                case 'challenges': fetchAdminChallenges(); break;
-                case 'documentation': fetchAdminDocumentation(); break;
-                case 'feedback-management': fetchAdminFeedbacks(); break;
+                case 'players':
+                    fetchPlayers();
+                    break;
+                case 'teams':
+                    fetchTeams();
+                    break;
+                case 'challenges':
+                    fetchAdminChallenges();
+                    break;
+                case 'documentation':
+                    fetchAdminDocumentation(); 
+                    break;
+                case 'feedback-management':
+                    fetchAdminFeedbacks();
+                    break;
             }
         }
         
@@ -417,6 +429,21 @@
             } catch (error) { messageEl.textContent = 'Erreur réseau.'; messageEl.className = 'error'; }
         }
 
+        async function handleDeleteDocumentation(articleId, articleTitle) {
+            if (confirm(`Voulez-vous vraiment supprimer l'article "${articleTitle}" (ID: ${articleId}) ?`)) {
+                try {
+                    const response = await fetch(`/admin/documentation/delete/${articleId}`, { method: 'DELETE' });
+                    const data = await response.json();
+                    alert(data.message);
+                    if (response.ok) {
+                        fetchAdminDocumentation(); // Recharger la liste
+                    }
+                } catch (error) {
+                    alert('Erreur réseau lors de la suppression.');
+                }
+            }
+        }
+
         async function loadArticleForEdit(articleId) {
             try {
                 const response = await fetch(`/admin/api/documentation/${articleId}`);
@@ -436,7 +463,6 @@
         async function handleDeletePlayer(playerId, playerName) { if (confirm(`Supprimer joueur "${playerName}" ?`)) { try { const r=await fetch(`/admin/delete_player/${playerId}`,{method:'DELETE'});const d=await r.json();alert(d.message);if(r.ok)fetchPlayers();}catch(e){alert('Erreur réseau.');}}}
         async function handleDeleteTeam(teamId, teamName) { if (confirm(`Supprimer équipe "${teamName}" ?`)) { try { const r=await fetch(`/admin/delete_team/${teamId}`,{method:'DELETE'});const d=await r.json();alert(d.message);if(r.ok)fetchTeams();}catch(e){alert('Erreur réseau.');}}}
         async function handleDeleteChallenge(challengeId, challengeName) { if (confirm(`Supprimer le challenge "${challengeName}" et toutes ses données associées ?`)) { try { const r=await fetch(`/admin/delete_challenge/${challengeId}`,{method:'DELETE'});const d=await r.json();alert(d.message);if(r.ok)fetchAdminChallenges();}catch(e){alert('Erreur réseau.');}}}
-        async function handleDeleteDocumentation(articleId, articleTitle) { if (confirm(`Supprimer l'article "${articleTitle}" ?`)) { try { const r=await fetch(`/admin/documentation/delete/${articleId}`,{method:'DELETE'});const d=await r.json();alert(d.message);if(r.ok)fetchAdminDocumentation();}catch(e){alert('Erreur réseau.');}}}
         async function deleteAdminFeedback(feedbackId) { if (confirm(`Supprimer le feedback ID ${feedbackId} ?`)) { try { const r=await fetch(`/admin/api/feedback/delete/${feedbackId}`,{method:'DELETE'});const d=await r.json();alert(d.message);if(r.ok)fetchAdminFeedbacks();}catch(e){alert('Erreur réseau.');}}}
         async function updateFeedbackStatus(feedbackId, newStatus) { try { const r=await fetch(`/admin/api/feedback/update_status/${feedbackId}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:newStatus})});const d=await r.json();const m=document.getElementById('admin-feedback-message');m.textContent=d.message;m.className=r.ok?'success':'error';setTimeout(()=>{m.textContent='';},3000);if(!r.ok)fetchAdminFeedbacks();}catch(e){alert('Erreur réseau.');fetchAdminFeedbacks();}}
         function viewFeedbackMessage(feedbackObject) {
