@@ -87,10 +87,7 @@ Avant de commencer, assurez-vous d'avoir installé :
    ```bash
    pip install -r requirements.txt
    ```
-   *Si le fichier `requirements.txt` n'est pas encore créé, vous pouvez le générer depuis votre environnement virtuel actuel (où vous avez installé Flask, bcrypt, etc.) avec :*
-   ```bash
-   pip freeze > requirements.txt
-   ```
+
    *Assurez-vous que `Flask`, `bcrypt`, et `waitress` ou `CherryPy` (selon votre choix pour Windows) sont dans ce fichier.*
 
 4. **Initialisation de la base de données :**  
