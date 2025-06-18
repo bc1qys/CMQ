@@ -17,115 +17,47 @@
             --primary-accent: #3498db;
             --danger-accent: #e74c3c;
             --success-accent: #2ecc71;
-            --warning-accent: #f39c12;
             --card-bg: #ffffff;
             --font-primary: 'Roboto', sans-serif;
             --box-shadow-light: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: var(--font-primary);
-            background-color: var(--bg-light);
-            color: var(--text-dark);
-            display: flex;
-            min-height: 100vh;
-        }
-
-        .sidebar {
-            width: 260px; background-color: var(--bg-sidebar); color: var(--text-sidebar);
-            padding: 20px 0; display: flex; flex-direction: column; position: fixed;
-            height: 100%; box-shadow: 2px 0 5px rgba(0,0,0,0.1); z-index: 1000;
-        }
+        body { font-family: var(--font-primary); background-color: var(--bg-light); color: var(--text-dark); display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background-color: var(--bg-sidebar); color: var(--text-sidebar); padding: 20px 0; display: flex; flex-direction: column; position: fixed; height: 100%; box-shadow: 2px 0 5px rgba(0,0,0,0.1); z-index: 1000; }
         .sidebar-header { padding: 0 20px 20px 20px; text-align: center; border-bottom: 1px solid #3e5165; }
         .sidebar-header h1 { font-size: 1.5rem; margin: 0; color: var(--primary-accent); }
         .sidebar-header h1 .fas { margin-right: 10px; }
         .sidebar-nav ul { list-style-type: none; padding: 0; margin-top: 20px; }
-        .sidebar-nav li a {
-            display: block; padding: 12px 20px; color: var(--text-sidebar); text-decoration: none;
-            font-size: 0.95rem; transition: background-color 0.2s ease, padding-left 0.2s ease;
-            border-left: 3px solid transparent;
-        }
+        .sidebar-nav li a { display: block; padding: 12px 20px; color: var(--text-sidebar); text-decoration: none; font-size: 0.95rem; transition: background-color 0.2s ease, padding-left 0.2s ease; border-left: 3px solid transparent; }
         .sidebar-nav li a .fas { margin-right: 12px; width: 20px; text-align: center; }
-        .sidebar-nav li a:hover, .sidebar-nav li a.active {
-            background-color: rgba(236, 240, 241, 0.1); border-left: 3px solid var(--primary-accent);
-            padding-left: 25px;
-        }
+        .sidebar-nav li a:hover, .sidebar-nav li a.active { background-color: rgba(236, 240, 241, 0.1); border-left: 3px solid var(--primary-accent); padding-left: 25px; }
         .sidebar-footer { margin-top: auto; padding: 20px; text-align: center; border-top: 1px solid #3e5165;}
         .sidebar-footer button { width: 100%; }
-
-        .main-content {
-            margin-left: 260px; padding: 30px; width: calc(100% - 260px); overflow-y: auto;
-        }
+        .main-content { margin-left: 260px; padding: 30px; width: calc(100% - 260px); }
         .content-header { margin-bottom: 30px; }
         .content-header h2 { font-size: 1.8rem; color: var(--text-dark); margin: 0; }
-
-        .card {
-            background-color: var(--card-bg); padding: 25px; border-radius: 8px;
-            margin-bottom: 25px; box-shadow: var(--box-shadow-light);
-        }
-        .card h3 {
-            font-size: 1.3rem; color: var(--primary-accent); margin-top: 0; margin-bottom: 20px;
-            padding-bottom: 10px; border-bottom: 1px solid var(--border-color);
-        }
-
-        .error { color: var(--danger-accent); }
-        .success { color: var(--success-accent); }
-        .info { color: var(--text-muted); }
-
-        .form-control {
-            display: block; width: 100%; padding: 10px 12px; margin-bottom: 15px;
-            font-size: 0.95rem; border-radius: 5px; border: 1px solid var(--border-color);
-            background-color: #fff; color: var(--text-dark);
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-        .form-control:focus {
-            outline: none; border-color: var(--primary-accent);
-            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-        }
+        .card { background-color: var(--card-bg); padding: 25px; border-radius: 8px; margin-bottom: 25px; box-shadow: var(--box-shadow-light); }
+        .card h3 { font-size: 1.3rem; color: var(--primary-accent); margin-top: 0; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
+        .error { color: var(--danger-accent); } .success { color: var(--success-accent); } .info { color: var(--text-muted); }
+        .form-control { display: block; width: 100%; padding: 10px 12px; margin-bottom: 15px; font-size: 0.95rem; border-radius: 5px; border: 1px solid var(--border-color); }
+        .form-control:focus { outline: none; border-color: var(--primary-accent); box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2); }
         textarea.form-control { min-height: 120px; resize: vertical; }
-        
-        button, .btn {
-            padding: 10px 18px; font-size: 0.9rem; font-weight: 500; border-radius: 5px;
-            cursor: pointer; transition: background-color 0.2s ease, opacity 0.2s ease;
-            border: none; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 10px;
-        }
+        button, .btn { padding: 10px 18px; font-size: 0.9rem; font-weight: 500; border-radius: 5px; cursor: pointer; transition: all 0.2s ease; border: none; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 10px; }
         .btn-primary { background-color: var(--primary-accent); color: white; }
         .btn-primary:hover { background-color: #2980b9; }
         .btn-secondary { background-color: #7f8c8d; color: white; }
         .btn-secondary:hover { background-color: #6c7a89; }
         .btn-danger { background-color: var(--danger-accent); color: white; }
         .btn-danger:hover { background-color: #c0392b; }
-        .btn-success { background-color: var(--success-accent); color: white; }
-        .btn-success:hover { background-color: #27ae60; }
-
         .hidden { display: none !important; }
-
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); }
-        th {
-            background-color: #e9ecef; color: var(--text-dark); font-weight: 500;
-            text-transform: uppercase; font-size: 0.85rem;
-        }
-        tr:nth-child(even) { background-color: #fdfdfe; }
-        tr:hover { background-color: #f1f4f8; }
+        th { background-color: #e9ecef; font-weight: 500; text-transform: uppercase; font-size: 0.85rem; }
         td.actions-cell { text-align: right; }
         .actions-cell button { margin-left: 5px; padding: 5px 10px; font-size: 0.8rem; }
-
-        /* Styles pour la modal de détail du feedback */
-        #feedback-detail-modal {
-            margin-top: 20px; padding: 20px; border-radius: 8px;
-            background: var(--card-bg); box-shadow: var(--box-shadow-medium);
-        }
-        #feedback-detail-modal h4 { color: var(--primary-accent); margin-bottom: 15px; }
-        #feedback-detail-modal p { margin-bottom: 8px; }
-        #detail-feedback-message {
-            white-space: pre-wrap; word-wrap: break-word; background: var(--bg-light);
-            padding: 10px; border-radius: 4px; border: 1px solid var(--border-color);
-            max-height: 300px; overflow-y: auto; margin-top: 5px;
-        }
-        #feedback-detail-modal button { margin-top: 15px; }
+        #feedback-detail-modal { margin-top: 20px; padding: 20px; border-radius: 8px; background: #f9f9f9; border: 1px solid var(--border-color); }
+        #detail-feedback-message { white-space: pre-wrap; word-wrap: break-word; background: #eee; padding: 10px; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -143,7 +75,6 @@
                 <li><a href="#" onclick="showAdminSection('feedback-management')"><i class="fas fa-envelope-open-text"></i> Gestion Feedbacks</a></li>
             </ul>
         </nav>
-        </nav>
         <div class="sidebar-footer">
             <button class="btn-secondary" id="admin-logout-button"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
         </div>
@@ -155,7 +86,6 @@
             <div class="card">
                 <h3>Bienvenue, Administrateur !</h3>
                 <p>Utilisez le menu de navigation à gauche pour gérer les différents aspects de la plateforme CTF.</p>
-                <p class="info">Des statistiques sur l'utilisation de la plateforme, le nombre d'inscrits, les challenges populaires, etc., pourraient être affichées ici à l'avenir.</p>
             </div>
         </div>
 
@@ -164,12 +94,8 @@
             <div class="card">
                 <h3>Liste des Joueurs</h3>
                 <table id="players-table">
-                    <thead> 
-                        <tr>
-                            <th>ID</th><th>Nom</th><th>Rôle Utilisateur</th><th>Score</th><th>Actions</th> 
-                        </tr>
-                    </thead>
-                    <tbody></tbody> 
+                    <thead><tr><th>ID</th><th>Nom</th><th>Rôle Utilisateur</th><th>Score</th><th class="actions-cell">Actions</th></tr></thead>
+                    <tbody></tbody>
                 </table>
                 <p id="players-message" class="info"></p>
             </div>
@@ -180,12 +106,8 @@
             <div class="card">
                 <h3>Liste des Équipes</h3>
                 <table id="teams-table">
-                    <thead> 
-                        <tr>
-                            <th>ID</th><th>Nom</th><th>Rôle Équipe</th><th>Créateur</th><th>Membres</th><th>Actions</th> 
-                        </tr>
-                    </thead>
-                    <tbody></tbody> 
+                    <thead><tr><th>ID</th><th>Nom</th><th>Rôle Équipe</th><th>Créateur</th><th>Membres</th><th class="actions-cell">Actions</th></tr></thead>
+                    <tbody></tbody>
                 </table>
                 <p id="teams-message" class="info"></p>
             </div>
@@ -193,6 +115,14 @@
 
         <div class="admin-section hidden" id="challenges-section">
             <div class="content-header"><h2>Gestion des Challenges</h2></div>
+            <div class="card">
+                <h3>Liste des Challenges Actifs</h3>
+                <table id="admin-challenges-table">
+                    <thead><tr><th>ID</th><th>Nom</th><th>Niveau</th><th>Points</th><th class="actions-cell">Actions</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+                <p id="admin-challenges-message" class="info"></p>
+            </div>
             <div class="card">
                 <h3>Créer un Nouveau Challenge</h3>
                 <input class="form-control" id="challenge-name" placeholder="Nom du challenge">
@@ -206,7 +136,7 @@
                 <input class="form-control" id="challenge-flag" placeholder="Flag (ex: CTF{solution_flag})">
                 <input class="form-control" id="challenge-ip" placeholder="Adresse IP de la VM (optionnel)">
                 <button class="btn-primary" id="create-challenge-button"><i class="fas fa-plus-circle"></i> Créer Challenge</button>
-                <p id="challenge-message"></p>
+                <p id="challenge-create-message"></p>
             </div>
         </div>
 
@@ -215,10 +145,10 @@
             <div class="card">
                 <h3>Ajouter un Nouvel Article</h3>
                 <input class="form-control" id="doc-title" placeholder="Titre de l'article">
-                <input class="form-control" id="doc-category" placeholder="Catégorie (ex: Sécurité Web, Cryptographie)">
-                <input class="form-control" id="doc-tags" placeholder="Tags (séparés par virgule, ex: SQLi, XSS)">
+                <input class="form-control" id="doc-category" placeholder="Catégorie (ex: Sécurité Web)">
+                <input class="form-control" id="doc-tags" placeholder="Tags (séparés par virgule)">
                 <select class="form-control" id="doc-difficulty">
-                    <option value="">Choisir un niveau de difficulté</option>
+                    <option value="">Choisir un niveau</option>
                     <option value="Débutant">Débutant</option>
                     <option value="Intermédiaire">Intermédiaire</option>
                     <option value="Avancé">Avancé</option>
@@ -230,33 +160,20 @@
         </div>
 
         <div class="admin-section hidden" id="feedback-management-section">
-            <div class="content-header"><h2>Gestion des Feedbacks Utilisateurs</h2></div>
+            <div class="content-header"><h2>Gestion des Feedbacks</h2></div>
             <div class="card">
-                <h3>Liste des Feedbacks</h3>
+                <h3>Liste des Feedbacks Utilisateurs</h3>
                 <table id="feedback-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Date</th>
-                            <th>Utilisateur</th>
-                            <th>Type</th>
-                            <th>Sujet</th>
-                            <th>Challenge ID</th>
-                            <th>Statut</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        </tbody>
+                    <thead><tr><th>ID</th><th>Date</th><th>Utilisateur</th><th>Type</th><th>Sujet</th><th>Challenge ID</th><th>Statut</th><th>Actions</th></tr></thead>
+                    <tbody></tbody>
                 </table>
                 <p id="admin-feedback-message" class="info"></p>
-                
-                <div id="feedback-detail-modal" class="hidden" style="margin-top: 20px; padding: 20px; border-radius: 8px; background: #f9f9f9; border: 1px solid var(--border-color);">
+                <div id="feedback-detail-modal" class="hidden">
                     <h4>Détail du Feedback <span id="detail-feedback-id"></span></h4>
                     <p><strong>De :</strong> <span id="detail-feedback-user"></span></p>
                     <p><strong>Sujet :</strong> <span id="detail-feedback-subject"></span></p>
                     <p><strong>Message :</strong></p>
-                    <pre id="detail-feedback-message" style="white-space: pre-wrap; word-wrap: break-word; background: #eee; padding: 10px; border-radius: 4px;"></pre>
+                    <pre id="detail-feedback-message"></pre>
                     <button class="btn-secondary" onclick="document.getElementById('feedback-detail-modal').classList.add('hidden')">Fermer</button>
                 </div>
             </div>
@@ -264,7 +181,7 @@
 
         <div class="admin-section" id="admin-access-denied-section-fallback">
              <h2>Accès Refusé</h2>
-             <p class="error">Authentification administrateur requise. JavaScript peut être nécessaire.</p>
+             <p class="error">Authentification administrateur requise.</p>
              <p><a href="/login" class="btn-primary" style="text-decoration:none; display:inline-block;">Retour à la Connexion</a></p>
         </div>
     </div>
@@ -276,12 +193,11 @@
             document.querySelectorAll('.admin-section').forEach(section => {
                 section.classList.add('hidden');
             });
-
             const activeSection = document.getElementById(sectionId + '-section');
             if (activeSection) {
                 activeSection.classList.remove('hidden');
             } else {
-                console.warn("Section admin non trouvée:", sectionId, "Affichage du tableau de bord par défaut.");
+                console.warn("Section admin non trouvée:", sectionId);
                 document.getElementById('dashboard-section').classList.remove('hidden');
                 sectionId = 'dashboard';
             }
@@ -294,19 +210,10 @@
             });
 
             switch (sectionId) {
-                case 'players':
-                    fetchPlayers();
-                    break;
-                case 'teams':
-                    fetchTeams();
-                    break;
-                case 'challenges':
-                    fetchAdminChallenges(); // Appel pour lister les challenges
-                    break;
-                case 'feedback-management':
-                    fetchAdminFeedbacks(); // Appel pour lister les feedbacks
-                    break;
-                // Les autres sections (dashboard, documentation) n'ont pas besoin de fetch de données au clic
+                case 'players': fetchPlayers(); break;
+                case 'teams': fetchTeams(); break;
+                case 'challenges': fetchAdminChallenges(); break;
+                case 'feedback-management': fetchAdminFeedbacks(); break;
             }
         }
         
@@ -316,23 +223,15 @@
                 const response = await fetch('/admin_players', { method: 'GET' }); 
                 if (response.ok) {
                     sessionStorage.setItem('isAdminLoggedIn', 'true');
-                    isAdminLoggedIn = true;
                     accessDeniedSection.classList.add('hidden'); 
                     showAdminSection('dashboard'); 
-                    const dashboardLink = document.querySelector('.sidebar-nav li a[onclick*="dashboard"]');
-                    if (dashboardLink) dashboardLink.classList.add('active');
                 } else {
                     throw new Error('Not admin or session expired');
                 }
             } catch (error) {
-                console.warn('Admin status check failed:', error.message);
-                isAdminLoggedIn = false;
-                sessionStorage.removeItem('isAdminLoggedIn');
-                document.querySelectorAll('.admin-section').forEach(section => {
-                    if(section.id !== 'admin-access-denied-section-fallback') {
-                        section.classList.add('hidden');
-                    }
-                });
+                document.querySelector('.sidebar').classList.add('hidden');
+                document.querySelector('.main-content').style.marginLeft = '0';
+                document.querySelectorAll('.admin-section').forEach(section => section.classList.add('hidden'));
                 accessDeniedSection.classList.remove('hidden'); 
             }
         }
@@ -343,291 +242,149 @@
                 const data = await response.json();
                 if (response.ok) {
                     sessionStorage.removeItem('isAdminLoggedIn');
-                    isAdminLoggedIn = false; 
                     window.location.href = data.redirect;
-                } else {
-                    alert(`Erreur de déconnexion: ${data.message || 'Erreur inconnue'}`);
-                }
-            } catch (error) {
-                alert('Erreur réseau lors de la déconnexion.');
-            }
+                } else { alert(`Erreur: ${data.message}`); }
+            } catch (error) { alert('Erreur réseau.'); }
         }
 
         async function fetchPlayers() {
             const messageEl = document.getElementById('players-message');
-            messageEl.textContent = 'Chargement...'; messageEl.className = 'info';
+            const tbody = document.getElementById('players-table').querySelector('tbody');
+            tbody.innerHTML = ''; messageEl.textContent = 'Chargement...'; messageEl.className = 'info';
             try {
                 const response = await fetch('/admin_players');
-                if (!response.ok) { const err = await response.json(); throw new Error(err.message || response.statusText); }
+                if (!response.ok) { const err = await response.json(); throw new Error(err.message); }
                 const data = await response.json();
-                const tbody = document.getElementById('players-table').querySelector('tbody');
-                tbody.innerHTML = ''; 
                 if (data.players && data.players.length > 0) {
                     data.players.forEach(player => {
                         const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${player.id}</td>
-                            <td>${player.username}</td>
-                            <td>${player.preferred_role || 'Joueur'}</td>
-                            <td>${player.score}</td>
-                            <td class="actions-cell">
-                                <button class="btn-danger btn-delete-player" data-id="${player.id}" data-username="${player.username}"><i class="fas fa-trash-alt"></i></button>
-                            </td>`;
+                        row.innerHTML = `<td>${player.id}</td><td>${player.username}</td><td>${player.preferred_role || 'Joueur'}</td><td>${player.score}</td><td class="actions-cell"><button class="btn-danger btn-delete-player" data-id="${player.id}" data-username="${player.username}"><i class="fas fa-trash-alt"></i></button></td>`;
                         tbody.appendChild(row);
                     });
                     messageEl.textContent = ''; 
-                } else {
-                    messageEl.textContent = 'Aucun joueur.'; messageEl.className = 'info';
-                }
-            } catch (error) {
-                messageEl.textContent = error.message || 'Erreur réseau.'; messageEl.className = 'error';
-            }
+                } else { messageEl.textContent = 'Aucun joueur.'; }
+            } catch (error) { messageEl.textContent = `Erreur: ${error.message}`; messageEl.className = 'error'; }
         }
 
         async function fetchTeams() {
             const messageEl = document.getElementById('teams-message');
-            messageEl.textContent = 'Chargement...'; messageEl.className = 'info';
+            const tbody = document.getElementById('teams-table').querySelector('tbody');
+            tbody.innerHTML = ''; messageEl.textContent = 'Chargement...'; messageEl.className = 'info';
             try {
                 const response = await fetch('/admin_teams');
-                 if (!response.ok) { const err = await response.json(); throw new Error(err.message || response.statusText); }
+                 if (!response.ok) { const err = await response.json(); throw new Error(err.message); }
                 const data = await response.json();
-                const tbody = document.getElementById('teams-table').querySelector('tbody');
-                tbody.innerHTML = ''; 
                 if (data.teams && data.teams.length > 0) {
                     data.teams.forEach(team => {
                         const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${team.id}</td>
-                            <td>${team.name}</td>
-                            <td>${team.role}</td>
-                            <td>${team.creator_username}</td>
-                            <td>${team.members.join(', ') || 'Aucun'}</td>
-                            <td class="actions-cell">
-                                <button class="btn-danger btn-delete-team" data-id="${team.id}" data-name="${team.name}"><i class="fas fa-trash-alt"></i></button>
-                            </td>`;
+                        row.innerHTML = `<td>${team.id}</td><td>${team.name}</td><td>${team.role}</td><td>${team.creator_username}</td><td>${team.members.join(', ') || 'Aucun'}</td><td class="actions-cell"><button class="btn-danger btn-delete-team" data-id="${team.id}" data-name="${team.name}"><i class="fas fa-trash-alt"></i></button></td>`;
                         tbody.appendChild(row);
                     });
                     messageEl.textContent = '';
-                } else {
-                    messageEl.textContent = 'Aucune équipe.'; messageEl.className = 'info';
-                }
-            } catch (error) {
-                messageEl.textContent = error.message || 'Erreur réseau.'; messageEl.className = 'error';
-            }
+                } else { messageEl.textContent = 'Aucune équipe.'; }
+            } catch (error) { messageEl.textContent = `Erreur: ${error.message}`; messageEl.className = 'error'; }
         }
         
         async function createChallenge() {
-            const name = document.getElementById('challenge-name').value;
-            const description = document.getElementById('challenge-description').value;
-            const level = document.getElementById('challenge-level').value;
-            const points = document.getElementById('challenge-points').value;
-            const flag = document.getElementById('challenge-flag').value;
-            const ip = document.getElementById('challenge-ip').value;
-            const messageEl = document.getElementById('challenge-message');
-            messageEl.className = ''; messageEl.textContent = '';
-
-            if (!name || !description || !level || !points || !flag) {
-                messageEl.textContent = 'Champs obligatoires manquants.'; messageEl.className = 'error'; return;
-            }
-            if (isNaN(parseInt(points))) {
-                messageEl.textContent = 'Les points doivent être un nombre.'; messageEl.className = 'error'; return;
-            }
+            const payload = { name: document.getElementById('challenge-name').value, description: document.getElementById('challenge-description').value, level: document.getElementById('challenge-level').value, points: parseInt(document.getElementById('challenge-points').value), flag: document.getElementById('challenge-flag').value, ip: document.getElementById('challenge-ip').value || null };
+            const messageEl = document.getElementById('challenge-create-message');
+            if (!payload.name || !payload.description || !payload.level || !payload.points || !payload.flag) { messageEl.textContent = 'Champs obligatoires manquants.'; messageEl.className = 'error'; return; }
             try {
-                const response = await fetch('/admin_create_challenge', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, description, level, points: parseInt(points), flag, ip: ip || null })
-                });
+                const response = await fetch('/admin_create_challenge', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 const data = await response.json();
                 messageEl.textContent = data.message;
                 messageEl.className = response.ok ? 'success' : 'error';
-                if (response.ok) { /* Vider les champs */ 
+                if (response.ok) {
                     document.getElementById('challenge-name').value = '';
                     document.getElementById('challenge-description').value = '';
                     document.getElementById('challenge-points').value = '';
                     document.getElementById('challenge-flag').value = '';
                     document.getElementById('challenge-ip').value = '';
+                    fetchAdminChallenges(); 
                 }
-            } catch (error) {
-                messageEl.textContent = 'Erreur réseau.'; messageEl.className = 'error';
-            }
+            } catch (error) { messageEl.textContent = 'Erreur réseau.'; messageEl.className = 'error'; }
         }
-        document.getElementById('create-challenge-button').addEventListener('click', createChallenge);
 
         async function createDocumentationArticle() {
-            const title = document.getElementById('doc-title').value;
-            const category = document.getElementById('doc-category').value;
-            const tags = document.getElementById('doc-tags').value;
-            const difficulty = document.getElementById('doc-difficulty').value;
-            const content = document.getElementById('doc-content').value;
+            const payload = { title: document.getElementById('doc-title').value, category: document.getElementById('doc-category').value || null, tags: document.getElementById('doc-tags').value || null, difficulty_level: document.getElementById('doc-difficulty').value || null, content: document.getElementById('doc-content').value };
             const messageEl = document.getElementById('doc-create-message');
-            messageEl.className = ''; messageEl.textContent = '';
-
-            if (!title || !content) {
-                messageEl.textContent = 'Titre et contenu obligatoires.'; messageEl.className = 'error'; return;
-            }
+            if (!payload.title || !payload.content) { messageEl.textContent = 'Titre et contenu obligatoires.'; messageEl.className = 'error'; return; }
             try {
-                const response = await fetch('/admin/documentation/create', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title, category: category || null, tags: tags || null, difficulty_level: difficulty || null, content })
-                });
+                const response = await fetch('/admin/documentation/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 const data = await response.json();
                 messageEl.textContent = data.message;
                 messageEl.className = response.ok ? 'success' : 'error';
-                if (response.ok) { /* Vider les champs */
+                if (response.ok) {
                     document.getElementById('doc-title').value = '';
                     document.getElementById('doc-category').value = '';
                     document.getElementById('doc-tags').value = '';
                     document.getElementById('doc-difficulty').value = '';
                     document.getElementById('doc-content').value = '';
                 }
-            } catch (error) {
-                messageEl.textContent = 'Erreur réseau.'; messageEl.className = 'error';
-            }
+            } catch (error) { messageEl.textContent = 'Erreur réseau.'; messageEl.className = 'error'; }
         }
-        document.getElementById('create-doc-button').addEventListener('click', createDocumentationArticle);
 
         async function handleDeletePlayer(playerId, playerName) {
             if (confirm(`Supprimer joueur "${playerName}" (ID: ${playerId}) ?`)) {
-                const messageEl = document.getElementById('players-message');
-                messageEl.className = 'info'; messageEl.textContent = `Suppression...`;
-                try {
-                    const response = await fetch(`/admin/delete_player/${playerId}`, { method: 'DELETE' });
-                    const data = await response.json();
-                    messageEl.textContent = data.message;
-                    messageEl.className = response.ok ? 'success' : 'error';
-                    if (response.ok) fetchPlayers(); 
-                } catch (error) {
-                    messageEl.textContent = 'Erreur réseau.'; messageEl.className = 'error';
-                }
+                try { const response = await fetch(`/admin/delete_player/${playerId}`, { method: 'DELETE' }); const data = await response.json(); alert(data.message); if (response.ok) fetchPlayers(); }
+                catch (error) { alert('Erreur réseau.'); }
             }
         }
 
         async function handleDeleteTeam(teamId, teamName) {
             if (confirm(`Supprimer équipe "${teamName}" (ID: ${teamId}) ?`)) {
-                const messageEl = document.getElementById('teams-message');
-                messageEl.className = 'info'; messageEl.textContent = `Suppression...`;
-                try {
-                    const response = await fetch(`/admin/delete_team/${teamId}`, { method: 'DELETE' });
-                    const data = await response.json();
-                    messageEl.textContent = data.message;
-                    messageEl.className = response.ok ? 'success' : 'error';
-                    if (response.ok) fetchTeams(); 
-                } catch (error) {
-                    messageEl.textContent = 'Erreur réseau.'; messageEl.className = 'error';
-                }
+                try { const response = await fetch(`/admin/delete_team/${teamId}`, { method: 'DELETE' }); const data = await response.json(); alert(data.message); if (response.ok) fetchTeams(); }
+                catch (error) { alert('Erreur réseau.'); }
             }
         }
 
-        // Fonctions pour la gestion des feedbacks
         async function fetchAdminChallenges() {
             const messageEl = document.getElementById('admin-challenges-message');
             const tbody = document.getElementById('admin-challenges-table').querySelector('tbody');
-            tbody.innerHTML = '';
-            messageEl.textContent = 'Chargement des challenges...';
-            messageEl.className = 'info';
-
+            tbody.innerHTML = ''; messageEl.textContent = 'Chargement...';
             try {
                 const response = await fetch('/admin/challenges');
-                if (!response.ok) {
-                    const err = await response.json();
-                    throw new Error(err.message || 'Erreur de chargement');
-                }
+                if (!response.ok) { const err = await response.json(); throw new Error(err.message); }
                 const data = await response.json();
-                
                 if (data.challenges && data.challenges.length > 0) {
-                    data.challenges.forEach(challenge => {
+                    data.challenges.forEach(c => {
                         const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${challenge.id}</td>
-                            <td>${challenge.name}</td>
-                            <td>${challenge.level}</td>
-                            <td>${challenge.points}</td>
-                            <td class="actions-cell">
-                                <button class="btn-danger btn-delete-challenge" data-id="${challenge.id}" data-name="${challenge.name}" title="Supprimer le challenge"><i class="fas fa-trash-alt"></i></button>
-                            </td>
-                        `;
+                        row.innerHTML = `<td>${c.id}</td><td>${c.name}</td><td>${c.level}</td><td>${c.points}</td><td class="actions-cell"><button class="btn-danger btn-delete-challenge" data-id="${c.id}" data-name="${c.name}" title="Supprimer"><i class="fas fa-trash-alt"></i></button></td>`;
                         tbody.appendChild(row);
                     });
                     messageEl.textContent = '';
-                } else {
-                    messageEl.textContent = 'Aucun challenge trouvé.';
-                }
-            } catch (error) {
-                messageEl.textContent = error.message;
-                messageEl.className = 'error';
-            }
+                } else { messageEl.textContent = 'Aucun challenge trouvé.'; }
+            } catch (error) { messageEl.textContent = `Erreur: ${error.message}`; messageEl.className = 'error'; }
         }
 
         async function handleDeleteChallenge(challengeId, challengeName) {
-            if (confirm(`Supprimer le challenge "${challengeName}" (ID: ${challengeId}) ?\nATTENTION : Ceci supprimera aussi tous les matchs et données associés !`)) {
-                const messageEl = document.getElementById('admin-challenges-message');
-                messageEl.textContent = `Suppression de "${challengeName}"...`;
-                messageEl.className = 'info';
-                try {
-                    const response = await fetch(`/admin/delete_challenge/${challengeId}`, { method: 'DELETE' });
-                    const data = await response.json();
-                    messageEl.textContent = data.message;
-                    messageEl.className = response.ok ? 'success' : 'error';
-                    if (response.ok) {
-                        fetchAdminChallenges();
-                    }
-                } catch (error) {
-                    messageEl.textContent = 'Erreur réseau lors de la suppression.';
-                    messageEl.className = 'error';
-                }
+            if (confirm(`Supprimer le challenge "${challengeName}" (ID: ${challengeId}) ?\n\nATTENTION : Ceci supprimera toutes les données associées !`)) {
+                try { const response = await fetch(`/admin/delete_challenge/${challengeId}`, { method: 'DELETE' }); const data = await response.json(); alert(data.message); if (response.ok) fetchAdminChallenges(); }
+                catch (error) { alert('Erreur réseau.'); }
             }
         }
 
         async function fetchAdminFeedbacks() {
             const messageEl = document.getElementById('admin-feedback-message');
             const tbody = document.getElementById('feedback-table').querySelector('tbody');
-            tbody.innerHTML = '';
-            messageEl.textContent = 'Chargement des feedbacks...';
-            messageEl.className = 'info';
-
+            tbody.innerHTML = ''; messageEl.textContent = 'Chargement...';
             try {
                 const response = await fetch('/admin/api/feedback');
                 if (!response.ok) { const err = await response.json(); throw new Error(err.message); }
                 const data = await response.json();
-                
                 if (data.feedbacks && data.feedbacks.length > 0) {
                     data.feedbacks.forEach(fb => {
                         const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${fb.id}</td>
-                            <td>${fb.timestamp_formatted}</td>
-                            <td>${fb.username || 'Anonyme'}</td>
-                            <td>${fb.type}</td>
-                            <td>${fb.subject}</td>
-                            <td>${fb.challenge_id_associated || 'N/A'}</td>
-                            <td>
-                                <select class="form-control feedback-status-select" data-id="${fb.id}" style="width:150px; padding:5px; font-size:0.85rem;">
-                                    <option value="Nouveau" ${fb.status === 'Nouveau' ? 'selected' : ''}>Nouveau</option>
-                                    <option value="En cours" ${fb.status === 'En cours' ? 'selected' : ''}>En cours</option>
-                                    <option value="Résolu" ${fb.status === 'Résolu' ? 'selected' : ''}>Résolu</option>
-                                    <option value="Fermé" ${fb.status === 'Fermé' ? 'selected' : ''}>Fermé</option>
-                                </select>
-                            </td>
-                            <td class="actions-cell">
-                                <button class="btn-primary" title="Voir le message"><i class="fas fa-eye"></i></button>
-                                <button class="btn-danger btn-delete-feedback" data-id="${fb.id}" title="Supprimer le feedback"><i class="fas fa-trash-alt"></i></button>
-                            </td>
-                        `;
+                        row.innerHTML = `<td>${fb.id}</td><td>${fb.timestamp_formatted}</td><td>${fb.username || 'Anonyme'}</td><td>${fb.type}</td><td>${fb.subject}</td><td>${fb.challenge_id_associated || 'N/A'}</td><td><select class="form-control feedback-status-select" data-id="${fb.id}"><option value="Nouveau" ${fb.status === 'Nouveau' ? 'selected' : ''}>Nouveau</option><option value="En cours" ${fb.status === 'En cours' ? 'selected' : ''}>En cours</option><option value="Résolu" ${fb.status === 'Résolu' ? 'selected' : ''}>Résolu</option><option value="Fermé" ${fb.status === 'Fermé' ? 'selected' : ''}>Fermé</option></select></td><td class="actions-cell"><button class="btn-primary" title="Voir le message"><i class="fas fa-eye"></i></button><button class="btn-danger btn-delete-feedback" data-id="${fb.id}" title="Supprimer"><i class="fas fa-trash-alt"></i></button></td>`;
                         row.querySelector('.btn-primary').addEventListener('click', () => viewFeedbackMessage(fb));
+                        row.querySelector('.feedback-status-select').addEventListener('change', (e) => updateFeedbackStatus(e.target.dataset.id, e.target.value));
                         tbody.appendChild(row);
                     });
                     messageEl.textContent = '';
-                } else {
-                    messageEl.textContent = 'Aucun feedback pour le moment.';
-                }
-            } catch (error) {
-                messageEl.textContent = error.message;
-                messageEl.className = 'error';
-            }
+                } else { messageEl.textContent = 'Aucun feedback.'; }
+            } catch (error) { messageEl.textContent = `Erreur: ${error.message}`; messageEl.className = 'error'; }
         }
-
+    
         function viewFeedbackMessage(feedbackObject) {
             const modal = document.getElementById('feedback-detail-modal');
             document.getElementById('detail-feedback-id').textContent = `(#${feedbackObject.id})`;
@@ -638,38 +395,22 @@
         }
 
         async function updateFeedbackStatus(feedbackId, newStatus) {
-            const messageEl = document.getElementById('admin-feedback-message');
             try {
-                const response = await fetch(`/admin/api/feedback/update_status/${feedbackId}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ status: newStatus })
-                });
+                const response = await fetch(`/admin/api/feedback/update_status/${feedbackId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) });
                 const data = await response.json();
-                messageEl.textContent = data.message;
-                messageEl.className = response.ok ? 'success' : 'error';
-                setTimeout(() => { messageEl.textContent = ''; messageEl.className = 'info'; }, 3000);
-            } catch (error) {
-                messageEl.textContent = 'Erreur réseau lors de la mise à jour.';
-                messageEl.className = 'error';
-            }
+                alert(data.message);
+                if (!response.ok) fetchAdminFeedbacks();
+            } catch (error) { alert('Erreur réseau.'); fetchAdminFeedbacks(); }
         }
 
         async function deleteAdminFeedback(feedbackId) {
-            if (confirm(`Êtes-vous sûr de vouloir supprimer le feedback ID ${feedbackId} ?`)) {
-                const messageEl = document.getElementById('admin-feedback-message');
+            if (confirm(`Supprimer le feedback ID ${feedbackId} ?`)) {
                 try {
-                    const response = await fetch(`/admin/api/feedback/delete/${feedbackId}`, { method: 'DELETE' });
+                    const response = await fetch(`/admin/api/feedback/delete/${feedbackId}`, {method: 'DELETE'});
                     const data = await response.json();
-                    messageEl.textContent = data.message;
-                    messageEl.className = response.ok ? 'success' : 'error';
-                    if (response.ok) {
-                        fetchAdminFeedbacks();
-                    }
-                } catch (error) {
-                    messageEl.textContent = 'Erreur réseau lors de la suppression.';
-                    messageEl.className = 'error';
-                }
+                    alert(data.message);
+                    if (response.ok) fetchAdminFeedbacks();
+                } catch (error) { alert('Erreur réseau.'); }
             }
         }
         
@@ -679,32 +420,16 @@
 
         document.addEventListener('click', function(event) {
             const playerDeleteButton = event.target.closest('.btn-delete-player');
-            if (playerDeleteButton) {
-                handleDeletePlayer(playerDeleteButton.dataset.id, playerDeleteButton.dataset.username);
-                return;
-            }
-
+            if (playerDeleteButton) { handleDeletePlayer(playerDeleteButton.dataset.id, playerDeleteButton.dataset.username); return; }
             const teamDeleteButton = event.target.closest('.btn-delete-team');
-            if (teamDeleteButton) {
-                handleDeleteTeam(teamDeleteButton.dataset.id, teamDeleteButton.dataset.name);
-                return;
-            }
-            
+            if (teamDeleteButton) { handleDeleteTeam(teamDeleteButton.dataset.id, teamDeleteButton.dataset.name); return; }
             const challengeDeleteButton = event.target.closest('.btn-delete-challenge');
-            if (challengeDeleteButton) {
-                handleDeleteChallenge(challengeDeleteButton.dataset.id, challengeDeleteButton.dataset.name);
-                return;
-            }
-            
+            if (challengeDeleteButton) { handleDeleteChallenge(challengeDeleteButton.dataset.id, challengeDeleteButton.dataset.name); return; }
             const feedbackDeleteButton = event.target.closest('.btn-delete-feedback');
-            if (feedbackDeleteButton) {
-                deleteAdminFeedback(feedbackDeleteButton.dataset.id);
-                return;
-            }
+            if (feedbackDeleteButton) { deleteAdminFeedback(feedbackDeleteButton.dataset.id); return; }
         });
-
+        
         checkAdminLoginAndSetup();
-
     </script>
 </body>
 </html>
