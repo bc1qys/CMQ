@@ -243,43 +243,35 @@
         }
         
         async function checkAdminLoginAndSetup() {
-            const accessDeniedSection = document.getElementById('admin-access-denied-section-fallback');
-            const fallbackTitle = document.getElementById('fallback-title');
-            const fallbackMessage = document.getElementById('fallback-message');
-            const fallbackLink = document.getElementById('fallback-login-link');
-            const sidebar = document.querySelector('.sidebar');
-            
-            try {
-                const response = await fetch('/admin_players', { method: 'GET' }); 
-                if (response.ok) {
-                    sessionStorage.setItem('isAdminLoggedIn', 'true');
-                    isAdminLoggedIn = true;
-                    accessDeniedSection.classList.add('hidden');
-                    sidebar.classList.remove('hidden');
-                    showAdminSection('dashboard');
-                } else {
-                    throw new Error('Not an admin or session has expired');
-                }
-            } catch (error) {
-                console.warn('Admin status check failed:', error.message);
-                isAdminLoggedIn = false;
-                sessionStorage.removeItem('isAdminLoggedIn');
-                
-                sidebar.classList.add('hidden');
-                document.querySelector('.main-content').style.marginLeft = '0';
-                document.querySelectorAll('.admin-section').forEach(section => {
-                    if(section.id !== 'admin-access-denied-section-fallback') {
-                        section.classList.add('hidden');
-                    }
-                });
-                
-                accessDeniedSection.classList.remove('hidden'); 
-                fallbackTitle.textContent = 'Accès Refusé';
-                fallbackMessage.textContent = 'Authentification administrateur requise.';
-                fallbackMessage.className = 'error';
-                fallbackLink.classList.remove('hidden');
+        const accessDeniedSection = document.getElementById('admin-access-denied-section-fallback');
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+        
+        try {
+            const response = await fetch('/admin_players', { method: 'GET' }); 
+            if (response.ok) {
+                sessionStorage.setItem('isAdminLoggedIn', 'true');
+                accessDeniedSection.classList.add('hidden'); 
+                sidebar.classList.remove('hidden');
+                mainContent.classList.remove('hidden');
+                showAdminSection('dashboard'); 
+            } else {
+                throw new Error('Not admin or session expired');
             }
+        } catch (error) {
+            console.warn('Admin status check failed:', error.message);
+            sessionStorage.removeItem('isAdminLoggedIn');
+            sidebar.classList.add('hidden');
+            mainContent.style.marginLeft = '0';
+            document.querySelectorAll('.admin-section').forEach(section => {
+                if(section.id !== 'admin-access-denied-section-fallback') {
+                    section.classList.add('hidden');
+                }
+            });
+            accessDeniedSection.classList.remove('hidden'); 
         }
+    }
+
 
         async function fetchAdminDocumentation() {
             const messageEl = document.getElementById('admin-documentation-message');
@@ -531,28 +523,43 @@
             }
         }
         
-        document.getElementById('admin-logout-button').addEventListener('click', logoutAdmin);
-        document.getElementById('create-challenge-button').addEventListener('click', createChallenge);
-        document.getElementById('create-doc-button').addEventListener('click', createDocumentationArticle);
-        document.addEventListener('click', function(event) {
-            const playerDeleteButton = event.target.closest('.btn-delete-player');
-            if (playerDeleteButton) { handleDeletePlayer(playerDeleteButton.dataset.id, playerDeleteButton.dataset.username); return; }
+            // --- Fonctions de récupération (Fetch) ---
+        async function fetchPlayers() { /* ... votre fonction fetchPlayers ... */ }
+        async function fetchTeams() { /* ... votre fonction fetchTeams ... */ }
+        async function fetchAdminChallenges() { /* ... votre fonction fetchAdminChallenges ... */ }
+        async function fetchAdminDocumentation() { /* ... votre fonction fetchAdminDocumentation ... */ }
+        async function fetchAdminFeedbacks() { /* ... votre fonction fetchAdminFeedbacks ... */ }
 
-            const teamDeleteButton = event.target.closest('.btn-delete-team');
-            if (teamDeleteButton) { handleDeleteTeam(teamDeleteButton.dataset.id, teamDeleteButton.dataset.name); return; }
+        // --- Fonctions d'Action (Créer, Supprimer, Mettre à jour) ---
+        async function createChallenge() { /* ... votre fonction createChallenge ... */ }
+        async function createDocumentationArticle() { /* ... votre fonction createDocumentationArticle ... */ }
+        async function handleDeletePlayer(id, name) { /* ... votre fonction handleDeletePlayer ... */ }
+        async function handleDeleteTeam(id, name) { /* ... votre fonction handleDeleteTeam ... */ }
+        async function handleDeleteChallenge(id, name) { /* ... votre fonction handleDeleteChallenge ... */ }
+        async function handleDeleteDocumentation(id, title) { /* ... votre fonction handleDeleteDocumentation ... */ }
+        async function deleteAdminFeedback(id) { /* ... votre fonction deleteAdminFeedback ... */ }
+        async function updateFeedbackStatus(id, status) { /* ... votre fonction updateFeedbackStatus ... */ }
+        function viewFeedbackMessage(feedbackObject) { /* ... votre fonction viewFeedbackMessage ... */ }
+            document.getElementById('admin-logout-button').addEventListener('click', logoutAdmin);
+            document.getElementById('create-challenge-button').addEventListener('click', createChallenge);
+            document.getElementById('save-doc-button').addEventListener('click', createDocumentationArticle); // Assurez-vous que l'ID du bouton est correct
             
-            const challengeDeleteButton = event.target.closest('.btn-delete-challenge');
-            if (challengeDeleteButton) { handleDeleteChallenge(challengeDeleteButton.dataset.id, challengeDeleteButton.dataset.name); return; }
-            
-            const feedbackDeleteButton = event.target.closest('.btn-delete-feedback');
-            if (feedbackDeleteButton) { deleteAdminFeedback(feedbackDeleteButton.dataset.id); return; }
+            document.addEventListener('click', function(event) {
+                const playerDeleteButton = event.target.closest('.btn-delete-player');
+                if (playerDeleteButton) { handleDeletePlayer(playerDeleteButton.dataset.id, playerDeleteButton.dataset.username); return; }
 
-            const docDeleteButton = event.target.closest('.btn-delete-doc');
-            if (docDeleteButton) {
-                handleDeleteDocumentation(docDeleteButton.dataset.id, docDeleteButton.dataset.name);
-                return;
-            }
-            });
+                const teamDeleteButton = event.target.closest('.btn-delete-team');
+                if (teamDeleteButton) { handleDeleteTeam(teamDeleteButton.dataset.id, teamDeleteButton.dataset.name); return; }
+                
+                const challengeDeleteButton = event.target.closest('.btn-delete-challenge');
+                if (challengeDeleteButton) { handleDeleteChallenge(challengeDeleteButton.dataset.id, challengeDeleteButton.dataset.name); return; }
+                
+                const docDeleteButton = event.target.closest('.btn-delete-doc');
+                if (docDeleteButton) { handleDeleteDocumentation(docDeleteButton.dataset.id, docDeleteButton.dataset.name); return; }
+
+                const feedbackDeleteButton = event.target.closest('.btn-delete-feedback');
+                if (feedbackDeleteButton) { deleteAdminFeedback(feedbackDeleteButton.dataset.id); return; }
+        });
         
         checkAdminLoginAndSetup();
     </script>
