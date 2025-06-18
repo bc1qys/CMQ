@@ -1441,6 +1441,44 @@ def get_available_matches():
         if conn:
             conn.close()
 
+@app.route('/admin/documentation/update/<int:article_id>', methods=['PUT'])
+def admin_update_documentation(article_id):
+    if 'admin_id' not in session:
+        return jsonify({"message": "Accès admin requis."}), 401
+
+    data = request.get_json()
+    title = data.get('title')
+    content = data.get('content')
+    category = data.get('category')
+    tags = data.get('tags')
+    difficulty_level = data.get('difficulty_level')
+
+    if not title or not content:
+        return jsonify({"message": "Le titre et le contenu sont obligatoires."}), 400
+
+    conn = None
+    try:
+        conn = sqlite3.connect('ctf.db')
+        c = conn.cursor()
+        c.execute("""
+            UPDATE documentation_articles 
+            SET title = ?, content = ?, category = ?, tags = ?, difficulty_level = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        """, (title, content, category, tags, difficulty_level, article_id))
+        conn.commit()
+        
+        if c.rowcount == 0:
+            return jsonify({"message": f"Aucun article avec l'ID {article_id} trouvé à mettre à jour."}), 404
+
+        app.logger.info(f"Article de documentation ID {article_id} mis à jour.")
+        return jsonify({"message": f"Article (ID: {article_id}) mis à jour avec succès !"})
+    except sqlite3.Error as e:
+        if conn: conn.rollback()
+        return jsonify({"message": "Erreur serveur lors de la mise à jour."}), 500
+    finally:
+        if conn:
+            conn.close()
+
 @app.route('/api/matches/create', methods=['POST'])
 def create_match():
     if 'user_id' not in session or 'team_id' not in session:
