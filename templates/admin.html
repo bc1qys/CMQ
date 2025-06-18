@@ -34,7 +34,7 @@
         .error { color: var(--danger-accent); } .success { color: var(--success-accent); } .info { color: var(--text-muted); }
         .form-control { display: block; width: 100%; padding: 10px 12px; margin-bottom: 15px; font-size: 0.95rem; border-radius: 5px; border: 1px solid var(--border-color); }
         .form-control:focus { outline: none; border-color: var(--primary-accent); box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2); }
-        textarea.form-control { min-height: 120px; resize: vertical; }
+        textarea.form-control { min-height: 150px; resize: vertical; font-family: Consolas, 'Courier New', monospace; }
         button, .btn { padding: 10px 18px; font-size: 0.9rem; font-weight: 500; border-radius: 5px; cursor: pointer; transition: all 0.2s ease; border: none; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 10px; }
         .btn-primary { background-color: var(--primary-accent); color: white; }
         .btn-primary:hover { background-color: #2980b9; }
@@ -59,12 +59,12 @@
         </div>
         <nav class="sidebar-nav">
             <ul>
-                <li><a href="#" onclick="showAdminSection('dashboard')" class="active"><i class="fas fa-tachometer-alt"></i> Tableau de Bord</a></li>
-                <li><a href="#" onclick="showAdminSection('players')"><i class="fas fa-users"></i> Gestion Joueurs</a></li>
-                <li><a href="#" onclick="showAdminSection('teams')"><i class="fas fa-users-cog"></i> Gestion Équipes</a></li>
-                <li><a href="#" onclick="showAdminSection('challenges')"><i class="fas fa-laptop-code"></i> Gestion Challenges</a></li>
-                <li><a href="#" onclick="showAdminSection('documentation')"><i class="fas fa-book-open"></i> Gestion Documentation</a></li>
-                <li><a href="#" onclick="showAdminSection('feedback-management')"><i class="fas fa-envelope-open-text"></i> Gestion Feedbacks</a></li>
+                <li><a href="#" onclick="showAdminSection('dashboard')" data-section="dashboard" class="active"><i class="fas fa-tachometer-alt"></i> Tableau de Bord</a></li>
+                <li><a href="#" onclick="showAdminSection('players')" data-section="players"><i class="fas fa-users"></i> Gestion Joueurs</a></li>
+                <li><a href="#" onclick="showAdminSection('teams')" data-section="teams"><i class="fas fa-users-cog"></i> Gestion Équipes</a></li>
+                <li><a href="#" onclick="showAdminSection('challenges')" data-section="challenges"><i class="fas fa-laptop-code"></i> Gestion Challenges</a></li>
+                <li><a href="#" onclick="showAdminSection('documentation')" data-section="documentation"><i class="fas fa-book-open"></i> Gestion Documentation</a></li>
+                <li><a href="#" onclick="showAdminSection('feedback-management')" data-section="feedback-management"><i class="fas fa-envelope-open-text"></i> Gestion Feedbacks</a></li>
             </ul>
         </nav>
         <div class="sidebar-footer">
@@ -73,7 +73,7 @@
     </div>
 
     <div class="main-content">
-        <div class="admin-section hidden" id="dashboard-section">
+        <div class="admin-section" id="dashboard-section">
             <div class="content-header"><h2>Tableau de Bord</h2></div>
             <div class="card">
                 <h3>Bienvenue, Administrateur !</h3>
@@ -134,28 +134,19 @@
 
         <div class="admin-section hidden" id="documentation-section">
             <div class="content-header"><h2>Gestion de la Documentation</h2></div>
-
             <div class="card">
                 <h3>Liste des Articles de Documentation</h3>
                 <table id="admin-documentation-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Titre</th>
-                            <th>Catégorie</th>
-                            <th>Niveau</th>
-                            <th class="actions-cell">Actions</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>ID</th><th>Titre</th><th>Catégorie</th><th>Niveau</th><th class="actions-cell">Actions</th></tr></thead>
                     <tbody></tbody>
                 </table>
                 <p id="admin-documentation-message" class="info"></p>
             </div>
-
             <div class="card">
                 <h3>Ajouter ou Modifier un Article</h3>
-                <p class="info">Pour modifier un article, cliquez sur son bouton "Modifier" dans la liste ci-dessus. Ses informations seront chargées dans ce formulaire.</p>
-                <input type="hidden" id="doc-id"> <input class="form-control" id="doc-title" placeholder="Titre de l'article">
+                <p class="info">Pour modifier un article, cliquez sur son bouton "Modifier" <i class="fas fa-edit"></i> dans la liste ci-dessus. Ses informations seront chargées dans ce formulaire.</p>
+                <input type="hidden" id="doc-id">
+                <input class="form-control" id="doc-title" placeholder="Titre de l'article">
                 <input class="form-control" id="doc-category" placeholder="Catégorie (ex: Sécurité Web, Cryptographie)">
                 <input class="form-control" id="doc-tags" placeholder="Tags (séparés par virgule, ex: SQLi, XSS)">
                 <select class="form-control" id="doc-difficulty">
@@ -166,7 +157,7 @@
                 </select>
                 <textarea class="form-control" id="doc-content" placeholder="Contenu de l'article (Markdown supporté)"></textarea>
                 <button class="btn-primary" id="save-doc-button"><i class="fas fa-save"></i> Sauvegarder Article</button>
-                <button class="btn-secondary" id="clear-doc-form-button" type="button" style="display: none;">Annuler la modification</button>
+                <button class="btn-secondary" id="clear-doc-form-button" type="button" style="display: none;"><i class="fas fa-times"></i> Annuler la modification</button>
                 <p id="doc-create-message"></p>
             </div>
         </div>
@@ -192,139 +183,76 @@
         </div>
 
         <div class="admin-section" id="admin-access-denied-section-fallback">
-            <h2 id="fallback-title">Vérification de l'accès...</h2>
-            <p id="fallback-message" class="info">Veuillez patienter.</p>
-            <p id="fallback-login-link" class="hidden"><a href="/login" class="btn-primary" style="text-decoration:none; display:inline-block;">Retour à la Connexion</a></p>
+             <h2 id="fallback-title">Vérification de l'accès...</h2>
+             <p id="fallback-message" class="info">Veuillez patienter.</p>
+             <p id="fallback-login-link" class="hidden"><a href="/login" class="btn-primary" style="text-decoration:none; display:inline-block;">Retour à la Connexion</a></p>
         </div>
     </div>
 
     <script>
-        
+        // --- BLOC SCRIPT COMPLET ---
+
         let isAdminLoggedIn = sessionStorage.getItem('isAdminLoggedIn') === 'true';
 
         function showAdminSection(sectionId) {
-            document.querySelectorAll('.admin-section').forEach(section => {
-                section.classList.add('hidden');
-            });
-
+            document.querySelectorAll('.admin-section').forEach(section => section.classList.add('hidden'));
             const activeSection = document.getElementById(sectionId + '-section');
             if (activeSection) {
                 activeSection.classList.remove('hidden');
             } else {
-                console.warn("Section admin non trouvée:", sectionId, "Affichage du tableau de bord par défaut.");
+                console.warn("Section admin non trouvée:", sectionId);
                 document.getElementById('dashboard-section').classList.remove('hidden');
                 sectionId = 'dashboard';
             }
 
             document.querySelectorAll('.sidebar-nav li a').forEach(link => {
                 link.classList.remove('active');
-                if (link.getAttribute('onclick') && link.getAttribute('onclick').includes(`'${sectionId}'`)) {
+                if (link.getAttribute('onclick')?.includes(`'${sectionId}'`)) {
                     link.classList.add('active');
                 }
             });
 
             switch (sectionId) {
-                case 'players':
-                    fetchPlayers();
-                    break;
-                case 'teams':
-                    fetchTeams();
-                    break;
-                case 'challenges':
-                    fetchAdminChallenges();
-                    break;
-                case 'documentation':
-                    fetchAdminDocumentation(); 
-                    break;
-                case 'feedback-management':
-                    fetchAdminFeedbacks();
-                    break;
+                case 'players': fetchPlayers(); break;
+                case 'teams': fetchTeams(); break;
+                case 'challenges': fetchAdminChallenges(); break;
+                case 'documentation': fetchAdminDocumentation(); break;
+                case 'feedback-management': fetchAdminFeedbacks(); break;
             }
         }
         
         async function checkAdminLoginAndSetup() {
-        const accessDeniedSection = document.getElementById('admin-access-denied-section-fallback');
-        const sidebar = document.querySelector('.sidebar');
-        const mainContent = document.querySelector('.main-content');
-        
-        try {
-            const response = await fetch('/admin_players', { method: 'GET' }); 
-            if (response.ok) {
-                sessionStorage.setItem('isAdminLoggedIn', 'true');
-                accessDeniedSection.classList.add('hidden'); 
-                sidebar.classList.remove('hidden');
-                mainContent.classList.remove('hidden');
-                showAdminSection('dashboard'); 
-            } else {
-                throw new Error('Not admin or session expired');
-            }
-        } catch (error) {
-            console.warn('Admin status check failed:', error.message);
-            sessionStorage.removeItem('isAdminLoggedIn');
-            sidebar.classList.add('hidden');
-            mainContent.style.marginLeft = '0';
-            document.querySelectorAll('.admin-section').forEach(section => {
-                if(section.id !== 'admin-access-denied-section-fallback') {
-                    section.classList.add('hidden');
-                }
-            });
-            accessDeniedSection.classList.remove('hidden'); 
-        }
-    }
-
-
-        async function fetchAdminDocumentation() {
-            const messageEl = document.getElementById('admin-documentation-message');
-            const tbody = document.getElementById('admin-documentation-table').querySelector('tbody');
-            tbody.innerHTML = '';
-            messageEl.textContent = 'Chargement de la documentation...';
-            messageEl.className = 'info';
-
+            const accessDeniedSection = document.getElementById('admin-access-denied-section-fallback');
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
             try {
-                const response = await fetch('/admin/api/documentation');
-                if (!response.ok) { const err = await response.json(); throw new Error(err.message); }
-                const data = await response.json();
-                
-                if (data.articles && data.articles.length > 0) {
-                    data.articles.forEach(article => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${article.id}</td>
-                            <td>${article.title}</td>
-                            <td>${article.category || 'N/A'}</td>
-                            <td>${article.difficulty_level || 'N/A'}</td>
-                            <td class="actions-cell">
-                                <button class="btn-primary" onclick="loadArticleForEdit(${article.id})" title="Modifier"><i class="fas fa-edit"></i></button>
-                                <button class="btn-danger btn-delete-doc" data-id="${article.id}" data-name="${article.title}" title="Supprimer"><i class="fas fa-trash-alt"></i></button>
-                            </td>
-                        `;
-                        tbody.appendChild(row);
-                    });
-                    messageEl.textContent = '';
+                const response = await fetch('/admin_players', { method: 'GET' }); 
+                if (response.ok) {
+                    sessionStorage.setItem('isAdminLoggedIn', 'true');
+                    accessDeniedSection.classList.add('hidden'); 
+                    sidebar.classList.remove('hidden');
+                    mainContent.style.marginLeft = '260px';
+                    showAdminSection('dashboard'); 
                 } else {
-                    messageEl.textContent = 'Aucun article de documentation trouvé.';
+                    throw new Error('Not admin or session expired');
                 }
             } catch (error) {
-                messageEl.textContent = `Erreur: ${error.message}`;
-                messageEl.className = 'error';
-            }
-        }
-
-        async function handleDeleteDocumentation(articleId, articleTitle) {
-            if (confirm(`Voulez-vous vraiment supprimer l'article "${articleTitle}" (ID: ${articleId}) ?`)) {
-                try {
-                    const response = await fetch(`/admin/documentation/delete/${articleId}`, { method: 'DELETE' });
-                    const data = await response.json();
-                    alert(data.message);
-                    if (response.ok) {
-                        fetchAdminDocumentation();
+                console.warn('Admin status check failed:', error.message);
+                sessionStorage.removeItem('isAdminLoggedIn');
+                sidebar.classList.add('hidden');
+                mainContent.style.marginLeft = '0';
+                document.querySelectorAll('.admin-section').forEach(section => {
+                    if (section.id !== 'admin-access-denied-section-fallback') {
+                        section.classList.add('hidden');
                     }
-                } catch (error) {
-                    alert('Erreur réseau lors de la suppression.');
-                }
+                });
+                accessDeniedSection.classList.remove('hidden'); 
+                document.getElementById('fallback-title').textContent = 'Accès Refusé';
+                document.getElementById('fallback-message').textContent = 'Authentification administrateur requise.';
+                document.getElementById('fallback-message').className = 'error';
+                document.getElementById('fallback-login-link').classList.remove('hidden');
             }
         }
-
 
         async function logoutAdmin() {
             try {
@@ -337,18 +265,19 @@
             } catch (error) { alert('Erreur réseau.'); }
         }
 
+        // --- Fonctions de récupération (Fetch) ---
         async function fetchPlayers() {
-            const messageEl = document.getElementById('players-message');
             const tbody = document.getElementById('players-table').querySelector('tbody');
+            const messageEl = document.getElementById('players-message');
             tbody.innerHTML = ''; messageEl.textContent = 'Chargement...'; messageEl.className = 'info';
             try {
                 const response = await fetch('/admin_players');
                 if (!response.ok) { const err = await response.json(); throw new Error(err.message); }
                 const data = await response.json();
                 if (data.players && data.players.length > 0) {
-                    data.players.forEach(player => {
+                    data.players.forEach(p => {
                         const row = document.createElement('tr');
-                        row.innerHTML = `<td>${player.id}</td><td>${player.username}</td><td>${player.preferred_role || 'Joueur'}</td><td>${player.score}</td><td class="actions-cell"><button class="btn-danger btn-delete-player" data-id="${player.id}" data-username="${player.username}" title="Supprimer"><i class="fas fa-trash-alt"></i></button></td>`;
+                        row.innerHTML = `<td>${p.id}</td><td>${p.username}</td><td>${p.preferred_role || 'Joueur'}</td><td>${p.score}</td><td class="actions-cell"><button class="btn-danger btn-delete-player" data-id="${p.id}" data-username="${p.username}" title="Supprimer"><i class="fas fa-trash-alt"></i></button></td>`;
                         tbody.appendChild(row);
                     });
                     messageEl.textContent = ''; 
@@ -357,93 +286,28 @@
         }
 
         async function fetchTeams() {
-            const messageEl = document.getElementById('teams-message');
             const tbody = document.getElementById('teams-table').querySelector('tbody');
+            const messageEl = document.getElementById('teams-message');
             tbody.innerHTML = ''; messageEl.textContent = 'Chargement...'; messageEl.className = 'info';
             try {
                 const response = await fetch('/admin_teams');
-                 if (!response.ok) { const err = await response.json(); throw new Error(err.message); }
+                if (!response.ok) { const err = await response.json(); throw new Error(err.message); }
                 const data = await response.json();
                 if (data.teams && data.teams.length > 0) {
-                    data.teams.forEach(team => {
+                    data.teams.forEach(t => {
                         const row = document.createElement('tr');
-                        row.innerHTML = `<td>${team.id}</td><td>${team.name}</td><td>${team.role}</td><td>${team.creator_username}</td><td>${team.members.join(', ')}</td><td class="actions-cell"><button class="btn-danger btn-delete-team" data-id="${team.id}" data-name="${team.name}" title="Supprimer"><i class="fas fa-trash-alt"></i></button></td>`;
+                        row.innerHTML = `<td>${t.id}</td><td>${t.name}</td><td>${t.role}</td><td>${t.creator_username || 'N/A'}</td><td>${t.members.join(', ')}</td><td class="actions-cell"><button class="btn-danger btn-delete-team" data-id="${t.id}" data-name="${t.name}" title="Supprimer"><i class="fas fa-trash-alt"></i></button></td>`;
                         tbody.appendChild(row);
                     });
                     messageEl.textContent = '';
                 } else { messageEl.textContent = 'Aucune équipe.'; }
             } catch (error) { messageEl.textContent = `Erreur: ${error.message}`; messageEl.className = 'error'; }
         }
-        
-        async function createChallenge() {
-            const payload = { name: document.getElementById('challenge-name').value, description: document.getElementById('challenge-description').value, level: document.getElementById('challenge-level').value, points: parseInt(document.getElementById('challenge-points').value), flag: document.getElementById('challenge-flag').value, ip: document.getElementById('challenge-ip').value || null };
-            const messageEl = document.getElementById('challenge-create-message');
-            messageEl.className = ''; messageEl.textContent = '';
-            if (!payload.name || !payload.description || !payload.level || !payload.points || !payload.flag) {
-                messageEl.textContent = 'Champs obligatoires manquants.'; messageEl.className = 'error'; return;
-            }
-            try {
-                const response = await fetch('/admin_create_challenge', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                const data = await response.json();
-                messageEl.textContent = data.message;
-                messageEl.className = response.ok ? 'success' : 'error';
-                if (response.ok) {
-                    document.getElementById('challenge-name').value = '';
-                    document.getElementById('challenge-description').value = '';
-                    document.getElementById('challenge-points').value = '';
-                    document.getElementById('challenge-flag').value = '';
-                    document.getElementById('challenge-ip').value = '';
-                    fetchAdminChallenges(); // Recharger la liste
-                }
-            } catch (error) { messageEl.textContent = 'Erreur réseau.'; messageEl.className = 'error'; }
-        }
-
-        async function createDocumentationArticle() {
-            const payload = { title: document.getElementById('doc-title').value, category: document.getElementById('doc-category').value || null, tags: document.getElementById('doc-tags').value || null, difficulty_level: document.getElementById('doc-difficulty').value || null, content: document.getElementById('doc-content').value };
-            const messageEl = document.getElementById('doc-create-message');
-            messageEl.className = ''; messageEl.textContent = '';
-            if (!payload.title || !payload.content) { messageEl.textContent = 'Titre et contenu obligatoires.'; messageEl.className = 'error'; return; }
-            try {
-                const response = await fetch('/admin/documentation/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                const data = await response.json();
-                messageEl.textContent = data.message;
-                messageEl.className = response.ok ? 'success' : 'error';
-                if (response.ok) {
-                    document.getElementById('doc-title').value = '';
-                    document.getElementById('doc-category').value = '';
-                    document.getElementById('doc-tags').value = '';
-                    document.getElementById('doc-difficulty').value = '';
-                    document.getElementById('doc-content').value = '';
-                }
-            } catch (error) { messageEl.textContent = 'Erreur réseau.'; messageEl.className = 'error'; }
-        }
-
-        async function handleDeletePlayer(playerId, playerName) {
-            if (confirm(`Supprimer joueur "${playerName}" (ID: ${playerId}) ?`)) {
-                try {
-                    const response = await fetch(`/admin/delete_player/${playerId}`, { method: 'DELETE' });
-                    const data = await response.json();
-                    alert(data.message);
-                    if (response.ok) fetchPlayers(); 
-                } catch (error) { alert('Erreur réseau.'); }
-            }
-        }
-
-        async function handleDeleteTeam(teamId, teamName) {
-            if (confirm(`Supprimer équipe "${teamName}" (ID: ${teamId}) ?`)) {
-                try {
-                    const response = await fetch(`/admin/delete_team/${teamId}`, { method: 'DELETE' });
-                    const data = await response.json();
-                    alert(data.message);
-                    if (response.ok) fetchTeams(); 
-                } catch (error) { alert('Erreur réseau.'); }
-            }
-        }
 
         async function fetchAdminChallenges() {
-            const messageEl = document.getElementById('admin-challenges-message');
             const tbody = document.getElementById('admin-challenges-table').querySelector('tbody');
-            tbody.innerHTML = ''; messageEl.textContent = 'Chargement...';
+            const messageEl = document.getElementById('admin-challenges-message');
+            tbody.innerHTML = ''; messageEl.textContent = 'Chargement...'; messageEl.className = 'info';
             try {
                 const response = await fetch('/admin/challenges');
                 if (!response.ok) { const err = await response.json(); throw new Error(err.message); }
@@ -459,20 +323,28 @@
             } catch (error) { messageEl.textContent = `Erreur: ${error.message}`; messageEl.className = 'error'; }
         }
 
-        async function handleDeleteChallenge(challengeId, challengeName) {
-            if (confirm(`Supprimer le challenge "${challengeName}" (ID: ${challengeId}) ?\n\nATTENTION : Ceci supprimera toutes les données associées !`)) {
-                try {
-                    const response = await fetch(`/admin/delete_challenge/${challengeId}`, { method: 'DELETE' });
-                    const data = await response.json();
-                    alert(data.message);
-                    if (response.ok) fetchAdminChallenges();
-                } catch (error) { alert('Erreur réseau.'); }
-            }
+        async function fetchAdminDocumentation() {
+            const tbody = document.getElementById('admin-documentation-table').querySelector('tbody');
+            const messageEl = document.getElementById('admin-documentation-message');
+            tbody.innerHTML = ''; messageEl.textContent = 'Chargement...'; messageEl.className = 'info';
+            try {
+                const response = await fetch('/admin/api/documentation');
+                if (!response.ok) { const err = await response.json(); throw new Error(err.message); }
+                const data = await response.json();
+                if (data.articles && data.articles.length > 0) {
+                    data.articles.forEach(article => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `<td>${article.id}</td><td>${article.title}</td><td>${article.category || 'N/A'}</td><td>${article.difficulty_level || 'N/A'}</td><td class="actions-cell"><button class="btn-primary" onclick="loadArticleForEdit(${article.id})" title="Modifier"><i class="fas fa-edit"></i></button><button class="btn-danger btn-delete-doc" data-id="${article.id}" data-name="${article.title}" title="Supprimer"><i class="fas fa-trash-alt"></i></button></td>`;
+                        tbody.appendChild(row);
+                    });
+                    messageEl.textContent = '';
+                } else { messageEl.textContent = 'Aucun article trouvé.'; }
+            } catch (error) { messageEl.textContent = `Erreur: ${error.message}`; messageEl.className = 'error'; }
         }
 
         async function fetchAdminFeedbacks() {
-            const messageEl = document.getElementById('admin-feedback-message');
             const tbody = document.getElementById('feedback-table').querySelector('tbody');
+            const messageEl = document.getElementById('admin-feedback-message');
             tbody.innerHTML = ''; messageEl.textContent = 'Chargement...';
             try {
                 const response = await fetch('/admin/api/feedback');
@@ -481,9 +353,8 @@
                 if (data.feedbacks && data.feedbacks.length > 0) {
                     data.feedbacks.forEach(fb => {
                         const row = document.createElement('tr');
-                        row.innerHTML = `<td>${fb.id}</td><td>${fb.timestamp_formatted}</td><td>${fb.username || 'Anonyme'}</td><td>${fb.type}</td><td>${fb.subject}</td><td>${fb.challenge_id_associated || 'N/A'}</td><td><select class="form-control feedback-status-select" data-id="${fb.id}" style="width:auto; padding:5px; font-size:0.85rem;"><option value="Nouveau" ${fb.status === 'Nouveau' ? 'selected' : ''}>Nouveau</option><option value="En cours" ${fb.status === 'En cours' ? 'selected' : ''}>En cours</option><option value="Résolu" ${fb.status === 'Résolu' ? 'selected' : ''}>Résolu</option><option value="Fermé" ${fb.status === 'Fermé' ? 'selected' : ''}>Fermé</option></select></td><td class="actions-cell"><button class="btn-primary" title="Voir le message"><i class="fas fa-eye"></i></button><button class="btn-danger btn-delete-feedback" data-id="${fb.id}" title="Supprimer"><i class="fas fa-trash-alt"></i></button></td>`;
+                        row.innerHTML = `<td>${fb.id}</td><td>${fb.timestamp_formatted}</td><td>${fb.username || 'Anonyme'}</td><td>${fb.type}</td><td>${fb.subject}</td><td>${fb.challenge_id_associated || 'N/A'}</td><td><select class="form-control feedback-status-select" data-id="${fb.id}" style="width:auto;padding:5px;font-size:0.85rem;"><option value="Nouveau" ${fb.status === 'Nouveau' ? 'selected' : ''}>Nouveau</option><option value="En cours" ${fb.status === 'En cours' ? 'selected' : ''}>En cours</option><option value="Résolu" ${fb.status === 'Résolu' ? 'selected' : ''}>Résolu</option><option value="Fermé" ${fb.status === 'Fermé' ? 'selected' : ''}>Fermé</option></select></td><td class="actions-cell"><button class="btn-primary" title="Voir le message"><i class="fas fa-eye"></i></button><button class="btn-danger btn-delete-feedback" data-id="${fb.id}" title="Supprimer"><i class="fas fa-trash-alt"></i></button></td>`;
                         row.querySelector('button.btn-primary').addEventListener('click', () => viewFeedbackMessage(fb));
-                        row.querySelector('select.feedback-status-select').addEventListener('change', (e) => updateFeedbackStatus(e.target.dataset.id, e.target.value));
                         tbody.appendChild(row);
                     });
                     messageEl.textContent = '';
@@ -491,6 +362,83 @@
             } catch (error) { messageEl.textContent = `Erreur: ${error.message}`; messageEl.className = 'error'; }
         }
     
+        // --- Fonctions d'Action (Créer, Supprimer, Mettre à jour) ---
+        
+        async function createChallenge() {
+            const payload = { name: document.getElementById('challenge-name').value, description: document.getElementById('challenge-description').value, level: document.getElementById('challenge-level').value, points: parseInt(document.getElementById('challenge-points').value), flag: document.getElementById('challenge-flag').value, ip: document.getElementById('challenge-ip').value || null };
+            const messageEl = document.getElementById('challenge-create-message');
+            messageEl.className = ''; messageEl.textContent = '';
+            if (!payload.name || !payload.description || !payload.level || isNaN(payload.points) || !payload.flag) {
+                messageEl.textContent = 'Champs obligatoires manquants ou invalides.'; messageEl.className = 'error'; return;
+            }
+            try {
+                const response = await fetch('/admin_create_challenge', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const data = await response.json();
+                messageEl.textContent = data.message;
+                messageEl.className = response.ok ? 'success' : 'error';
+                if (response.ok) {
+                    document.getElementById('challenge-name').value = ''; document.getElementById('challenge-description').value = '';
+                    document.getElementById('challenge-points').value = ''; document.getElementById('challenge-flag').value = '';
+                    document.getElementById('challenge-ip').value = '';
+                    fetchAdminChallenges();
+                }
+            } catch (error) { messageEl.textContent = 'Erreur réseau.'; messageEl.className = 'error'; }
+        }
+
+        function clearDocForm() {
+            document.getElementById('doc-id').value = '';
+            document.getElementById('doc-title').value = '';
+            document.getElementById('doc-category').value = '';
+            document.getElementById('doc-tags').value = '';
+            document.getElementById('doc-difficulty').value = '';
+            document.getElementById('doc-content').value = '';
+            document.getElementById('clear-doc-form-button').style.display = 'none';
+        }
+
+        async function saveDocumentationArticle() {
+            const articleId = document.getElementById('doc-id').value;
+            const payload = { title: document.getElementById('doc-title').value, category: document.getElementById('doc-category').value || null, tags: document.getElementById('doc-tags').value || null, difficulty_level: document.getElementById('doc-difficulty').value || null, content: document.getElementById('doc-content').value };
+            const messageEl = document.getElementById('doc-create-message');
+            messageEl.className = ''; messageEl.textContent = '';
+            if (!payload.title || !payload.content) { messageEl.textContent = 'Titre et contenu obligatoires.'; messageEl.className = 'error'; return; }
+            
+            const url = articleId ? `/admin/documentation/update/${articleId}` : '/admin/documentation/create';
+            const method = articleId ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const data = await response.json();
+                messageEl.textContent = data.message;
+                messageEl.className = response.ok ? 'success' : 'error';
+                if (response.ok) {
+                    clearDocForm();
+                    fetchAdminDocumentation();
+                }
+            } catch (error) { messageEl.textContent = 'Erreur réseau.'; messageEl.className = 'error'; }
+        }
+
+        async function loadArticleForEdit(articleId) {
+            try {
+                const response = await fetch(`/admin/api/documentation/${articleId}`);
+                if (!response.ok) { const err = await response.json(); throw new Error(err.message); }
+                const article = await response.json();
+                document.getElementById('doc-id').value = article.id;
+                document.getElementById('doc-title').value = article.title;
+                document.getElementById('doc-category').value = article.category || '';
+                document.getElementById('doc-tags').value = article.tags || '';
+                document.getElementById('doc-difficulty').value = article.difficulty_level || '';
+                document.getElementById('doc-content').value = article.content;
+                document.getElementById('clear-doc-form-button').style.display = 'inline-block';
+                document.querySelector('#documentation-section .card:last-child h3').scrollIntoView({ behavior: 'smooth' });
+            } catch (error) { alert(`Erreur de chargement de l'article: ${error.message}`); }
+        }
+
+        async function handleDeletePlayer(playerId, playerName) { if (confirm(`Supprimer joueur "${playerName}" ?`)) { try { const r=await fetch(`/admin/delete_player/${playerId}`,{method:'DELETE'});const d=await r.json();alert(d.message);if(r.ok)fetchPlayers();}catch(e){alert('Erreur réseau.');}}}
+        async function handleDeleteTeam(teamId, teamName) { if (confirm(`Supprimer équipe "${teamName}" ?`)) { try { const r=await fetch(`/admin/delete_team/${teamId}`,{method:'DELETE'});const d=await r.json();alert(d.message);if(r.ok)fetchTeams();}catch(e){alert('Erreur réseau.');}}}
+        async function handleDeleteChallenge(challengeId, challengeName) { if (confirm(`Supprimer le challenge "${challengeName}" et toutes ses données associées ?`)) { try { const r=await fetch(`/admin/delete_challenge/${challengeId}`,{method:'DELETE'});const d=await r.json();alert(d.message);if(r.ok)fetchAdminChallenges();}catch(e){alert('Erreur réseau.');}}}
+        async function handleDeleteDocumentation(articleId, articleTitle) { if (confirm(`Supprimer l'article "${articleTitle}" ?`)) { try { const r=await fetch(`/admin/documentation/delete/${articleId}`,{method:'DELETE'});const d=await r.json();alert(d.message);if(r.ok)fetchAdminDocumentation();}catch(e){alert('Erreur réseau.');}}}
+        async function deleteAdminFeedback(feedbackId) { if (confirm(`Supprimer le feedback ID ${feedbackId} ?`)) { try { const r=await fetch(`/admin/api/feedback/delete/${feedbackId}`,{method:'DELETE'});const d=await r.json();alert(d.message);if(r.ok)fetchAdminFeedbacks();}catch(e){alert('Erreur réseau.');}}}
+        async function updateFeedbackStatus(feedbackId, newStatus) { try { const r=await fetch(`/admin/api/feedback/update_status/${feedbackId}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:newStatus})});const d=await r.json();const m=document.getElementById('admin-feedback-message');m.textContent=d.message;m.className=r.ok?'success':'error';setTimeout(()=>{m.textContent='';},3000);if(!r.ok)fetchAdminFeedbacks();}catch(e){alert('Erreur réseau.');fetchAdminFeedbacks();}}
         function viewFeedbackMessage(feedbackObject) {
             const modal = document.getElementById('feedback-detail-modal');
             document.getElementById('detail-feedback-id').textContent = `(#${feedbackObject.id})`;
@@ -500,67 +448,26 @@
             modal.classList.remove('hidden');
         }
 
-        async function updateFeedbackStatus(feedbackId, newStatus) {
-            try {
-                const response = await fetch(`/admin/api/feedback/update_status/${feedbackId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) });
-                const data = await response.json();
-                const messageEl = document.getElementById('admin-feedback-message');
-                messageEl.textContent = data.message;
-                messageEl.className = response.ok ? 'success' : 'error';
-                setTimeout(() => { messageEl.textContent = ''; }, 3000);
-                if (!response.ok) fetchAdminFeedbacks();
-            } catch (error) { alert('Erreur réseau.'); fetchAdminFeedbacks(); }
-        }
-
-        async function deleteAdminFeedback(feedbackId) {
-            if (confirm(`Supprimer le feedback ID ${feedbackId} ?`)) {
-                try {
-                    const response = await fetch(`/admin/api/feedback/delete/${feedbackId}`, {method: 'DELETE'});
-                    const data = await response.json();
-                    alert(data.message);
-                    if (response.ok) fetchAdminFeedbacks();
-                } catch (error) { alert('Erreur réseau.'); }
-            }
-        }
+        document.getElementById('admin-logout-button').addEventListener('click', logoutAdmin);
+        document.getElementById('create-challenge-button').addEventListener('click', createChallenge);
+        document.getElementById('save-doc-button').addEventListener('click', saveDocumentationArticle);
+        document.getElementById('clear-doc-form-button').addEventListener('click', clearDocForm);
         
-            // --- Fonctions de récupération (Fetch) ---
-        async function fetchPlayers() { /* ... votre fonction fetchPlayers ... */ }
-        async function fetchTeams() { /* ... votre fonction fetchTeams ... */ }
-        async function fetchAdminChallenges() { /* ... votre fonction fetchAdminChallenges ... */ }
-        async function fetchAdminDocumentation() { /* ... votre fonction fetchAdminDocumentation ... */ }
-        async function fetchAdminFeedbacks() { /* ... votre fonction fetchAdminFeedbacks ... */ }
+        document.addEventListener('click', function(event) {
+            if (event.target.closest('.btn-delete-player')) { handleDeletePlayer(event.target.closest('.btn-delete-player').dataset.id, event.target.closest('.btn-delete-player').dataset.username); return; }
+            if (event.target.closest('.btn-delete-team')) { handleDeleteTeam(event.target.closest('.btn-delete-team').dataset.id, event.target.closest('.btn-delete-team').dataset.name); return; }
+            if (event.target.closest('.btn-delete-challenge')) { handleDeleteChallenge(event.target.closest('.btn-delete-challenge').dataset.id, event.target.closest('.btn-delete-challenge').dataset.name); return; }
+            if (event.target.closest('.btn-delete-doc')) { handleDeleteDocumentation(event.target.closest('.btn-delete-doc').dataset.id, event.target.closest('.btn-delete-doc').dataset.name); return; }
+            if (event.target.closest('.btn-delete-feedback')) { deleteAdminFeedback(event.target.closest('.btn-delete-feedback').dataset.id); return; }
+        });
 
-        // --- Fonctions d'Action (Créer, Supprimer, Mettre à jour) ---
-        async function createChallenge() { /* ... votre fonction createChallenge ... */ }
-        async function createDocumentationArticle() { /* ... votre fonction createDocumentationArticle ... */ }
-        async function handleDeletePlayer(id, name) { /* ... votre fonction handleDeletePlayer ... */ }
-        async function handleDeleteTeam(id, name) { /* ... votre fonction handleDeleteTeam ... */ }
-        async function handleDeleteChallenge(id, name) { /* ... votre fonction handleDeleteChallenge ... */ }
-        async function handleDeleteDocumentation(id, title) { /* ... votre fonction handleDeleteDocumentation ... */ }
-        async function deleteAdminFeedback(id) { /* ... votre fonction deleteAdminFeedback ... */ }
-        async function updateFeedbackStatus(id, status) { /* ... votre fonction updateFeedbackStatus ... */ }
-        function viewFeedbackMessage(feedbackObject) { /* ... votre fonction viewFeedbackMessage ... */ }
-            document.getElementById('admin-logout-button').addEventListener('click', logoutAdmin);
-            document.getElementById('create-challenge-button').addEventListener('click', createChallenge);
-            document.getElementById('save-doc-button').addEventListener('click', createDocumentationArticle); // Assurez-vous que l'ID du bouton est correct
-            
-            document.addEventListener('click', function(event) {
-                const playerDeleteButton = event.target.closest('.btn-delete-player');
-                if (playerDeleteButton) { handleDeletePlayer(playerDeleteButton.dataset.id, playerDeleteButton.dataset.username); return; }
-
-                const teamDeleteButton = event.target.closest('.btn-delete-team');
-                if (teamDeleteButton) { handleDeleteTeam(teamDeleteButton.dataset.id, teamDeleteButton.dataset.name); return; }
-                
-                const challengeDeleteButton = event.target.closest('.btn-delete-challenge');
-                if (challengeDeleteButton) { handleDeleteChallenge(challengeDeleteButton.dataset.id, challengeDeleteButton.dataset.name); return; }
-                
-                const docDeleteButton = event.target.closest('.btn-delete-doc');
-                if (docDeleteButton) { handleDeleteDocumentation(docDeleteButton.dataset.id, docDeleteButton.dataset.name); return; }
-
-                const feedbackDeleteButton = event.target.closest('.btn-delete-feedback');
-                if (feedbackDeleteButton) { deleteAdminFeedback(feedbackDeleteButton.dataset.id); return; }
+        document.addEventListener('change', function(event) {
+            if (event.target.classList.contains('feedback-status-select')) {
+                updateFeedbackStatus(event.target.dataset.id, event.target.value);
+            }
         });
         
+        // Initialisation de la page
         checkAdminLoginAndSetup();
     </script>
 </body>
