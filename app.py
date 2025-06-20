@@ -985,17 +985,36 @@ def admin_delete_team(team_id):
     finally:
         conn.close()
 
-@app.route('/documentation', methods=['GET'])
-def get_public_documentation():
+app.route('/api/documentation/articles', methods=['GET'])
+def get_public_articles():
     try:
         conn = sqlite3.connect('ctf.db')
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
-        c.execute("SELECT id, title, content, category, tags, difficulty_level, created_at, updated_at FROM documentation_articles ORDER BY id DESC")
+        c.execute("SELECT id, title, category, tags, difficulty_level FROM documentation_articles ORDER BY id DESC")
         articles = [dict(row) for row in c.fetchall()]
         return jsonify({"articles": articles})
-    except sqlite3.Error as e:
-        app.logger.error(f"Erreur SQLite - get_public_documentation: {e}")
+    except Exception as e:
+        app.logger.error(f"Erreur SQLite - get_public_articles: {e}")
+        return jsonify({"message": "Erreur serveur."}), 500
+    finally:
+        if conn:
+            conn.close()
+
+@app.route('/api/documentation/article/<int:article_id>', methods=['GET'])
+def get_public_article(article_id):
+    try:
+        conn = sqlite3.connect('ctf.db')
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute("SELECT id, title, content, category, tags, difficulty_level FROM documentation_articles WHERE id = ?", (article_id,))
+        row = c.fetchone()
+        if row:
+            return jsonify(dict(row))
+        else:
+            return jsonify({"message": "Article non trouvé."}), 404
+    except Exception as e:
+        app.logger.error(f"Erreur SQLite - get_public_article: {e}")
         return jsonify({"message": "Erreur serveur."}), 500
     finally:
         if conn:
