@@ -1243,7 +1243,6 @@ def admin_get_feedback():
         conn = sqlite3.connect('ctf.db')
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
-        # Trier par statut (ex: 'Nouveau' en premier) puis par date
         c.execute("SELECT id, user_id, username, strftime('%Y-%m-%d %H:%M:%S', timestamp) as timestamp_formatted, type, challenge_id_associated, subject, message, status FROM feedback ORDER BY CASE status WHEN 'Nouveau' THEN 1 WHEN 'En cours' THEN 2 ELSE 3 END, timestamp DESC")
         feedbacks_raw = c.fetchall()
         feedbacks_list = [dict(row) for row in feedbacks_raw] if feedbacks_raw else []
