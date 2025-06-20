@@ -984,7 +984,23 @@ def admin_delete_team(team_id):
         return jsonify({"message": "Erreur serveur lors de la suppression de l'équipe"}), 500
     finally:
         conn.close()
-#Doc
+
+@app.route('/documentation', methods=['GET'])
+def get_public_documentation():
+    try:
+        conn = sqlite3.connect('ctf.db')
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute("SELECT id, title, content, category, tags, difficulty_level, created_at, updated_at FROM documentation_articles ORDER BY id DESC")
+        articles = [dict(row) for row in c.fetchall()]
+        return jsonify({"articles": articles})
+    except sqlite3.Error as e:
+        app.logger.error(f"Erreur SQLite - get_public_documentation: {e}")
+        return jsonify({"message": "Erreur serveur."}), 500
+    finally:
+        if conn:
+            conn.close()
+
 @app.route('/admin/api/documentation', methods=['GET'])
 def admin_get_documentation():
     if 'admin_id' not in session:
