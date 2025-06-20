@@ -985,7 +985,7 @@ def admin_delete_team(team_id):
     finally:
         conn.close()
 
-app.route('/api/documentation/articles', methods=['GET'])
+@app.route('/api/documentation/articles', methods=['GET'])
 def get_public_articles():
     try:
         conn = sqlite3.connect('ctf.db')
